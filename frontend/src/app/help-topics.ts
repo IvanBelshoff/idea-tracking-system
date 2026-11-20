@@ -1,0 +1,50 @@
+/**
+ * Página da ajuda (its/ajuda) de cada tela e atalho do ITS. O endereço é o mesmo nos dois idiomas;
+ * o idioma entra na frente (/ajuda/pt-BR/<slug>/). A ajuda confere, no build, que todo tópico
+ * daqui existe lá (ajuda/scripts/check-content.mjs): link de ajuda quebrado não chega a produção.
+ */
+export const HELP_TOPICS = {
+  home: '',
+  submitIdea: 'colaborador/enviar-ideia',
+  myIdeas: 'colaborador/acompanhar',
+  hall: 'colaborador/hall-e-pontos',
+  mural: 'colaborador/mural',
+  muralModerate: 'analista/mural',
+  approvalRequest: 'analista/pedir-aprovacao',
+  approve: 'gestor/aprovar-uma-ideia',
+  store: 'colaborador/loja',
+  storeManage: 'admin/loja',
+  recognition: 'colaborador/hall-e-pontos',
+  queue: 'analista/triagem',
+  reports: 'gestor/indicadores',
+  campaigns: 'gestor/campanhas',
+  gains: 'gestor/ganhos',
+  adminUsers: 'admin/usuarios-e-perfis',
+  adminUserFields: 'admin/campos-do-usuario',
+  adminRoles: 'admin/usuarios-e-perfis',
+  adminEntities: 'admin/entidades-e-categorias',
+  adminCategories: 'admin/entidades-e-categorias',
+  adminSettings: 'admin/configuracoes',
+  adminBranding: 'admin/configuracoes',
+  loginScreen: 'admin/tela-de-login',
+  adminTriageRules: 'analista/triagem',
+  adminRecognition: 'colaborador/hall-e-pontos',
+  adminEmail: 'admin/email',
+  adminAudit: 'admin/auditoria-e-privacidade',
+  adminOps: 'admin/ler-a-observabilidade',
+  adminAccess: 'admin/acesso-corporativo',
+  adminIntegrations: 'admin/integracoes',
+  integrationApi: 'ti/api-de-integracao',
+  adminWebhooks: 'admin/webhooks',
+  webhooksReceive: 'ti/webhooks-receber',
+  mailMicrosoft: 'ti/envio-pela-microsoft',
+  mailGoogle: 'ti/envio-pelo-google',
+  permissions: 'referencia/perfis-e-permissoes',
+  faq: 'referencia/perguntas-frequentes',
+  ideaDetail: 'referencia/situacoes',
+  statuses: 'referencia/situacoes',
+  glossary: 'referencia/glossario',
+  rules: 'referencia/regras',
+} as const;
+
+export type HelpTopic = keyof typeof HELP_TOPICS;

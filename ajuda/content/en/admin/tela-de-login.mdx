@@ -1,0 +1,59 @@
+export const meta = {
+  title: 'Customize the sign-in screen',
+  description: 'How to give the sign-in screen the look of your organization: layout, background, title and subtitle, checking everything in the preview before saving.',
+};
+
+# Customize the sign-in screen
+
+The sign-in screen is the first thing people see. In **Administration > Visual identity > Sign-in screen**, you choose the layout, the background and the texts. The name, logo and brand color come from the rest of the [visual identity](/en/admin/configuracoes/).
+
+The settings <Regra id="RN-176">apply to three screens</Regra>: **Sign in**, **I forgot my password** and **Create your password**. The installation wizard and public lookup stay as they are.
+
+## How do I see the result before saving?
+
+The **Preview** shows what you haven't saved yet, on a computer and on a phone, in light and in dark. <Regra id="RN-180">Nothing changes for people</Regra> until you click **Save the sign-in screen**.
+
+## Which layout should I choose?
+
+There are six, each with a description on the screen. **Centered card** is the default: if you leave this alone, nobody sees a change when ITS is updated. With **Split**, you choose which side the form is on. **Brand band**, with no background chosen, uses the brand color.
+
+Centered card and **Minimal** don't show a background. Split, **Full background** and **Side panel**, with no background chosen, look like the centered card. On a phone, every layout becomes a single column, with the form in view without scrolling.
+
+## What background can I use?
+
+The <Regra id="RN-177">background</Regra> can be none, a color, a gradient, an image or a video. For a color or a gradient, use the brand color (and a dark shade of it, in the gradient) or pick the colors.
+
+- **Image:** PNG, JPEG or WebP, up to 10 MB. ITS stores it as WebP and removes the metadata, including the photo's location.
+- **Video:** MP4 or WebM, up to 20 MB, with a <Regra id="RN-178">required cover</Regra>. It plays muted and on a loop, and people signing in can pause it. The cover shows instead of the video for people who ask for less motion, on phones and when the browser asks to save data.
+
+For an image or a video, you can adjust the focus (the point that's never cropped on narrow screens), a color overlay on top and the blur.
+
+The file uploads right away, but it only becomes the background when you save. A file that's in the current background can't be removed: change the background first.
+
+## What color should the text be?
+
+The <Regra id="RN-177">text color</Regra> can be **Automatic** (ITS uses the one that's readable), **Light** or **Dark**, and the one you choose is always respected.
+
+<Atencao>
+  The form always sits on a solid surface, so it's readable on any background. The **title** sits on the background, and ITS checks that it's readable even on an all-light or all-dark photo. When the text color isn't readable on its own (a blue-to-yellow gradient, or the black overlay below 55%), the title gets a **translucent plate** behind it, and the screen warns you.
+</Atencao>
+
+## How do I write the title and subtitle?
+
+Both are optional and plain text, with no HTML or links, up to 80 characters for the title and 200 for the subtitle. <Regra id="RN-179">People signing in see the Portuguese or the English version</Regra>, depending on their own language; if there's no English version, they see the Portuguese one.
+
+Choose one of the 6 **Ready-made texts**, already translated, which fill in the fields and stay editable, or write your own in Portuguese. If the browser has a built-in translator (recent Chrome and Edge), **Suggest translation** appears and fills in the English for you to review. The translation happens in the browser itself, without calling any service; the first time, the browser may download the language pack.
+
+## Can people choose the theme before signing in?
+
+Yes. Every access screen has a **Theme** button (Automatic, Light or Dark) in the corner. The choice applies right away and, <Regra id="RN-181">when the person signs in, it becomes their account theme</Regra>. People who don't touch the button sign in with the theme they already had.
+
+## How do I go back to the default?
+
+**Restore the default** goes back to the centered card, with no background or texts, and deletes the uploaded image, cover and video. ITS asks for confirmation first.
+
+## Who can change it, and what gets recorded?
+
+Only people with the **Change settings** permission can change the sign-in screen. When you save, the [audit log](/en/admin/auditoria-e-privacidade/) records <Regra id="RN-180">which fields changed, without the values</Regra>. Uploading and removing files and restoring the default are recorded too.
+
+The access screens <Regra id="RN-182">pass the accessibility check</Regra> in both themes, on computers and phones, with any layout and background.

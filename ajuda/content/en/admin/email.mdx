@@ -1,0 +1,49 @@
+export const meta = {
+  title: 'Email',
+  description: 'How to turn on ITS email safely: provider, test email, daily summary, templates and failed sends.',
+};
+
+# Email
+
+ITS works without email: notifications arrive in the bell. With email on, they also arrive in a daily summary, and **I forgot my password** starts working.
+
+<Atencao>
+  Sending comes turned off and <Regra id="RN-90">only turns on after a successful test email</Regra>.
+</Atencao>
+
+## How do I turn sending on?
+
+1. In **Settings > Notifications and email**, fill in the **System address**: the address people use to open ITS, such as `https://ideas.yourcompany.com`. It goes into the links in emails.
+2. In **Email > Sending**, choose the **Provider type** and fill in the details of the organization's **SMTP** server, **Microsoft 365 (Graph)** or **Google Workspace (Gmail)**. The password, secret or key is stored encrypted and never shown back.
+3. Click **Send test** and check the inbox.
+4. Once the test works, click **Turn sending on**.
+
+The fields that identify your organization (tenant, client, sender mailbox, SMTP user) <Regra id="RN-135">open hidden</Regra>: click the eye to see them.
+
+<Captura nome="email" alt="ITS email screen, with the sending status and the server setup." />
+
+## How do I send through Microsoft 365?
+
+With the **Microsoft 365 (Graph)** type, <Regra id="RN-99">ITS sends through an application registered at Microsoft</Regra>, without a person's username and password. You enter the tenant, the client ID, the secret, the **Sender mailbox (email)** and, if you want, **Reply to**. Creating the application and releasing the mailbox in Exchange is IT's job: see [Sending email through Microsoft](/en/ti/envio-pela-microsoft/).
+
+Also enter the **Secret expiry date**: <Regra id="RN-100">health warns 30 days before it expires, and at 7 days it raises an alert</Regra>. When you replace the secret, enter the new expiry date.
+
+## How do I send through Google Workspace?
+
+With the **Google Workspace (Gmail)** type, <Regra id="RN-101">ITS sends through a Google service account</Regra>, without a person's username and password. You paste the **Service account JSON key** from the file downloaded from Google Cloud, enter the **Sender mailbox (email)** (a Workspace user) and, if you want, **Sender (name)** and **Reply to**. Once saved, the screen shows only the service account's email; the key never comes back. Creating the account and authorizing sending in the Admin Console is IT's job: see [Sending email through Google](/en/ti/envio-pelo-google/).
+
+The **Key expiry date** is optional, because service account keys don't expire by default. If you enter a date, <Regra id="RN-100">health warns 30 days before</Regra>.
+
+## How does the daily summary work?
+
+So nobody gets an email for every event, <Regra id="RN-31">notifications go out in a daily summary</Regra>, at the configured time. Each person chooses in **My account** what they want to receive.
+
+## Can I change the text of the emails?
+
+Yes. In **Email > Templates**, <Regra id="RN-32">edit the text of each email in each language</Regra>: the daily summary, the password link, the test email and <Regra id="RN-191">the three for approval from another area</Regra> (request, reminder and code). Without edits, the factory text applies.
+
+The template's variables, such as `{{link}}` or `{{items}}`, sit below the text as pieces. Drag one to the spot in the text where it should go, or click it (or press Enter) to insert it at the cursor. <Regra id="RN-138">The template stays plain text, with the same validation</Regra>: dragging only writes the variable.
+
+## What happens when a send fails?
+
+ITS retries a few times. If it still fails, the failure shows up in **Email > Sends**, with the reason and a **Try again** button.

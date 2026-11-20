@@ -1,0 +1,95 @@
+export const meta = {
+  title: 'Login corporativo',
+  description: 'Para o TI: como registrar o ITS na Microsoft (Entra) e no Google, o que preparar no servidor (endereço de retorno, HTTPS, rede, proxy e chave), a validade do segredo e o que fazer quando o login falha.',
+};
+
+# Login corporativo
+
+Esta página é para quem instala e mantém o ITS e cuida da Microsoft ou do Google da sua organização. Quem administra o ITS usa a tela [Acesso corporativo](/pt-BR/admin/acesso-corporativo/); aqui está o que precisa existir **antes** dela.
+
+O ITS usa **OpenID Connect**, de servidor para servidor. Com o recurso desligado (o padrão), o ITS não fala com ninguém de fora. Ligado, a API só conversa com o [provedor](/pt-BR/referencia/glossario/#provedor) na hora de a pessoa entrar: para descobrir os endereços, trocar o código e ler as chaves públicas.
+
+<Dica>
+  Para enviar e-mail pelo Microsoft 365, use **outro aplicativo**, só para o envio e restrito a uma caixa. Veja [Envio de e-mail pela Microsoft](/pt-BR/ti/envio-pela-microsoft/).
+</Dica>
+
+## O que preciso preparar antes?
+
+| Item | Por quê |
+|---|---|
+| **Endereço do sistema** em `https://` (em **Configurações > Notificações e e-mail**) | A Microsoft e o Google só aceitam `http` em `localhost`. O [endereço de retorno](/pt-BR/referencia/glossario/#endereco-de-retorno) é montado a partir dele |
+| **`APP_SECRET_KEY`** no `.env` | O segredo do cliente fica cifrado com ela. Se a chave mudar, cadastre o segredo de novo |
+| **Saída de rede** do servidor da API | Para `login.microsoftonline.com` (Microsoft), `accounts.google.com` e `www.googleapis.com` (Google), na porta 443 |
+| **Domínios da organização** cadastrados | O login corporativo só vale para e-mails desses domínios |
+
+### Qual é o endereço de retorno?
+
+É o endereço do sistema mais o caminho do provedor:
+
+- Microsoft: `https://ideias.suaempresa.com/api/auth/sso/microsoft/callback`
+- Google: `https://ideias.suaempresa.com/api/auth/sso/google/callback`
+
+A tela **Acesso corporativo** mostra o endereço exato, pronto para copiar. O endereço registrado no provedor tem de ser **idêntico** a ele.
+
+### E se o servidor sair por um proxy?
+
+Se o servidor só sai para a internet por um proxy, defina no `.env`:
+
+```bash
+NODE_USE_ENV_PROXY=1
+HTTPS_PROXY=http://proxy.suaempresa.local:3128
+NO_PROXY=localhost,127.0.0.1,db,api
+```
+
+Depois, suba os serviços de novo (`docker compose ... up -d`). Sem proxy, não defina nada.
+
+## Como registro o ITS na Microsoft (Entra ID)?
+
+<Regra id="RN-96">O ITS vale para um tenant só</Regra>, o da sua organização.
+
+1. No **Centro de administração do Microsoft Entra**, abra **Aplicativos > Registros de aplicativo > Novo registro**.
+2. Nome: `ITS`. Em **Tipos de conta com suporte**, escolha **Somente contas neste diretório organizacional (locatário único)**.
+3. Em **URI de redirecionamento**, escolha a plataforma **Web** e informe o endereço de retorno da Microsoft.
+4. Em **Visão geral**, copie o **ID do aplicativo (cliente)** e o **ID do diretório (locatário)**. Na tela do ITS, eles vão em **ID do cliente (aplicativo)** e **ID do tenant (diretório)**.
+5. Em **Certificados e segredos > Novo segredo do cliente**, crie um segredo e copie o **Valor** (não o ID do segredo). Ele aparece **uma única vez**.
+6. Em **Configuração de token > Adicionar declaração opcional**, escolha o tipo **ID** e marque `email`. Assim o token traz o e-mail.
+7. Para limitar **quem** entra: em **Aplicativos empresariais > ITS > Propriedades**, ligue **Atribuição necessária** e, em **Usuários e grupos**, adicione o grupo autorizado.
+
+As permissões padrão (`openid`, `profile`, `email`) bastam; o ITS não lê nada além do login.
+
+Se o administrador do ITS ligar **Oferecer a foto do perfil**, inclua no aplicativo a permissão delegada **Microsoft Graph > User.Read** (em *Permissões de API*). Sem ela, o login continua funcionando, mas a foto não vem. O ITS busca a foto pelo servidor, só em `graph.microsoft.com`, e <Regra id="RN-144">não guarda o token de acesso</Regra>.
+
+## Como registro o ITS no Google?
+
+1. No **Google Cloud Console**, escolha (ou crie) um projeto e abra **APIs e serviços > Tela de permissão OAuth**.
+2. Em **Tipo de usuário**, escolha **Interno**, que restringe o acesso ao seu Google Workspace, e preencha o nome do app e o e-mail de suporte.
+3. Em **Credenciais > Criar credenciais > ID do cliente OAuth**, escolha o tipo **Aplicativo da Web**.
+4. Em **URIs de redirecionamento autorizados**, informe o endereço de retorno do Google.
+5. Copie o **ID do cliente** e a **chave secreta do cliente**.
+6. Para limitar **quem** entra, controle o acesso ao app por **unidade organizacional** na **Admin Console do Google Workspace**.
+
+O ITS só aceita contas do Workspace dos **domínios cadastrados**. Conta pessoal (gmail.com) não entra.
+
+## O que fazer quando o segredo vence?
+
+O [segredo do cliente](/pt-BR/referencia/glossario/) **expira**. Na Microsoft, dura no máximo 24 meses. Anote a data e informe-a em **Validade do segredo**, na tela **Acesso corporativo**, para a saúde do ITS avisar antes de vencer.
+
+Quando o segredo vence, o login corporativo para de funcionar. Crie um segredo novo no provedor e cadastre-o em **Acesso corporativo**. Enquanto isso, quem tem o [acesso de emergência](/pt-BR/referencia/glossario/#acesso-de-emergencia) (os administradores) continua entrando com senha. Trocar o segredo desliga o provedor: depois de salvar o novo, faça o teste e clique em **Ligar**, e o login corporativo volta ao normal.
+
+## O que fazer quando o login falha?
+
+O motivo aparece na tela de entrada e fica registrado na **Auditoria**, como `Entrada pela conta corporativa recusada`.
+
+| Mensagem ou sintoma | O que verificar |
+|---|---|
+| "O provedor não concluiu a entrada" | O endereço de retorno registrado é **idêntico** ao da tela? O segredo não venceu? Veja `logs api` |
+| "Não foi possível falar com o provedor" | A saída de rede para o provedor (firewall e proxy). Use **Testar endereço** na tela |
+| "Esta conta não pertence à organização" | A conta é de outro [tenant](/pt-BR/referencia/glossario/#tenant)? O ID do tenant na tela é o do diretório certo? |
+| "O e-mail desta conta não é de um domínio da organização" | O domínio está na lista? No Google, a conta é do Workspace, e não pessoal? |
+| "Seu e-mail ainda não está cadastrado no ITS" | Cadastre a pessoa em **Usuários** ou ligue a criação automática |
+| Todos recusados depois de trocar a `APP_SECRET_KEY` | O segredo cadastrado não abre mais: cadastre-o de novo |
+| Ninguém entra no modo **Só SSO** | Um administrador entra com senha, muda o modo para **Só senha** e corrige |
+
+<Atencao>
+  Se o provedor sair do ar, o ITS **não** consegue avisar por conta própria. Os administradores seguem entrando com senha. Para acompanhar a saúde da instalação, veja [Operação e alertas](/pt-BR/ti/operacao-e-alertas/).
+</Atencao>

@@ -1,0 +1,61 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+/* Fontes livres, servidas pelo próprio projeto (sem serviços externos). */
+@import "@fontsource-variable/geist";
+@import "@fontsource-variable/geist-mono";
+
+/* Tokens do ITS (decisões em its/docs/DESIGN.md). */
+@import "./tokens.css";
+
+@import "./theme.css";
+
+/* Tela de carregamento (PageLoading). Sozinha na página (primeira carga) ocupa a altura toda;
+   dentro do app, a área de conteúdo. O fade só começa após 150 ms: carga rápida não pisca. */
+.page-loading {
+  animation: page-loading-in 200ms cubic-bezier(0.16, 1, 0.3, 1) 150ms both;
+}
+#root > .page-loading {
+  min-height: 100svh;
+}
+@keyframes page-loading-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Avisos na tela (M23, RN-175): entrada e saída curtas; sem animação para quem pede menos movimento. */
+.toast-enter {
+  animation: toast-in 250ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.toast-exit {
+  animation: toast-out 200ms ease-in both;
+}
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(0.5rem);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes toast-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .toast-enter,
+  .toast-exit {
+    animation: none;
+  }
+}

@@ -1,0 +1,274 @@
+export const meta = {
+  title: 'Writing through the API: submit ideas, comment and declare gains',
+  description: 'What writing through the ITS API is for, with usage examples: submit an idea on behalf of a person, comment, store the external reference and declare a gain. The concepts, the first idea step by step, a complete flow and the details of routes, idempotency key, limits and errors.',
+};
+
+# Writing through the API: submit ideas, comment and declare gains
+
+Writing through the API lets another system write to ITS. There are four small actions: submit an idea on behalf of a person, comment on an idea, store on the idea the number of the matching item in your system and record a declared gain. Writing uses the same address and token as reading, described in [Integration API: how to consume it](/en/ti/api-de-integracao/). The token is the secret key, starting with `its_`, that the integration identifies itself with on every call.
+
+The administrator turns writing on, in [Integrations: setting up](/en/admin/integracoes/). If you're not sure yet whether your case calls for writing, reading or receiving notices, compare the three in the table [Read, write or be notified: which should I use?](/en/ti/api-de-integracao/#read-write-or-be-notified-which-should-i-use).
+
+<Atencao>
+  The integration never decides. It doesn't triage, approve, reject, implement, archive, delete or merge ideas, validate gains or highlight ideas in the Hall of fame, because <Regra id="RN-132">those routes don't exist</Regra>. Every decision stays with a person, on the ITS screen.
+</Atencao>
+
+## What is it for?
+
+Some common uses, each with the module it needs (modules are explained just below):
+
+- At the service desk, some tickets are really improvement suggestions. When the agent classifies a ticket as "improvement suggestion", a flow creates the idea in ITS on behalf of whoever opened the ticket and stores the ticket number on it. When the ticket is resolved, the same flow comments on the idea. It uses the **Submit ideas and comment** module.
+- The team already collects suggestions in its own form. Each response becomes an idea in ITS on behalf of whoever filled it in, with no one retyping anything. The person needs an active account in ITS and must be able to submit ideas in that entity. The module is the same, **Submit ideas and comment**.
+- The maintenance system carries out the work orders that come from approved ideas. When an order is finished, it comments on the matching idea, and the progress is recorded on the idea itself, visible to whoever follows it. It also uses **Submit ideas and comment**.
+- Finance calculates the gain of implemented ideas in a spreadsheet. A flow reads the spreadsheet and records each value as a declared gain; then a person with permission checks and validates the gain in ITS. It uses the **Record declared gains** module.
+
+## How does writing work?
+
+### Which modules does the integration need?
+
+The API is divided into modules, parts the administrator grants one by one to each integration. The two [write modules](/en/referencia/glossario/) are <Regra id="RN-126">separate from the read modules</Regra>: **Submit ideas and comment** (`ideas_write`), which also updates the external reference, and **Record declared gains** (`gains_write`). So an integration can write without reading.
+
+In practice, an integration that submits ideas almost always also asks for the **Entities and categories** read module, because that's where the entity and category identifiers come from (see [Where do the entity and category identifiers come from?](#where-do-the-entity-and-category-identifiers-come-from)).
+
+### What does the scope change for writing?
+
+Every idea belongs to an entity, a part of the organization's structure, such as a site or a department. The scope is the set of entities the integration sees, chosen by the administrator, and every write checks the scope. ITS refuses an idea submitted to an entity outside it (`422 entity_not_in_scope`). For the integration, an idea outside the scope doesn't exist: any write to it answers `404`.
+
+### On whose behalf is the idea submitted?
+
+An idea submitted through the API belongs to a person, not to the integration. ITS finds that person by the email given in the call (`author_email`). The person needs an active account and must be able to submit ideas in that entity on the screen, because <Regra id="RN-127">the integration never gives anyone more than the person would have</Regra>. If the person doesn't exist, has been deactivated or has no permission in that entity, the call is refused and nothing is created.
+
+### Where do the entity and category identifiers come from?
+
+To submit an idea, the API asks for the entity and the category by their internal identifier, a long code such as `7d9e6a0e-3a11-4f55-8f4a-2a0c4c7b9a10`, not by name. The ITS screen doesn't show this identifier. It comes from two read routes in the Entities and categories module: entities (`GET /integration/v1/entities`) and categories (`GET /integration/v1/categories`). Each list comes whole, in a single response, without pages:
+
+| List | Field | What it is |
+|---|---|---|
+| Entities | `id` | The identifier, sent in the submission as `entity_id` |
+| Entities | `name` | The name, as shown on screen |
+| Entities | `parent_id` | The parent entity; empty at the top of the scope |
+| Entities | `active` | Whether the entity accepts new ideas |
+| Categories | `id` | The identifier, sent in the submission as `category_id` |
+| Categories | `name` | The name |
+| Categories | `color` | The color, such as `#2563eb` |
+| Categories | `active` | Whether the category accepts new ideas |
+
+The entity list returns only the entities in the integration's scope; the category list returns all categories, including inactive ones. The usual approach is to query both once, build a lookup table between name and identifier (for example, Shipping and `7d9e6a0e-…`) and use it when submitting. Query again when the administrator creates or renames an entity or category.
+
+### What is the external reference?
+
+The external reference is the item's number in the other system, such as the service desk ticket or the maintenance work order, stored on the idea to link the two. It appears on the idea page, and reading returns it with each idea (`external_ref` field). It can go in with the idea submission or be written later, and has up to 100 characters. <Regra id="RN-129">Every change goes to the history</Regra>, with the old value, the new one and the origin.
+
+### How does the integration's comment appear?
+
+A comment written through the API is always public, visible to whoever follows the idea. Internal comments, which the person who submitted the idea doesn't see, aren't available through the API. The comment shows the integration's name as author ("via Integration X"), never a person's name, and has up to 5000 characters. <Regra id="RN-128">You can comment on a closed idea</Regra>, just as on the screen.
+
+### What's the difference between a declared and a validated gain?
+
+An idea's gain is the financial result it brings, with the periodicity (one-time, monthly or yearly) and the implementation cost. It starts as declared, when someone enters the value, and becomes validated when a person with permission, such as the controllers, checks and confirms it in ITS. Only validated gains count in the official indicators. See [Validate gains](/en/gestor/ganhos/).
+
+<Regra id="RN-130">Through the API, the gain stays declared</Regra>: the integration never validates and doesn't overwrite a gain a person has already validated. There are two values: the estimated value, forecast before execution, and the realized value, measured afterwards. The API accepts the estimated value while the idea is Submitted or In review, and the realized value only after it's implemented.
+
+### How do I repeat a call without duplicating it?
+
+Sometimes the network drops in the middle of a write, and the flow can't tell whether the idea was created. If it simply repeats the call, it may create two identical ideas. The idempotency key prevents this. It goes in the `Idempotency-Key` header: a unique text you choose for each operation. If the same key arrives again with the same body, ITS returns the response from the first time and writes nothing, so <Regra id="RN-131">a write never happens twice</Regra>.
+
+The key is required on calls that create something (submitting an idea and commenting, which use `POST`) and accepted on calls that update (external reference and gain, which use `PUT`). It has 1 to 64 characters, among letters, digits, `-` and `_`, and is valid for 24 hours, per integration and per route. What happens in each case is in [What happens with the idempotency key in each case?](#what-happens-with-the-idempotency-key-in-each-case).
+
+<Dica>
+  Use as the key an identifier that already exists in your system, such as the ticket number: if the flow repeats the call, ITS doesn't create a second idea.
+</Dica>
+
+## How do I submit the first idea?
+
+### What do I ask the administrator for?
+
+1. The ITS address and the integration token, as for reading.
+2. The integration with the Submit ideas and comment module and, to find the identifiers, the Entities and categories read module.
+3. A scope that includes a test entity.
+
+An idea submitted through the API is a real idea, which goes into the queue of whoever does triage. So run the first tests on a test entity and with the email of a test person. The administrator sees everything in [Audit](/en/admin/auditoria-e-privacidade/) and can delete the test idea afterwards.
+
+### How do I find the identifiers?
+
+Ask for the entity list:
+
+```
+curl -H "Authorization: Bearer YOUR_TOKEN" "https://its.company.com/integration/v1/entities"
+```
+
+The response returns the entities in the scope (the data is made up):
+
+```json
+{
+  "data": [
+    { "id": "7d9e6a0e-3a11-4f55-8f4a-2a0c4c7b9a10", "name": "Shipping", "parent_id": null, "active": true }
+  ],
+  "next_cursor": null
+}
+```
+
+Do the same with `/integration/v1/categories` to find the category.
+
+### How do I build and submit the idea?
+
+The call body is a JSON with the idea's data:
+
+```json
+{
+  "author_email": "maria.souza@company.com",
+  "title": "Replace the conveyor roller",
+  "description": "The current roller jams every week.",
+  "entity_id": "7d9e6a0e-3a11-4f55-8f4a-2a0c4c7b9a10",
+  "category_id": "2c1f0f6e-8a9b-4a3e-9f10-7c5d3e2a1b00",
+  "external_ref": "TICKET-4711"
+}
+```
+
+The body carries the author by email (`author_email`), the title (`title`), the idea text, which is the **Current situation** field on the screen form (`description`), the entity and category by the identifiers from the previous step (`entity_id` and `category_id`) and, if you want, the external reference (`external_ref`). The proposed solution (`proposed_solution`) and the campaign (`campaign_id`) are also optional.
+
+Besides the token, the call carries the body type and the idempotency key:
+
+```
+Authorization: Bearer YOUR_TOKEN
+Content-Type: application/json
+Idempotency-Key: A-UNIQUE-KEY-123
+```
+
+`Content-Type` says the body is JSON. `Idempotency-Key` is required on `POST` and accepted on `PUT` (see [how to repeat a call without duplicating it](#how-do-i-repeat-a-call-without-duplicating-it)). With curl, the whole call looks like this:
+
+```
+curl -X POST \
+  -H "Authorization: Bearer YOUR_TOKEN" \
+  -H "Idempotency-Key: TICKET-4711" \
+  -H "Content-Type: application/json" \
+  -d '{"author_email":"maria.souza@company.com","title":"Replace the conveyor roller","description":"The current roller jams every week.","entity_id":"7d9e6a0e-3a11-4f55-8f4a-2a0c4c7b9a10","category_id":"2c1f0f6e-8a9b-4a3e-9f10-7c5d3e2a1b00"}' \
+  "https://its.company.com/integration/v1/ideas"
+```
+
+### What comes back and what happens in ITS?
+
+Response `201`:
+
+```json
+{ "code": "ITS-2026-0042", "status": "submitted", "entity_id": "7d9e6a0e-3a11-4f55-8f4a-2a0c4c7b9a10" }
+```
+
+Code `201` means the idea was created. The response is minimal: the new idea's code, its status and its entity. Save the code in your system, because you'll use it to comment, update the reference and read the idea later. To see the whole idea, use reading.
+
+In ITS, the idea follows the same path as one submitted on the screen:
+
+- It starts as Submitted (`submitted`), with the same history and the same notifications.
+- It goes into the **Idea queue** of whoever does triage in that entity (see [Queue and triage](/en/analista/triagem/)).
+- The author gets the receipt notification.
+- The idea page shows it was **Submitted by integration**, with the integration's name. <Regra id="RN-133">Everything the integration writes carries the origin "via Integration X"</Regra>: the idea, the comment and the history.
+
+## Example: how do I turn a ticket into an idea?
+
+The service desk flow, end to end:
+
+1. The administrator creates the "Service desk" integration, with the Submit ideas and comment and Entities and categories modules and the scope on the sites the service desk serves, and hands over the token.
+2. Once, the flow reads the entity and category lists and builds the mapping between the names used in the service desk and the ITS identifiers.
+3. When a ticket is classified as "improvement suggestion", the flow submits the idea. The email of whoever opened the ticket goes as the author, the summary becomes the title, the ticket description goes in the **Current situation** field and the site becomes the entity. The ticket number goes as the external reference and also as the idempotency key.
+4. The flow saves on the ticket the idea code that came back in the response.
+5. If the response is `422 author_not_found` or `422 author_cannot_submit`, the person has no active account or can't submit in that site. The flow records on the ticket that the idea wasn't created and why, so the agent can sort it out.
+6. When the ticket is resolved, the flow comments on the idea, using the saved code, with a text such as "Ticket handled by the maintenance team.". This comment uses a different idempotency key, such as the ticket number followed by `-resolved`.
+7. To know when the idea is approved, the service desk can receive ITS notices (see [Webhooks: how to receive](/en/ti/webhooks-receber/)).
+
+In Power Automate, each call is the **HTTP** action:
+
+- **Method**: `POST`.
+- **URI**: `https://its.company.com/integration/v1/ideas`.
+- **Headers**: `Authorization` (`Bearer ` and the token, kept in the vault), `Content-Type` (`application/json`) and `Idempotency-Key` (a unique value for the operation, such as the identifier of the item that triggered the flow).
+- **Body**: the action's JSON.
+
+If the flow repeats the call, ITS returns the same response instead of creating another idea.
+
+In n8n, use the **HTTP Request** node:
+
+- **Method**: `POST`.
+- **Send Headers**: the same three headers.
+- **Send Body**: the body in JSON.
+
+Authentication can be *Header Auth*, with `Authorization: Bearer YOUR_TOKEN`.
+
+## Reference details
+
+### Which actions does the API perform?
+
+Where `<identifier>` appears, use the idea code, such as `ITS-2026-0042`.
+
+| Action | Route | Module |
+|---|---|---|
+| Submit an idea | `POST /integration/v1/ideas` | `ideas_write` |
+| Comment | `POST /integration/v1/ideas/<identifier>/comments` | `ideas_write` |
+| Update the external reference | `PUT /integration/v1/ideas/<identifier>/external-ref` | `ideas_write` |
+| Record a declared gain | `PUT /integration/v1/ideas/<identifier>/gain` | `gains_write` |
+
+Each response is minimal, only what you need to save the result.
+
+### Which rules apply when submitting an idea?
+
+- The author's email is required. If the person doesn't exist, is deactivated or was anonymized, the response is `422 author_not_found`; if they have no permission in the entity, `422 author_cannot_submit`.
+- The entity must be in the integration's scope (`422 entity_not_in_scope`) and active (`422 validation_failed`). The category is required when the installation requires it. The campaign only works if it's open for the entity and category.
+- An unknown field in the body, such as `status` or `author_id`, is refused with `422`. Size limits are the same as on screen (a 200-character title, for example).
+
+### How do I comment on an idea?
+
+```json
+{ "body": "Ticket handled by the maintenance team." }
+```
+
+Response `201`: `{ "id": "...", "idea_code": "ITS-2026-0042", "created_at": "..." }`.
+
+### How do I update the external reference?
+
+```json
+{ "external_ref": "TICKET-4711" }
+```
+
+Response `200`: `{ "idea_code": "ITS-2026-0042", "external_ref": "TICKET-4711" }`.
+
+Use `null` to clear it; the maximum is 100 characters. On a closed or archived idea, the response is `409 idea_closed`, and on an idea merged into another, `409 idea_converged`. Sending the same reference again answers `200`, with no new history record.
+
+### How do I record the declared gain?
+
+```json
+{ "periodicity": "once", "estimated": 12000, "implementation_cost": 3000 }
+```
+
+Response `200`: `{ "idea_code": "ITS-2026-0042", "status": "declared" }`.
+
+- The periodicity (`periodicity`) is `once`, `monthly` or `yearly`. If you don't send the currency (`currency`), the installation's currency applies.
+- The estimated value (`estimated`) only goes in while the idea is Submitted or In review, and the realized value (`realized`) only after it's implemented. Otherwise, the response is `409`. Values can't be negative.
+- A Not approved or archived idea answers `409 idea_closed`, and an idea merged into another, `409 idea_converged`.
+- A gain a person has already validated isn't overwritten (`409 gain_validated`). A declared gain doesn't count in the official indicators and doesn't appear in the gain list returned by reading.
+
+### What happens with the idempotency key in each case?
+
+- If the key is missing on a `POST`, the response is `422 idempotency_key_required`; if it's in the wrong format, `422 invalid_idempotency_key`.
+- If the key and the body repeat, ITS returns the same response, with the `Idempotent-Replay: true` header, and doesn't write again.
+- If the key repeats with a different body, the response is `422 idempotency_key_reused`.
+- If the first call with the same key is still running, the response is `409 request_in_progress`. Try again in a moment.
+- If the first attempt failed with a server error (`5xx`), the key is released and you can repeat the call. A business error (`4xx`) comes back the same on the repeat.
+
+### How many writes can I make per minute?
+
+Writing has <Regra id="RN-134">its own limit of 30 calls per minute</Regra>, on top of the integration's calls-per-minute limit. If you go over it, the response is `429`, with `Retry-After` in seconds. Reads don't count against this limit.
+
+### Which errors does writing return?
+
+| Status | Code | When |
+|---|---|---|
+| `401` | `unauthenticated` | Missing, invalid, expired or revoked token |
+| `403` | `module_not_allowed` | The module is on, but this integration doesn't have it |
+| `404` | `not_found` | Module off, or the idea doesn't exist or is outside the scope |
+| `405` | `method_not_allowed` | A method the route doesn't accept (the `Allow` header says which) |
+| `409` | `idea_closed`, `idea_converged`, `gain_validated`, `realized_not_yet`, `estimate_closed`, `request_in_progress` | A business rule or a key still in progress prevents it |
+| `422` | `idempotency_key_required`, `invalid_idempotency_key`, `idempotency_key_reused`, `author_not_found`, `author_cannot_submit`, `entity_not_in_scope`, `validation_failed` | Invalid data |
+| `429` | `too_many_requests`, `too_many_writes` | Call limit |
+
+### What gets recorded and who is notified?
+
+- Each write goes to [Audit](/en/admin/auditoria-e-privacidade/) with the integration and the idea code, without the comment text or the call body.
+- With [webhooks](/en/ti/webhooks-receber/) on, an event caused by an integration doesn't go back to that same integration, so it doesn't react to its own write in an endless loop. The other subscriptions receive the event.

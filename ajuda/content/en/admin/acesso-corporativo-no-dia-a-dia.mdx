@@ -1,0 +1,50 @@
+export const meta = {
+  title: 'Corporate access: day to day',
+  description: 'After turning on Microsoft or Google sign-in: how a person is recognized, when someone can\'t sign in, unlinking an account, people who leave the company and a provider that goes down.',
+};
+
+# Corporate access: day to day
+
+This page is for after you [set up corporate access](/en/admin/acesso-corporativo/): what happens when people sign in and what to do when something goes off track.
+
+## How does ITS recognize a person?
+
+At the first sign-in, ITS looks up the email among the users. If it finds it, <Regra id="RN-96">it links the provider account to the user</Regra>, and the person signs in normally. From then on, ITS recognizes the person by the account's identifier at the provider. That's why changing the email later doesn't break the account or hand it to someone else.
+
+Under **Users**, on the person's details, the **Access** block shows how they sign in and the linked accounts.
+
+## Why can't someone sign in?
+
+The sign-in screen shows the reason, and **Audit** keeps the same reason (look for "Corporate account sign-in refused"). The common cases:
+
+| Reason | What to do |
+|---|---|
+| Email not registered yet (automatic creation off) | Register the person under **Users** or turn on automatic creation |
+| Email from another domain, or an account from another Microsoft tenant | The person signed in with the wrong account, such as a personal one. Ask them to choose the company account |
+| Unverified email on Google, or a personal Google account | ITS only accepts Workspace accounts from the registered domains |
+| Disabled user | If appropriate, use **Enable** under **Users** |
+| Already linked to another provider account | Unlink the old account (see below) and ask the person to sign in again |
+| Provider error, or "could not reach the provider" | See the failure table in [Corporate sign-in](/en/ti/login-corporativo/) |
+
+## How do I unlink an account?
+
+When the person changes accounts at the provider (a new corporate email, for example), open their details under **Users** and use **Unlink**. At the next corporate sign-in, the link is rebuilt by email.
+
+## What do I do when someone leaves the company?
+
+1. IT disables the account at the provider, which blocks new sign-ins.
+2. You use **Disable** on the person, under **Users**, which ends their ITS session right away. Their ideas and history stay. When you disable someone with a linked account, ITS reminds you of this second step.
+
+If step 2 is forgotten, the person loses access at the latest when their session expires. That's why the session of people who sign in with corporate sign-in is shorter: 8 hours out of the box, adjustable in **Settings > Passwords and access**. The person goes back to the provider every day, and that's where a disabled account stops getting in.
+
+## What if the provider goes down or is misconfigured?
+
+In **SSO only** mode, administrators keep signing in with email and password: that's the [emergency access](/en/referencia/glossario/#acesso-de-emergencia). Sign in, open **Administration > Corporate access**, set the mode back to **Password only** (or **Password and SSO**) and fix the setup. When the test passes again, choose the mode again.
+
+If the client secret expired, create a new one at the provider and enter it on the screen. Expiry is explained in [Corporate sign-in](/en/ti/login-corporativo/).
+
+## What doesn't corporate access do?
+
+- It doesn't disable people who left the company on its own: see the steps above.
+- It doesn't set roles or entities from the person's group at the provider. Roles remain ITS's own.
+- It doesn't repeat MFA (the second security step): the provider's MFA applies.

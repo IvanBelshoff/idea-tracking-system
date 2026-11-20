@@ -1,0 +1,68 @@
+export const meta = {
+  title: 'Backup e atualização',
+  description: 'O que guardar no backup do ITS, como restaurar, como atualizar para uma versão nova e o que olhar quando algo não funciona.',
+};
+
+# Backup e atualização
+
+Um backup que nunca foi restaurado é uma aposta. Esta página diz o que guardar, como voltar e como atualizar sem susto.
+
+## O que guardar
+
+São três coisas, e sem qualquer uma delas a restauração fica incompleta:
+
+| O quê | Onde está | Como copiar |
+|---|---|---|
+| Banco de dados | volume `its_pgdata` | `pg_dump` |
+| Anexos, fotos e logo da organização | volume `its_storage` | arquivo `.tar.gz` |
+| Configuração | arquivo `.env`, com a `POSTGRES_PASSWORD` e a `APP_SECRET_KEY` | copie para um lugar seguro, fora da máquina |
+
+Os nomes dos volumes vêm do <Regra id="RN-140">projeto `its` do Docker Compose</Regra>. Rode os comandos na pasta do `docker-compose.yml`:
+
+```bash
+mkdir -p backup
+STAMP=$(date +%Y%m%d-%H%M)
+docker compose exec -T db \
+  sh -c 'pg_dump -U "$POSTGRES_USER" -Fc "$POSTGRES_DB"' > backup/its-$STAMP.dump
+docker run --rm -v its_storage:/dados -v "$PWD/backup":/saida alpine \
+  tar czf /saida/its-arquivos-$STAMP.tar.gz -C /dados .
+```
+
+Programe esses comandos para rodar todo dia e **copie os arquivos para fora da máquina**.
+
+## Restaurar
+
+Numa máquina com o `docker-compose.yml` e o mesmo `.env`:
+
+1. Suba só o banco: `docker compose up -d db`.
+2. Restaure o banco com `pg_restore --clean --if-exists`.
+3. Restaure os anexos, as fotos e o logo no volume `its_storage`.
+4. Suba o resto: `docker compose up -d`.
+
+Os comandos completos estão em `docs/INSTALACAO.md`. Faça uma restauração completa numa máquina separada pelo menos uma vez.
+
+## Atualizar
+
+1. Faça o backup **antes**.
+2. Baixe as imagens novas: `docker compose pull`.
+3. Suba com elas: `docker compose up -d`.
+
+Com `ITS_VERSION=1`, isso traz a versão 1 mais recente. Para ir a uma versão maior, como a 2, leia antes o CHANGELOG, faça o que ele pedir, mude o `ITS_VERSION` no `.env` e rode os mesmos dois comandos. Quando uma versão muda o `docker-compose.yml`, o CHANGELOG avisa: baixe o arquivo de novo antes do `pull`.
+
+A API aplica as migrações do banco sozinha quando sobe. Acompanhe com `docker compose logs -f api` e procure "Migrações aplicadas" ou "Esquema em dia". Quem estiver com o app aberto vê "Há uma versão nova do ITS" e escolhe a hora de atualizar.
+
+Se algo der errado, volte à versão anterior: fixe-a no `.env` (por exemplo `ITS_VERSION=1.2.0`), restaure o backup feito no passo 1 e rode `docker compose up -d`.
+
+## Quando algo não funciona
+
+| Sintoma | O que olhar |
+|---|---|
+| O Compose para dizendo que falta uma variável | Preencha a `POSTGRES_PASSWORD` e a `APP_SECRET_KEY` no `.env`. |
+| As imagens não baixam | A internet e o proxy do Docker. Se o GitHub estiver bloqueado, use `ITS_REGISTRY=docker.io/ivanbelshoff` no `.env`. Uma versão fixada que não existe também dá `not found`. |
+| A página não abre | `docker compose ps`: `web` e `api` estão `healthy`? Os logs da `api` mostram erro? |
+| A API não sobe | A `POSTGRES_PASSWORD` do `.env` é a mesma de quando o banco foi criado? |
+| A Ajuda mostra "indisponível" | O serviço `docs` está de pé? `docker compose ps docs`. |
+| Datas e horários errados | O fuso em Configurações e o `TZ` do `.env`. |
+| E-mail não sai | **E-mail > Envios** mostra o motivo. |
+
+Os logs ficam em português: `docker compose logs api worker`.

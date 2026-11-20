@@ -1,0 +1,90 @@
+export const meta = {
+  title: 'Glossary',
+  description: 'ITS terms explained without jargon: idea, status, step, entity, role, convergence, integration and more.',
+};
+
+# Glossary
+
+The terms that appear in ITS and in this Help, explained without jargon.
+
+## The idea and the work
+
+| Term | What it is |
+|---|---|
+| **Idea** | An improvement proposal someone submitted. It's called an idea from submission until the work is done; what changes is its status. |
+| **Idea code** | Each idea's number, like `ITS-2026-0042`, which the screens show as **Code**. It's the easiest way to refer to a specific idea, and it's how other systems find the idea through the API. |
+| **Status** | Where the idea is on its path: Submitted, In review, In progress, Implemented or Not approved. See [Idea statuses](/en/referencia/situacoes/). |
+| **Step** | One part of the execution, with an owner, dates and completion. An idea in progress has one or more steps. |
+| **Late** | The flag an In progress idea gets when its open step passes the due date; on the due date itself, it's still on time. The status stays In progress: Late is only a deadline warning. |
+| **Interrupt** | Stopping an In progress idea before the end, always with a justification that the person who submitted it sees. The idea ends as Not approved. |
+| **Reopen** | Putting a closed idea (Implemented or Not approved) back into the flow, always with a reason that stays in the history. By default, only the administrator reopens ideas; an Implemented idea goes back to In progress, and a Not approved one goes back to In review. |
+| **Archive and delete** | In ITS, deleting an idea means archiving it (the button is **Archive**): it disappears from the lists but stays in the history. Erasing it for good, with **Delete permanently**, is only for the administrator and is logged. |
+| **Declared gain** | The gain amount entered for the idea, by the team or by an integration, with periodicity and implementation cost. It doesn't count in the official indicators yet: it becomes a validated gain when someone with permission checks and confirms it. See [Validate gains](/en/gestor/ganhos/). |
+| **Validated gain** | The gain of an implemented idea, confirmed by someone with permission to validate it (for example, the finance team). Only validated gains count in the official indicators. |
+| **Formatted text** | Long text written in the editor, with bold, italic, lists, quotes and links. ITS also keeps a plain-text copy, used by search and the PDF. |
+| **Approval from another area** | The go-ahead from whoever answers for the change or the affected area, requested by the improvement team before approving or implementing the idea. The approver may not have an ITS account. See [Request approval from another area](/en/analista/pedir-aprovacao/). |
+| **Custom field** | Data about a person that the organization itself creates, such as employee ID, tax ID or department. It can be required in the person's profile. See [User custom fields](/en/admin/campos-do-usuario/). |
+| **Hidden field** | A setting that opens masked and only shows when the administrator clicks the eye icon. |
+
+## People and organization
+
+| Term | What it is |
+|---|---|
+| **Entity** | A part of the organization's structure, arranged as a tree: company, sites, departments. The ones below an entity are its sub-entities, and every idea belongs to an entity. |
+| **Category** | The type of improvement, set up by the organization: Safety, Quality, Cost, Environment and so on. |
+| <span id="qdcep" className="scroll-mt-20">**QDCEP**</span> | An acronym for five areas common in improvement programs: **Q**uality, **D**elivery, **C**ost, **E**nvironment and **P**eople. The ready-made **Safety + QDCEP** set creates one category for each, plus Safety. |
+| **Role** | A set of permissions that say what the person can do in ITS. The factory roles are Employee, Analyst, Manager, Results validator and Administrator, and the organization can edit them and create others. |
+| **Scope** | The entity where a role applies, with or without its sub-entities: someone can be an employee in one department and an analyst at another site. The person who submitted an idea always sees it, whatever the scope. |
+| **Co-author** | Someone who shares authorship of an idea with the person who submitted it: someone who supported the idea, someone who asked for the same thing and had their request merged into it, or someone the team added. Co-authors follow the idea in **My ideas** and get its notifications. |
+
+## Triage, recognition and transparency
+
+| Term | What it is |
+|---|---|
+| **Triage** | The first review of incoming ideas: taking the review, evaluating, approving or not approving. |
+| **Expected reply** | The date by which the improvement team should give the first answer to an idea. It comes from the deadline the organization set, and the person who submitted the idea sees it from the moment they submit. |
+| **Reply overdue** | The flag on an idea that is still Submitted after its expected reply date. The analyst and the manager are notified, and the flag goes away when someone takes the review. |
+| **Convergence** | Merging similar ideas into one. The oldest becomes the main idea, and the people who submitted the others become co-authors. See [Merge similar ideas](/en/analista/convergencia/). |
+| **Campaign** | A themed challenge with a period, focus and goal, to draw ideas about one of the organization's objectives. |
+| **Hall of fame** | The recognition wall with the best ideas, shown with the consent of the people who appear on it. |
+| **Idea wall** | The ITS Home page, when turned on: In progress and Implemented ideas the improvement team published, for everyone to react to, talk about and share. The author only appears with their consent. |
+| **On-screen notice** | A short message in the corner of the screen that confirms the result of an action (it worked or it failed) and goes away by itself. It isn't the bell notification, which is kept. |
+| **Sign-in screen** | The screens for signing in, for a forgotten password and for setting a password, which the organization customizes with layout, background and texts. See [Customize the sign-in screen](/en/admin/tela-de-login/). |
+| **Store balance** | What each person has to trade in the store, separate from the points earned: redeeming lowers the balance, never the points, the level or the ranking. |
+| **Bonus** | A store item with a money value that is for information only (a cash bonus, a meal voucher, a gift voucher): ITS tracks it until HR marks it as paid, but never pays it. |
+| **Tracking code** | A code that lets anyone check an idea's progress without signing in, when the organization turns on public lookup. It shows only the progress, never names or personal data. |
+
+## Signing in
+
+| Term | What it is |
+|---|---|
+| **Corporate sign-in (SSO)** | Signing in with the company account (Microsoft or Google), without creating another password. SSO stands for "single sign-on". It stays off until the administrator turns it on. See [Corporate access](/en/admin/acesso-corporativo/). |
+| <span id="provedor" className="scroll-mt-20">**Provider**</span> | The service that confirms who the person is: Microsoft or Google. |
+| <span id="tenant" className="scroll-mt-20">**Tenant**</span> | The organization's "directory" at Microsoft. ITS only accepts accounts from the tenant the administrator entered. |
+| <span id="endereco-de-retorno" className="scroll-mt-20">**Return address**</span> | Where the provider sends the person back after signing in. IT registers this address with the provider. See [Corporate sign-in](/en/ti/login-corporativo/). |
+| <span id="acesso-de-emergencia" className="scroll-mt-20">**Emergency access**</span> | The password administrators keep even in "SSO only" mode, in case the provider goes down. |
+
+## Email and secrets
+
+| Term | What it is |
+|---|---|
+| **Shared mailbox** | An Exchange mailbox with no owner and no license, a good fit for ITS to send notifications. See [Sending email through Microsoft](/en/ti/envio-pela-microsoft/). |
+| **RBAC for Applications** | Exchange's way of letting an application send through one specific mailbox instead of all of them. It's what restricts the ITS application to a single mailbox. |
+| **Client secret** | The application's "password" at Microsoft. It expires on a set date, and what ITS needs is its **Value**, not the "secret ID". |
+| **Service account (Google)** | A Google Cloud "robot account", with a key in a JSON file, that ITS uses to send email through Google Workspace. See [Sending email through Google](/en/ti/envio-pelo-google/). |
+| **Domain-wide delegation** | The authorization, given in the Google Admin Console, for the service account to act on behalf of the domain's users. Because it covers the whole domain and not just one mailbox, ITS asks only for permission to send email (`gmail.send`). |
+| **Secret expiry** | The date the secret expires. ITS stores this date and warns in system health starting 30 days before. |
+
+## Integrations
+
+| Term | What it is |
+|---|---|
+| **Integration** | An external system (BI dashboard, Power Automate, n8n, ERP) connected to ITS through the integration API: it can read data, write through four small actions (submit an idea on behalf of a person, comment, update the external reference and record a declared gain) and receive notices through webhooks. It isn't a user and doesn't sign in to the ITS screens; it has its own modules, entity scope and tokens. See [Integrations: setting up](/en/admin/integracoes/). |
+| **Integration scope** | The entities the integration sees, chosen by the administrator, with or without their sub-entities. Whatever is outside the scope doesn't exist for it, and with no entity at all it sees nothing. |
+| **Module** | A part of the integration API, split by subject, such as **Ideas**, **Indicators and gains** or **Store (orders)**. The administrator turns modules on one by one and chooses which ones each integration gets; it uses only those. |
+| **Write module** | A module that writes to ITS: **Submit ideas and comment**, which also updates the external reference, or **Record declared gains**. It ships turned off, and the screen marks it as "writes". |
+| <span id="token-de-integracao" className="scroll-mt-20">**Integration token**</span> | The secret key, starting with `its_`, that the integration identifies itself with on every call. It has an expiry date, is shown only once and can be replaced without taking the integration down. |
+| **Idempotency key** | A unique text the integration sends with a write, in the `Idempotency-Key` header, so the same write never happens twice. If the call is repeated with the same key and the same body, ITS returns the response from the first time and doesn't write again. See [Writing through the API](/en/ti/escrita-pela-api/). |
+| **External reference** | The number of the matching item in another system, such as a service desk ticket, stored on the idea to link the two. It shows on the idea page, and every change goes into the history. |
+| <span id="webhook" className="scroll-mt-20">**Webhook**</span> | A notice ITS sends on its own to an address in another system when something happens, such as an idea being submitted or a status change. The notice is minimal and signed, and the receiving system fetches the details through the read API. See [Webhooks: setting up](/en/admin/webhooks/). |
+| **Webhook secret** | The secret key, starting with `whsec_`, that ITS signs each notice with, so the receiving system can check that it really came from ITS. It has an expiry date and is shown only once. |

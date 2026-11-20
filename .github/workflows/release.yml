@@ -1,0 +1,275 @@
+# Publicação de uma versão (M28): a cada tag vX.Y.Z, roda as mesmas verificações da CI, monta as três
+# imagens (its-api, its-web e its-ajuda) para amd64 e arm64, publica no GitHub (ghcr.io) e no Docker
+# Hub, publica a Ajuda no GitHub Pages e cria o release com o trecho do CHANGELOG.
+#
+# GitHub Pages: no repositório, Settings > Pages > Source = GitHub Actions (uma vez).
+#
+# Etiquetas: v1.2.3 publica 1.2.3, 1.2, 1 e latest (é o que ITS_VERSION=1 segue). Uma versão de teste,
+# como v1.3.0-rc.1, publica só o número exato.
+#
+# Segredo necessário no repositório: DOCKERHUB_TOKEN (token de acesso da conta ivanbelshoff, leitura e
+# escrita). O GHCR usa o token do próprio fluxo.
+#
+# As actions de terceiros ficam fixadas pelo commit (a etiqueta da versão vai no comentário): uma
+# etiqueta pode ser movida, e este fluxo tem permissão de publicar as imagens.
+name: Publicação
+
+on:
+  push:
+    tags: ["v*.*.*"]
+
+permissions:
+  contents: read
+
+# Uma publicação por tag de cada vez; uma segunda execução da mesma tag espera, nunca corta a primeira.
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  GHCR: ghcr.io/ivanbelshoff
+  DOCKERHUB: docker.io/ivanbelshoff
+
+jobs:
+  versao:
+    name: Tag igual à versão do código
+    runs-on: ubuntu-24.04
+    outputs:
+      version: ${{ steps.check.outputs.version }}
+      prerelease: ${{ steps.check.outputs.prerelease }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - id: check
+        name: A tag precisa bater com os três package.json
+        env:
+          TAG: ${{ github.ref_name }}
+        run: |
+          version="${TAG#v}"
+          for pkg in backend frontend ajuda; do
+            found=$(node -p "require('./$pkg/package.json').version")
+            if [ "$found" != "$version" ]; then
+              echo "::error::A tag $TAG pede a versão $version, mas $pkg/package.json está em $found."
+              exit 1
+            fi
+          done
+          if ! grep -q "^## \[$version\]" CHANGELOG.md; then
+            echo "::error::O CHANGELOG.md não tem a seção ## [$version]."
+            exit 1
+          fi
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          case "$version" in *-*) echo "prerelease=true" ;; *) echo "prerelease=false" ;; esac >> "$GITHUB_OUTPUT"
+
+  # As mesmas verificações de sempre (testes, lint, tipos, build, auditoria, segredos e Compose).
+  backend:
+    needs: versao
+    uses: ./.github/workflows/backend.yml
+  frontend:
+    needs: versao
+    uses: ./.github/workflows/frontend.yml
+  ajuda:
+    needs: versao
+    uses: ./.github/workflows/ajuda.yml
+  repositorio:
+    needs: versao
+    uses: ./.github/workflows/ci.yml
+
+  # Cada imagem é montada na máquina da própria arquitetura (arm64 sem emulação: o backend tem código
+  # nativo, @node-rs/argon2 e sharp) e enviada só pelo digest; o passo seguinte junta as duas.
+  imagem:
+    name: ${{ matrix.image.name }} (${{ matrix.platform.arch }})
+    needs: [versao, backend, frontend, ajuda, repositorio]
+    runs-on: ${{ matrix.platform.runner }}
+    permissions:
+      contents: read
+      packages: write
+    strategy:
+      fail-fast: true
+      matrix:
+        image:
+          - { name: its-api, context: backend, file: backend/Dockerfile }
+          - { name: its-web, context: frontend, file: frontend/Dockerfile }
+          - { name: its-ajuda, context: ., file: ajuda/Dockerfile }
+        platform:
+          - { arch: amd64, runner: ubuntu-24.04 }
+          - { arch: arm64, runner: ubuntu-24.04-arm }
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
+      - uses: docker/login-action@8aa5831fb8d48d8f76594c7ddde61ae58019f550 # v4.8.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - uses: docker/login-action@8aa5831fb8d48d8f76594c7ddde61ae58019f550 # v4.8.0
+        with:
+          registry: docker.io
+          username: ivanbelshoff
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - id: meta
+        uses: docker/metadata-action@dc802804100637a589fabce1cb79ff13a1411302 # v6.2.0
+        with:
+          images: |
+            ${{ env.GHCR }}/${{ matrix.image.name }}
+            ${{ env.DOCKERHUB }}/${{ matrix.image.name }}
+          labels: |
+            org.opencontainers.image.title=${{ matrix.image.name }}
+            org.opencontainers.image.vendor=ITS – Idea Tracking System
+            org.opencontainers.image.licenses=MIT
+            org.opencontainers.image.version=${{ needs.versao.outputs.version }}
+      - id: build
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
+        with:
+          context: ${{ matrix.image.context }}
+          file: ${{ matrix.image.file }}
+          platforms: linux/${{ matrix.platform.arch }}
+          labels: ${{ steps.meta.outputs.labels }}
+          outputs: type=image,"name=${{ env.GHCR }}/${{ matrix.image.name }},${{ env.DOCKERHUB }}/${{ matrix.image.name }}",push-by-digest=true,name-canonical=true,push=true
+          cache-from: type=gha,scope=${{ matrix.image.name }}-${{ matrix.platform.arch }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.image.name }}-${{ matrix.platform.arch }}
+      - name: Guardar o digest
+        env:
+          DIGEST: ${{ steps.build.outputs.digest }}
+        run: |
+          mkdir -p "$RUNNER_TEMP/digests"
+          touch "$RUNNER_TEMP/digests/${DIGEST#sha256:}"
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: digest-${{ matrix.image.name }}-${{ matrix.platform.arch }}
+          path: ${{ runner.temp }}/digests/*
+          if-no-files-found: error
+          retention-days: 1
+
+  # Junta amd64 e arm64 numa imagem só e aplica as etiquetas nos dois registros.
+  manifesto:
+    name: ${{ matrix.image }} (etiquetas)
+    needs: [versao, imagem]
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      packages: write
+    strategy:
+      fail-fast: true
+      matrix:
+        image: [its-api, its-web, its-ajuda]
+    steps:
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          pattern: digest-${{ matrix.image }}-*
+          path: ${{ runner.temp }}/digests
+          merge-multiple: true
+      - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
+      - uses: docker/login-action@8aa5831fb8d48d8f76594c7ddde61ae58019f550 # v4.8.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - uses: docker/login-action@8aa5831fb8d48d8f76594c7ddde61ae58019f550 # v4.8.0
+        with:
+          registry: docker.io
+          username: ivanbelshoff
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - id: meta
+        uses: docker/metadata-action@dc802804100637a589fabce1cb79ff13a1411302 # v6.2.0
+        with:
+          images: |
+            ${{ env.GHCR }}/${{ matrix.image }}
+            ${{ env.DOCKERHUB }}/${{ matrix.image }}
+          # As etiquetas de série (1.2 e 1) e o latest não saem em versão de teste (v1.3.0-rc.1).
+          flavor: latest=false
+          tags: |
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=semver,pattern={{major}}
+            type=raw,value=latest,enable=${{ needs.versao.outputs.prerelease == 'false' }}
+      - name: Criar a imagem das duas arquiteturas em cada registro
+        working-directory: ${{ runner.temp }}/digests
+        env:
+          IMAGE: ${{ matrix.image }}
+          META: ${{ steps.meta.outputs.json }}
+        run: |
+          for registry in "$GHCR" "$DOCKERHUB"; do
+            tags=$(jq -r --arg r "$registry/$IMAGE:" '.tags[] | select(startswith($r)) | "-t " + .' <<< "$META")
+            sources=$(printf "$registry/$IMAGE@sha256:%s " *)
+            # shellcheck disable=SC2086
+            docker buildx imagetools create $tags $sources
+          done
+      - name: Conferir
+        env:
+          IMAGE: ${{ matrix.image }}
+          VERSION: ${{ needs.versao.outputs.version }}
+        run: |
+          for registry in "$GHCR" "$DOCKERHUB"; do
+            docker buildx imagetools inspect "$registry/$IMAGE:$VERSION"
+          done
+
+  # A Ajuda pública: o mesmo app ajuda/, montado com o caminho do Pages e sem o que só existe dentro de
+  # uma instalação (src/site.ts e scripts/publica.mjs). Versão de teste não troca a Ajuda pública.
+  ajuda-publica:
+    name: Ajuda pública (GitHub Pages)
+    needs: [versao, manifesto]
+    if: needs.versao.outputs.prerelease == 'false'
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    defaults:
+      run:
+        working-directory: ajuda
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4.4.0
+        with:
+          package_json_file: ajuda/package.json # versão lida de "packageManager"
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: 24
+          cache: pnpm
+          cache-dependency-path: ajuda/pnpm-lock.yaml
+      - run: pnpm install --frozen-lockfile
+      - name: Build da Ajuda pública
+        env:
+          AJUDA_PUBLICA: "1"
+          AJUDA_BASE_PATH: /${{ github.event.repository.name }}
+        run: pnpm build
+      - uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
+        with:
+          path: ajuda/out
+      - id: deploy
+        uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5.0.1
+
+  release:
+    name: Release no GitHub
+    needs: [versao, manifesto]
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Notas a partir do CHANGELOG
+        env:
+          VERSION: ${{ needs.versao.outputs.version }}
+        run: |
+          awk -v v="$VERSION" '
+            $0 ~ "^## \\[" v "\\]" { on = 1; next }
+            on && /^## \[/ { exit }
+            on { print }
+          ' CHANGELOG.md > "$RUNNER_TEMP/notas.md"
+          cat >> "$RUNNER_TEMP/notas.md" <<EOF
+
+          ---
+
+          Imagens: \`ghcr.io/ivanbelshoff/its-api:$VERSION\`, \`its-web\` e \`its-ajuda\` (também em \`docker.io/ivanbelshoff\`), para amd64 e arm64. Instalação e atualização: [docs/INSTALACAO.md](https://github.com/${{ github.repository }}/blob/${{ github.ref_name }}/docs/INSTALACAO.md) e a [Ajuda](https://ivanbelshoff.github.io/${{ github.event.repository.name }}/).
+          EOF
+      - name: Criar o release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.ref_name }}
+          PRERELEASE: ${{ needs.versao.outputs.prerelease }}
+        run: |
+          flags=()
+          [ "$PRERELEASE" = "true" ] && flags+=(--prerelease)
+          gh release create "$TAG" --title "ITS $TAG" --notes-file "$RUNNER_TEMP/notas.md" --verify-tag "${flags[@]}"

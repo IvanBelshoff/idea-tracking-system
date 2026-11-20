@@ -1,0 +1,172 @@
+export const meta = {
+  title: 'Webhooks: como receber',
+  description: 'Para que servem os avisos que o ITS manda a outros sistemas, com exemplos de uso, como funcionam assinatura, eventos e conferência do aviso, o primeiro recebimento passo a passo, um fluxo completo e os detalhes de eventos, cabeçalhos, repetições e rede.',
+};
+
+# Webhooks: como receber
+
+Um [webhook](/pt-BR/referencia/glossario/#webhook) é um aviso que o ITS manda, por conta própria, para outro sistema quando algo acontece, como uma ideia aprovada ou um pedido da loja aprovado. Em vez de o seu sistema perguntar ao ITS de tempos em tempos se há novidade, o ITS chama um endereço que você indicou, no momento do evento. Essa chamada é um `POST` com um corpo em JSON, um formato de texto organizado em campos e valores.
+
+Esta página é para quem monta o recebimento dos avisos: o TI, um desenvolvedor ou quem cria fluxos. Quem cria a assinatura no ITS é o administrador, em [Webhooks: configurar](/pt-BR/admin/webhooks/). Para comparar o webhook com a leitura e a escrita, veja o quadro [Ler, gravar ou ser avisado: qual usar?](/pt-BR/ti/api-de-integracao/#ler-gravar-ou-ser-avisado-qual-usar).
+
+## Para que serve?
+
+Alguns usos comuns, cada um com o módulo de que precisa (os módulos são as partes da API que o administrador libera para cada integração):
+
+- A equipe de uma área quer ver no seu canal do Teams cada ideia aprovada. Quando uma ideia da área é aprovada, o ITS avisa um fluxo. O aviso traz só o código da ideia, então o fluxo busca o título pela API de leitura e então posta a mensagem. Usa o módulo **Ideias**. Este caso está montado passo a passo em [Exemplo: como avisar o Teams quando uma ideia é aprovada?](#exemplo-como-avisar-o-teams-quando-uma-ideia-e-aprovada).
+- A manutenção quer que cada ideia aprovada vire uma ordem de serviço. O aviso de aprovação chega ao sistema de manutenção, que abre a ordem ligada ao código da ideia. Quando a ordem termina, o mesmo sistema pode comentar na ideia pela [escrita](/pt-BR/ti/escrita-pela-api/). Usa o módulo **Ideias**.
+- O painel de BI que se atualiza toda noite pode passar a se atualizar na hora: a cada aviso de ideia, ele lê pela API só a ideia que mudou. Usa o módulo **Ideias**.
+- O RH quer saber logo quando um pedido da loja é aprovado, para separar o prêmio. O aviso traz o pedido, o item e a situação, e o sistema do RH busca o resto na lista de pedidos da leitura. Usa o módulo **Loja (pedidos)**.
+
+## Como funcionam os avisos?
+
+### O que é a assinatura?
+
+A assinatura é o cadastro, feito pelo administrador, que diz ao ITS para onde mandar os avisos e quais eventos interessam. Ela pertence a uma integração, que é como o ITS registra cada sistema conectado, com os módulos que ele pode usar e o escopo de entidades (as unidades e os setores) que ele enxerga. Esses conceitos estão explicados em [Como funciona a leitura?](/pt-BR/ti/api-de-integracao/#como-funciona-a-leitura). O endereço que vai na assinatura é criado por você, no seu sistema.
+
+### Que eventos existem?
+
+Um evento é o tipo de acontecimento que gera aviso, como ideia enviada (`idea.submitted`) ou mudança na situação da ideia (`idea.status_changed`). Cada evento pertence a um módulo, e a assinatura só oferece os eventos dos módulos que a integração tem. O escopo também vale: <Regra id="RN-119">a integração só recebe o evento de uma ideia (ou campanha) que ela enxerga naquele momento</Regra>. A lista completa está em [Que eventos posso assinar?](#que-eventos-posso-assinar).
+
+Na mudança de situação, a situação vem por um código em inglês: Enviada (`submitted`), Em análise (`in_review`), Em andamento (`in_progress`), Implementada (`implemented`) e Não autorizada (`rejected`). Aprovar uma ideia é passá-la de Em análise para Em andamento.
+
+### Por que o aviso não traz o título da ideia?
+
+O aviso sai do ITS e chega a sistemas que o ITS não controla. Por isso o campo `data` <Regra id="RN-119">traz só identificadores e o estado</Regra>, nunca título, texto, nome, e-mail ou valor. Quem precisa do detalhe busca pela [API de leitura](/pt-BR/ti/api-de-integracao/), com o token da integração dona da assinatura. O token é a chave secreta com que a integração se identifica nas chamadas à API, e com ele cada sistema só vê o que o escopo da integração permite.
+
+### Como sei que o aviso veio mesmo do ITS?
+
+Qualquer pessoa que descubra o endereço do seu recebimento pode mandar um `POST` para ele. Para separar o aviso verdadeiro do falso, o ITS assina cada aviso com um segredo, uma chave que começa com `whsec_`, que o administrador entrega a você uma única vez e que <Regra id="RN-120">só o ITS e o seu sistema conhecem</Regra>.
+
+A assinatura digital é um código calculado pelo método HMAC-SHA256, que combina o conteúdo do aviso com o segredo. Sem o segredo, ninguém consegue produzir um código que bata, e qualquer mudança no aviso, mesmo de um caractere, muda o resultado. O seu sistema refaz a conta e compara com o código que veio no cabeçalho `X-ITS-Signature`. O nome confunde, mas são coisas diferentes: a assinatura do administrador é o cadastro dos avisos, e a assinatura digital é o código que vem em cada aviso. Os passos estão em [Como confiro a assinatura?](#como-confiro-a-assinatura).
+
+### O que acontece se o meu sistema não responder?
+
+<Regra id="RN-121">A entrega é ao menos uma vez</Regra>: se o seu sistema demorar ou responder com erro, o ITS manda o mesmo aviso de novo, mais tarde, algumas vezes. Por isso o mesmo aviso pode chegar mais de uma vez. Cada aviso tem um identificador que se repete em todas as tentativas, para você ignorar o que já processou. A ordem de chegada também não é garantida. Os prazos e os casos estão em [Como lido com repetições, duplicados e ordem?](#como-lido-com-repeticoes-duplicados-e-ordem).
+
+## Como monto o primeiro recebimento?
+
+1. Crie no seu sistema um endereço que aceite `POST` com corpo em JSON e que o servidor do ITS consiga alcançar pela rede. Numa ferramenta de fluxo, esse endereço costuma nascer de um gatilho que recebe uma chamada HTTP.
+2. Peça ao administrador para cadastrar esse endereço numa assinatura, marcar os eventos e entregar a você o segredo (`whsec_`) por um caminho seguro. O servidor do endereço precisa estar na lista de destinos permitidos do ITS.
+3. No recebimento, leia o corpo exatamente como chegou, confira a assinatura digital (veja [Como confiro a assinatura?](#como-confiro-a-assinatura)) e responda com um código de sucesso (`2xx`) em até 10 segundos.
+4. Peça ao administrador para usar **Enviar teste** na assinatura. O ITS manda um evento `webhook.ping`, com o campo `data` vazio, <Regra id="RN-122">pelo mesmo caminho dos avisos reais</Regra>, e mostra na tela o código HTTP que o seu sistema respondeu. Se o seu sistema aceitou a assinatura e a tela mostra `2xx`, o recebimento está pronto.
+
+### Como é o aviso?
+
+Depois do teste, os avisos reais chegam assim (os dados são inventados):
+
+```json
+{
+  "id": "0b6f1c1e-7c1e-4b0a-9a53-5f6c2f0e8d11",
+  "type": "idea.status_changed",
+  "created_at": "2026-11-12T14:03:22.000Z",
+  "data": {
+    "idea_code": "ITS-2026-0042",
+    "entity_id": "7d9e6a0e-3a11-4f55-8f4a-2a0c4c7b9a10",
+    "from": "in_review",
+    "to": "in_progress"
+  }
+}
+```
+
+Cada aviso traz o identificador do evento (`id`, o mesmo valor do cabeçalho `X-ITS-Event-Id`), o tipo (`type`), a data e a hora em UTC (`created_at`) e os dados (`data`), que mudam conforme o evento. Neste exemplo, que é a aprovação de uma ideia, os dados são o código da ideia, a entidade dela e as situações de antes e de depois (`from` e `to`). Os valores possíveis do tipo estão em [Que eventos posso assinar?](#que-eventos-posso-assinar).
+
+## Exemplo: como avisar o Teams quando uma ideia é aprovada?
+
+O fluxo que posta no canal da área, de ponta a ponta:
+
+1. O administrador cria uma integração com o módulo Ideias e o escopo na entidade da área. Nela, cria uma assinatura com o evento de mudança de situação (`idea.status_changed`), apontando para o endereço do fluxo, e entrega o token e o segredo.
+2. Quando uma ideia da área muda de situação, o aviso chega ao fluxo. O primeiro passo confere a assinatura digital; se ela não bater, o fluxo para.
+3. O fluxo responde `200` logo, para o ITS não tratar a demora como falha.
+4. O fluxo confere se o identificador do evento (`X-ITS-Event-Id`) já foi processado. Se já foi, para aqui.
+5. O fluxo olha os dados e só segue se a ideia saiu de `in_review` e foi para `in_progress`, que é a aprovação.
+6. Com o token da integração, o fluxo lê a ideia pelo código, numa chamada como `GET /integration/v1/ideas/ITS-2026-0042`, e pega o título e o nome da entidade.
+7. O fluxo posta no canal uma mensagem como "Ideia ITS-2026-0042 aprovada: Trocar o rolo da esteira (Expedição)" e guarda o identificador do evento.
+
+## Detalhes para consulta
+
+### Que eventos posso assinar?
+
+Cada evento pertence a um módulo da integração, e a assinatura só oferece os eventos dos módulos que a integração tem.
+
+| Evento | Quando | Módulo da integração |
+|---|---|---|
+| `idea.submitted` | Uma ideia foi enviada | Ideias |
+| `idea.status_changed` | A situação da ideia mudou, inclusive quando ela é reaberta (traz de onde e para onde) | Ideias |
+| `idea.archived` | Uma ideia foi arquivada | Ideias |
+| `idea.deleted` | Uma ideia foi excluída de vez (só o código e a entidade) | Ideias |
+| `idea.converged` | Uma ideia foi unida a outra | Ideias |
+| `gain.validated` | Um ganho foi validado | Indicadores e ganhos |
+| `highlight.created`, `highlight.revoked` | Um destaque entrou ou saiu do Hall | Hall e reconhecimento |
+| `campaign.status_changed` | A situação de uma campanha mudou | Campanhas |
+| `mural.published`, `mural.withdrawn` | Uma ideia foi publicada no mural ou retirada dele (só o código e a entidade, <Regra id="RN-157">nunca o motivo</Regra>) | Ideias |
+| `approval.requested`, `approval.decided` | Foi pedida a aprovação de outra área, ou o pedido terminou: aprovado, não aprovado, vencido ou cancelado (só o código, a entidade, o pedido e a situação; <Regra id="RN-191">nunca nomes, e-mails ou comentários</Regra>) | Ideias |
+| `store.order_approved`, `store.order_delivered`, `store.bonus_paid` | Pedido da loja aprovado, entregue ou bonificação paga (só o pedido, o item e a situação; <Regra id="RN-172">nunca a pessoa nem o valor</Regra>) | Loja (pedidos) |
+
+O escopo vale no momento do evento. Quando quem causou o evento foi a própria integração, por uma gravação pela API, o aviso não volta para ela; as assinaturas das outras integrações recebem normalmente.
+
+### Quais cabeçalhos vêm no aviso?
+
+| Cabeçalho | O que é |
+|---|---|
+| `X-ITS-Event` | O tipo do evento |
+| `X-ITS-Event-Id` | O identificador do evento. É o mesmo em toda repetição: use-o para ignorar duplicados |
+| `X-ITS-Timestamp` | Segundos desde 1970, usado na assinatura |
+| `X-ITS-Signature` | `v1=<assinatura>`. Durante a troca de segredo vêm duas, separadas por vírgula |
+
+### Como confiro a assinatura?
+
+Confira a assinatura de todo aviso, nestes passos:
+
+1. Leia o corpo exatamente como chegou, antes de converter em JSON. Qualquer espaço a mais muda a assinatura.
+2. Recuse o aviso se o carimbo de tempo (`X-ITS-Timestamp`) estiver a mais de 5 minutos de agora, para os dois lados. Isso barra o reenvio de um aviso antigo capturado por alguém.
+3. Calcule o HMAC-SHA256 de `<carimbo>.<corpo>` com o segredo e compare o resultado com cada `v1=` do cabeçalho, em tempo constante (uma comparação que leva o mesmo tempo, acerte ou erre, para não dar pistas a quem tenta adivinhar). Basta uma bater.
+4. Responda `2xx` logo e processe depois.
+
+Um exemplo em Node.js (os nomes são livres; o que importa são os passos):
+
+```js
+import { createHmac, timingSafeEqual } from 'node:crypto';
+
+export function verify(headers, rawBody, secret) {
+  const timestamp = headers['x-its-timestamp'];
+  if (Math.abs(Date.now() / 1000 - Number(timestamp)) > 300) return false;
+  const expected = createHmac('sha256', secret).update(`${timestamp}.${rawBody}`).digest();
+  return String(headers['x-its-signature'])
+    .split(',')
+    .some((part) => {
+      const [version, value] = part.trim().split('=');
+      return (
+        version === 'v1' &&
+        /^[0-9a-f]{64}$/.test(value ?? '') &&
+        timingSafeEqual(Buffer.from(value, 'hex'), expected)
+      );
+    });
+}
+```
+
+<Dica>
+  Em ferramentas de fluxo (n8n, Power Automate), conferir a assinatura costuma exigir um passo de código ou uma função própria logo depois do gatilho de recebimento. Guarde o segredo no cofre da ferramenta, não escrito no fluxo.
+</Dica>
+
+### Como lido com repetições, duplicados e ordem?
+
+Se o seu sistema demorar mais de 10 segundos ou responder erro de servidor (`5xx`), `408` ou `429`, o ITS repete o aviso em 30 segundos, 2 minutos, 10 minutos, 1 hora, 3 horas, 6 horas, 12 horas e 24 horas, sempre com o mesmo corpo e o mesmo `X-ITS-Event-Id`. Guarde os `X-ITS-Event-Id` já processados e ignore os repetidos.
+
+A ordem não é garantida: dois avisos seguidos podem chegar trocados. Use o `created_at` do aviso para ordenar.
+
+Responder `4xx` (fora 408 e 429) ou redirecionar (`3xx`) conta como falha definitiva: o ITS não repete nem segue o redirecionamento. A entrega que esgota as repetições também conta como falha definitiva. Depois de 20 falhas definitivas seguidas, a assinatura é suspensa. A entrega que passa 48 horas sem sucesso vira falha, e o administrador pode reenviá-la na tela, com **Reenviar**.
+
+<Atencao>
+  Responda rápido. Se o processamento for demorado, grave o aviso numa fila e devolva `200` na hora: um recebimento lento é tratado como falha e gera repetição.
+</Atencao>
+
+### O que o TI precisa liberar na rede?
+
+- Quem envia os avisos é o worker do ITS, o processo que roda as tarefas em segundo plano, e a API, no botão **Enviar teste**. Os dois precisam alcançar o seu endereço. Essa é a única saída de rede nova do ITS.
+- O ITS conecta direto, sem passar por proxy, porque um proxy desviaria a conexão do endereço que o ITS conferiu. Se a sua rede só deixa sair por proxy, os avisos só chegam a destinos que o servidor alcança direto, como os da rede interna.
+- O ITS só chama o que o administrador permitiu na lista de destinos, e nunca chama o próprio computador, endereços de link local (nem o de metadados de nuvem), `0.0.0.0` ou multicast.
+- Prefira `https://`. O `http://` só vale para destino da rede interna que esteja na lista.
+- O ITS não segue redirecionamentos: cadastre o endereço final.
+- Libere, no firewall de saída do servidor do ITS, só o endereço e a porta do seu recebimento.
+- O recebimento precisa responder em até 10 segundos.

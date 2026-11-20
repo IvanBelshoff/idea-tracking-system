@@ -1,0 +1,109 @@
+export const meta = {
+  title: 'Webhooks: configurar',
+  description: 'Como fazer o ITS avisar outro sistema quando algo acontece: chave, destinos permitidos, assinaturas, segredo, teste, entregas e o que nunca vai no aviso.',
+};
+
+# Webhooks: configurar
+
+Além de ser consultado pela API de integração, o ITS pode avisar outro sistema na hora em que algo acontece: uma ideia enviada, uma mudança de situação, um ganho validado. Esse aviso é um [webhook](/pt-BR/referencia/glossario/#webhook), e com ele o sistema que recebe não precisa ficar perguntando de tempos em tempos.
+
+A tela fica em **Administração > Integrações > Webhooks** e só aparece para quem tem a permissão **Gerenciar as integrações (API e webhooks)** (de fábrica, o Administrador).
+
+<Atencao>
+  Este é o único recurso em que o ITS chama algo fora dele. Por isso <Regra id="RN-117">vem desligado e só chama endereços que você permitiu</Regra>. O aviso também é mínimo: traz identificadores e o estado, nunca título, texto, nome, e-mail ou valor. Quem recebe busca o detalhe pela [API de leitura](/pt-BR/ti/api-de-integracao/), com o token da integração, e só vê o que o escopo dela permite.
+</Atencao>
+
+## O que controla os avisos?
+
+1. A **chave dos webhooks** liga e desliga todos. Ela exige a chave geral da API de integração ligada.
+2. Os **Destinos permitidos** são a lista de onde o ITS pode chamar. Fora dela nada sai, nem para a rede interna.
+3. A **assinatura** pertence a uma integração e diz para onde enviar e quais eventos. <Regra id="RN-118">A integração só recebe eventos dos módulos e do escopo que ela já tem</Regra>.
+
+Com a chave desligada, nada é enviado e nenhum evento novo é guardado. O que estava esperando volta a ser tentado quando você religa; o que passou de 48 horas vira falha.
+
+## Como configuro os webhooks?
+
+### 1. Ligar a chave
+
+Na aba **Webhooks**, clique em **Ligar os webhooks**. Se a chave geral da API de integração estiver desligada, a tela avisa e pede para ligá-la antes, na aba **Integrações**.
+
+### 2. Cadastrar os destinos permitidos
+
+Em **Destinos permitidos**, escreva um por linha, até 50, e clique em **Salvar a lista**:
+
+| Tipo | Exemplo | O que cobre |
+|---|---|---|
+| Nome | `erp.empresa.local` | Só esse servidor |
+| Domínio com curinga | `*.empresa.com.br` | Os subdomínios (não o domínio puro) |
+| IP ou faixa | `10.20.0.0/16` | Os endereços da faixa |
+
+Algumas classes de endereço ficam sempre bloqueadas, mesmo cadastradas: o próprio computador (`localhost`), endereços de link local (incluindo o de metadados de nuvem, `169.254.169.254`), `0.0.0.0` e multicast. O ITS confere o endereço no momento do envio, não só ao salvar, então trocar o DNS depois não desvia o aviso.
+
+### 3. Criar a assinatura
+
+Em **Assinaturas**, clique em **Nova assinatura**, escolha a **Integração**, dê um **Nome**, informe o **Endereço (URL)** e marque os **Eventos**:
+
+- Use `https://`. O `http://` só vale para um destino da rede interna que esteja na lista. Não coloque usuário e senha na URL.
+- Só aparecem os eventos dos módulos que a integração tem. Cada integração pode ter até 5 assinaturas.
+- Informe a **Validade do segredo (dias)**, de 1 a 365.
+
+### 4. Guardar o segredo
+
+Ao criar, o ITS mostra o segredo, que começa com `whsec_`, <Regra id="RN-120">uma única vez</Regra>. Copie e entregue a quem monta o recebimento por um caminho seguro. Depois que você fecha a janela, só o início fica visível, e não há como recuperar o valor.
+
+<Atencao>
+  O segredo é como uma senha: quem o tem consegue forjar avisos que parecem vir do ITS. Não mande por e-mail aberto nem cole em chat.
+</Atencao>
+
+Quem vai receber os avisos precisa da página [Webhooks: como receber](/pt-BR/ti/webhooks-receber/).
+
+### 5. Testar
+
+Abra a assinatura e clique em **Enviar teste**. O ITS manda um aviso de teste pelo mesmo caminho dos avisos reais, com a mesma checagem de destino e a mesma assinatura, e mostra na hora o resultado: o código HTTP da resposta ou o motivo da falha. <Regra id="RN-122">O teste não depende de ideia nem de escopo</Regra>. O que chega ao sistema que recebe está em [Webhooks: como receber](/pt-BR/ti/webhooks-receber/).
+
+## Que eventos posso assinar?
+
+A assinatura pode avisar quando:
+
+- uma ideia é enviada, muda de situação, é arquivada, é excluída de vez ou é unida a outra;
+- um ganho é validado;
+- um destaque entra no Hall ou sai dele;
+- uma campanha muda de situação;
+- uma ideia é publicada no mural ou retirada dele, <Regra id="RN-157">sem o motivo da retirada</Regra>;
+- a aprovação de outra área é pedida ou o pedido termina, <Regra id="RN-191">sem nomes, e-mails nem comentários</Regra>;
+- um pedido da loja é aprovado ou entregue, ou uma bonificação é paga, <Regra id="RN-172">sem a pessoa nem o valor</Regra>.
+
+O escopo vale no momento do evento: <Regra id="RN-119">a integração só recebe o evento de uma ideia (ou campanha) que ela enxerga naquele momento</Regra>. O nome técnico de cada evento e o módulo que ele exige estão na tabela completa, em [Webhooks: como receber](/pt-BR/ti/webhooks-receber/#que-eventos-posso-assinar).
+
+## Como acompanho as entregas?
+
+Na assinatura, a tabela **Entregas** mostra cada envio e o resultado, com filtro por situação. Se o destino não responder ou responder erro de servidor, o ITS tenta de novo, com intervalos cada vez maiores; os erros definitivos não são repetidos. O mesmo aviso pode chegar mais de uma vez, e fora de ordem. Os prazos das tentativas e quais erros contam como definitivos estão em [Webhooks: como receber](/pt-BR/ti/webhooks-receber/).
+
+Se 20 envios seguidos falharem de vez, <Regra id="RN-121">o ITS suspende a assinatura</Regra> e avisa na saúde do sistema. Corrija o destino, use **Enviar teste** e depois **Reativar**.
+
+Uma entrega que falhou pode voltar com **Reenviar**: ela fica pendente de novo e sai igual. <Regra id="RN-122">O registro nunca guarda a resposta do destino</Regra> e segue a mesma retenção da observabilidade.
+
+## Como troco o segredo?
+
+Na assinatura, use **Gerar segredo novo**. Durante a janela de sobreposição (padrão 24 horas, até 72), cada aviso leva duas assinaturas, a do segredo novo e a do antigo, para você trocar no sistema que recebe sem perder nada. Cada assinatura tem no máximo 2 segredos ativos. Quando terminar a troca, use **Revogar segredo** no antigo.
+
+## Como suspendo ou removo uma assinatura?
+
+**Suspender** pausa os avisos da assinatura, e **Reativar** os retoma. **Remover** apaga a assinatura e o registro de entregas dela. Se a integração for suspensa ou revogada, nenhum aviso dela sai.
+
+## Como a saúde avisa sobre os webhooks?
+
+O segredo tem validade obrigatória, e <Regra id="RN-123">a saúde do sistema ganha dois itens</Regra>:
+
+- **Segredo dos webhooks**: atenção a 30 dias do vencimento e falha a 7 dias (ou vencido).
+- **Entrega dos webhooks**: falha se alguma assinatura foi suspensa por falhas; atenção se houve falha definitiva nas últimas 24 horas ou se há aviso esperando entrega há mais de 15 minutos.
+
+A falha gera <Regra id="RN-94">o alerta para quem tem a permissão de observabilidade</Regra>. Veja [Ler a observabilidade](/pt-BR/admin/ler-a-observabilidade/).
+
+## O que fica na auditoria?
+
+Tudo o que você faz fica na [Auditoria](/pt-BR/admin/auditoria-e-privacidade/): ligar ou desligar a chave, mudar a lista de destinos, criar, alterar, suspender, reativar e remover assinaturas, criar, girar e revogar segredos, e pedir reenvio ou teste. A suspensão automática por falhas também fica registrada. <Regra id="RN-124">A auditoria guarda só o servidor do endereço</Regra>, nunca o caminho nem a consulta (que podem trazer um segredo), e nunca o segredo. Os envios em si não vão para a auditoria: ficam no registro de entregas.
+
+## O que mostra a aba Documentação?
+
+Em **Integrações > Documentação**, no fim da página, ficam a lista de eventos, o formato do aviso, os cabeçalhos e o passo a passo para conferir a assinatura, com um exemplo de código. <Regra id="RN-125">Os dados do exemplo são inventados</Regra>.

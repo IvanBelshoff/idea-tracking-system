@@ -1,0 +1,90 @@
+export const meta = {
+  title: 'Operação e alertas',
+  description: 'Como acompanhar o ITS em produção: o endereço de saúde, o worker, o espaço dos anexos, os alertas, o que eles não cobrem e as variáveis de observabilidade.',
+};
+
+# Operação e alertas
+
+O ITS mede a si mesmo e avisa quando algo falha. Esta página é para quem instala e mantém o servidor: o que olhar, o que o alerta cobre e **o que ele não consegue cobrir**. Quem administra o ITS lê os mesmos números na tela, em [Ler a observabilidade](/pt-BR/admin/ler-a-observabilidade/).
+
+<Regra id="RN-92">Tudo é local: nenhuma medida sai do servidor</Regra>, e não há integração com serviços de fora.
+
+## Como saber de fora se o ITS está no ar?
+
+O endereço `/api/health` responde sem login e sem detalhes:
+
+| Resposta | Quando |
+|---|---|
+| `200` com `{"status":"ok","db":"ok"}` | A API está no ar e o banco responde |
+| `503` com `{"status":"degraded","db":"down"}` | A API está no ar, mas o banco não responde |
+
+O **healthcheck do Docker** usa esse endereço: com o banco fora, o serviço `api` aparece como `unhealthy` em `docker compose ps`. Ele funciona até antes de a instalação ser concluída. Se você tem uma ferramenta de monitoramento própria, aponte-a para ele, sabendo que <Regra id="RN-93">o endereço só diz se a API e o banco respondem</Regra>.
+
+## Como vejo os serviços e os logs?
+
+```bash
+docker compose ps
+docker compose logs --tail 100 api
+docker compose logs --tail 100 worker
+```
+
+Os logs saem em português. O `worker` não atende pela rede, por isso aparece como `Up`, e não como `healthy`. Para saber se ele está vivo, olhe o **sinal de vida** que ele grava a cada minuto, no item **Worker** da tela **Observabilidade**.
+
+## Quando o ITS avisa?
+
+A cada 5 minutos, o **worker** e a **API** conferem a saúde. <Regra id="RN-94">Quando um item entra em falha</Regra>, quem tem a permissão **Ver a saúde e as métricas do sistema** recebe um aviso no sino e, com o e-mail ligado, um e-mail na hora. O alerta cobre:
+
+- o **worker** parado e a **API** sem sinal: são processos separados, e um avisa pelo outro (com o worker parado, é a API que avisa);
+- a **fila de e-mail** parada e os **envios** falhando;
+- o **espaço dos anexos** acabando;
+- os segredos do **e-mail** e do **login corporativo**, o **token de integração** e o **segredo dos webhooks** perto de vencer ou vencidos;
+- as **entregas dos webhooks** suspensas por falhas seguidas.
+
+Migração pendente e banco lento ficam só em atenção, que aparece na tela mas não gera alerta.
+
+## O que o alerta não cobre?
+
+<Atencao>
+  **Se o banco de dados cair, o ITS não consegue avisar**, porque o aviso é gravado no banco. Também não há alerta se caírem o servidor inteiro, o Docker, ou o worker **e** a API juntos.
+</Atencao>
+
+Para esses casos, use o que já existe fora do ITS:
+
+- **Reinício automático**: o Compose usa `restart: unless-stopped`, e o Docker sobe os serviços de novo se eles caírem.
+- **Monitoramento externo** de `/api/health`: se ele devolver `503` ou não responder, é hora de olhar.
+- **Disco do servidor**: o item **Espaço dos anexos** mede só o volume dos anexos (`storage`). O volume do banco (`pgdata`) e o disco do servidor ficam por sua conta. O **Tamanho do banco** aparece em **Uso e segurança**.
+
+## O que fazer com o worker parado?
+
+Você percebe pelo item **Worker** em atenção ou falha, pelos e-mails que não saem e pelos lembretes de prazo e resumos diários que não chegam. Reinicie o worker e leia o log:
+
+```bash
+docker compose restart worker
+docker compose logs --tail 100 worker
+```
+
+Se ele cair de novo logo em seguida, o log mostra o motivo (em geral, banco inacessível ou `APP_SECRET_KEY` trocada).
+
+## O que fazer quando o espaço dos anexos acaba?
+
+O item **Espaço dos anexos** mede o espaço livre do volume `storage`. Ele fica em **atenção abaixo de 10%** e em **falha abaixo de 3%**. Aumente o volume ou limpe anexos antigos. O backup do volume está em [Backup e atualização](/pt-BR/ti/backup-e-atualizacao/).
+
+## O que dá para ajustar?
+
+| O quê | Onde | Padrão | Para quê |
+|---|---|---|---|
+| `METRICS_ENABLED` | `.env` | `true` | `false` desliga a contagem de tráfego e o histórico. A saúde e os alertas continuam |
+| Observabilidade: dias de histórico guardados | **Configurações > Operação** | 30 (de 1 a 90) | Quanto tempo o tráfego por hora fica guardado |
+| `TZ` | `.env` | `UTC` | Fuso dos logs. Os gráficos usam o fuso da instalação |
+
+O worker apaga o histórico vencido uma vez por hora. Depois de mudar o `.env`, recrie os serviços (`up -d`).
+
+## O que muda quando reinicio ou atualizo?
+
+Reiniciar a API **zera o bloco Agora**, que conta desde que ela subiu; o histórico por hora não zera. Ao subir, a API aplica sozinha as migrações pendentes, então o item **Migrações** só fica em atenção se algo impedir isso.
+
+## Por onde começo quando algo dá errado?
+
+1. Abra a tela **Observabilidade** e veja qual item não está **Em ordem**.
+2. Confira `docker compose ps` e o log do serviço envolvido.
+3. Se o banco estiver fora, comece por `docker compose logs db`.

@@ -1,0 +1,83 @@
+/* Movimento do símbolo do ITS. Parado por padrão; data-motion="loop" | "once" liga. */
+.its-symbol-pas {
+  transform-origin: 16px 16px;
+}
+
+/* Carregando: avança um terço de volta por vez, com pausa (cada etapa passa a vez à seguinte). */
+.its-symbol[data-motion="loop"] .its-symbol-pas {
+  animation: its-symbol-step 3s cubic-bezier(0.65, 0, 0.35, 1) infinite;
+}
+
+/* Entrada: as pás chegam girando (ex.: ideia enviada). */
+.its-symbol[data-motion="once"] .its-symbol-pas {
+  animation: its-symbol-in 1s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes its-symbol-step {
+  0%,
+  12% {
+    transform: rotate(0deg);
+  }
+  33%,
+  45% {
+    transform: rotate(120deg);
+  }
+  67%,
+  79% {
+    transform: rotate(240deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes its-symbol-in {
+  from {
+    transform: rotate(-120deg) scale(0.5);
+    opacity: 0;
+  }
+  to {
+    transform: rotate(0) scale(1);
+    opacity: 1;
+  }
+}
+
+/* Movimento reduzido: as pás acendem uma de cada vez, só com opacidade (sem giro nem deslocamento). */
+@keyframes its-symbol-pulse {
+  0%,
+  100% {
+    opacity: 0.3;
+  }
+  33% {
+    opacity: 1;
+  }
+}
+
+/* Respeita a preferência do sistema: nada gira. No "carregando", sobra um sinal suave de opacidade, para
+   continuar dizendo que algo está acontecendo. Exceção: data-force-motion, quando a pessoa pediu para ver. */
+@media (prefers-reduced-motion: reduce) {
+  .its-symbol:not([data-force-motion]) .its-symbol-pas {
+    animation: none;
+  }
+  .its-symbol[data-motion="loop"]:not([data-force-motion]) .its-symbol-pas path {
+    animation: its-symbol-pulse 1.8s ease-in-out infinite;
+  }
+  .its-symbol[data-motion="loop"]:not([data-force-motion]) .its-symbol-pas path:nth-child(2) {
+    animation-delay: -1.2s;
+  }
+  .its-symbol[data-motion="loop"]:not([data-force-motion]) .its-symbol-pas path:nth-child(3) {
+    animation-delay: -0.6s;
+  }
+}
+
+/*
+ * Símbolo solto sobre fundo escuro (assinatura dupla, tela de carregamento): 68% e 36% da marca
+ * quase somem no preto; sobem para 80% e 58%, mantendo os três tons distintos. Sobre o quadro de
+ * cor, nada muda. `[data-surface="dark"]` vale para as amostras do tema escuro na tela clara.
+ */
+:is(.dark, [data-surface="dark"]) .its-symbol[data-free] .its-symbol-pas path:nth-child(2) {
+  opacity: 0.8;
+}
+:is(.dark, [data-surface="dark"]) .its-symbol[data-free] .its-symbol-pas path:nth-child(3) {
+  opacity: 0.58;
+}

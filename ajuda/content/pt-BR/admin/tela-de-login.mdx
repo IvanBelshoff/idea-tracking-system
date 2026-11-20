@@ -1,0 +1,59 @@
+export const meta = {
+  title: 'Personalizar a tela de login',
+  description: 'Como deixar a tela de entrada com a cara da organização: layout, fundo, título e subtítulo, conferindo tudo na prévia antes de salvar.',
+};
+
+# Personalizar a tela de login
+
+A tela de login é a primeira coisa que as pessoas veem. Em **Administração > Identidade visual > Tela de login**, você escolhe o layout, o fundo e os textos. O nome, o logo e a cor da marca vêm do resto da [identidade visual](/pt-BR/admin/configuracoes/).
+
+A configuração <Regra id="RN-176">vale para três telas</Regra>: **Entrar**, **Esqueci minha senha** e **Crie sua senha**. O assistente de instalação e a consulta pública continuam como estão.
+
+## Como vejo o resultado antes de salvar?
+
+A **Prévia** mostra o que você ainda não salvou, no computador e no celular, no claro e no escuro. <Regra id="RN-180">Nada muda para as pessoas</Regra> até você clicar em **Salvar a tela de login**.
+
+## Qual layout escolher?
+
+São seis, cada um com uma descrição na tela. O **Cartão central** é o de fábrica: quem não mexer aqui não vê mudança ao atualizar o ITS. No **Dividido**, você escolhe o lado do formulário. A **Faixa da marca**, sem fundo escolhido, usa a cor da marca.
+
+O Cartão central e o **Minimalista** não mostram fundo. O Dividido, o **Fundo inteiro** e o **Painel lateral**, sem fundo escolhido, aparecem como o Cartão central. No celular, todo layout vira uma coluna, com o formulário à vista sem precisar rolar.
+
+## Que fundo posso usar?
+
+O <Regra id="RN-177">fundo</Regra> pode ser nenhum, cor, gradiente, imagem ou vídeo. Na cor e no gradiente, use a cor da marca (e um tom escuro dela, no gradiente) ou escolha as cores.
+
+- **Imagem:** PNG, JPEG ou WebP, até 10 MB. O ITS grava em WebP e tira os metadados, inclusive a localização da foto.
+- **Vídeo:** MP4 ou WebM, até 20 MB, com <Regra id="RN-178">capa obrigatória</Regra>. Ele toca sem som e em repetição, e quem entra pode pausar. A capa aparece no lugar do vídeo para quem pede menos movimento, no celular e quando o navegador pede economia de dados.
+
+Na imagem e no vídeo, dá para ajustar o foco (o ponto que nunca é cortado em telas estreitas), uma camada de cor por cima e o desfoque.
+
+O arquivo sobe na hora, mas só vira o fundo quando você salva. Um arquivo que está no fundo atual não pode ser removido: troque o fundo antes.
+
+## Qual cor usar no texto?
+
+A <Regra id="RN-177">cor do texto</Regra> pode ser **Automática** (o ITS usa a que dá leitura), **Clara** ou **Escura**, e a escolhida é sempre respeitada.
+
+<Atencao>
+  O formulário fica sempre sobre uma superfície sólida, então é legível com qualquer fundo. O **título** fica sobre o fundo, e o ITS confere a leitura mesmo numa foto toda clara ou toda escura. Quando a cor do texto não dá leitura sozinha (um gradiente do azul ao amarelo, ou a camada preta abaixo de 55%), o título ganha uma **placa translúcida** atrás, e a tela avisa.
+</Atencao>
+
+## Como escrevo o título e o subtítulo?
+
+Os dois são opcionais e em texto simples, sem HTML nem links, com até 80 caracteres no título e 200 no subtítulo. <Regra id="RN-179">Quem entra vê a versão em português ou em inglês</Regra>, conforme o próprio idioma; sem a versão em inglês, vê a em português.
+
+Escolha um dos 6 **Textos prontos**, já traduzidos, que preenchem os campos e continuam editáveis, ou escreva o seu em português. Se o navegador tiver tradutor embutido (Chrome e Edge recentes), aparece **Sugerir tradução**, que preenche o inglês para você revisar. A tradução acontece no próprio navegador, sem chamar nenhum serviço; na primeira vez, ele pode baixar o pacote do idioma.
+
+## Dá para escolher o tema antes de entrar?
+
+Dá. Toda tela de acesso tem um botão de **Tema** (Automático, Claro ou Escuro) no canto. A escolha vale na hora e, <Regra id="RN-181">quando a pessoa entra, vira o tema da conta dela</Regra>. Quem não mexe no botão entra com o tema que já tinha.
+
+## Como volto ao padrão?
+
+**Restaurar o padrão** volta ao Cartão central, sem fundo nem textos, e apaga a imagem, a capa e o vídeo enviados. O ITS pede confirmação antes.
+
+## Quem pode mexer e o que fica registrado?
+
+Só quem tem a permissão **Alterar configurações** mexe na tela de login. Ao salvar, a [auditoria](/pt-BR/admin/auditoria-e-privacidade/) registra <Regra id="RN-180">quais campos mudaram, sem os valores</Regra>. Enviar e remover arquivos e restaurar o padrão também ficam registrados.
+
+As telas de acesso <Regra id="RN-182">passam na verificação de acessibilidade</Regra> nos dois temas, no computador e no celular, com qualquer layout e fundo.

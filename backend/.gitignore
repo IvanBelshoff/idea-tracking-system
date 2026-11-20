@@ -1,0 +1,21 @@
+node_modules/
+dist/
+coverage/
+*.tsbuildinfo
+
+# ambiente e segredos (nunca versionar)
+.env
+.env.*
+!.env.example
+
+# arquivos enviados e dados locais
+uploads/
+storage/
+
+*.log
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/*
+!.vscode/extensions.json
+.pnpm-store/

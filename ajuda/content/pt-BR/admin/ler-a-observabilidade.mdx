@@ -1,0 +1,107 @@
+export const meta = {
+  title: 'Ler a observabilidade',
+  description: 'Como ler a tela de Observabilidade: saúde, tráfego, histórico, uso e segurança, o que cada sinal quer dizer e o que fazer quando algo foge do normal.',
+};
+
+# Ler a observabilidade
+
+A tela **Observabilidade**, em **Administração**, mostra se o ITS está saudável: banco de dados, e-mail, processamento em segundo plano e o tráfego da API. Só a vê quem tem a permissão **Ver a saúde e as métricas do sistema**; de fábrica, só o Administrador.
+
+Os dados ficam no banco do próprio ITS. <Regra id="RN-92">Nada é enviado para fora, e nenhuma medida identifica pessoa, ideia ou endereço</Regra>.
+
+<Captura nome="observabilidade" alt="Tela de Observabilidade do ITS: saúde por itens, o tráfego agora com o gráfico de requisições por minuto e o início do histórico." />
+
+## O que está funcionando agora?
+
+No alto da tela, a **Saúde** mostra o estado geral, que é o do pior item. Cada item tem um ícone, uma palavra e uma explicação, e nunca depende só da cor:
+
+- **Em ordem**: nada a fazer.
+- **Atenção**: ainda funciona, mas vale olhar logo. Não gera alerta.
+- **Falha**: algo parou ou está perto de parar. <Regra id="RN-94">Gera alerta</Regra>.
+
+| Item | O que confere | Atenção quando | Falha quando |
+|---|---|---|---|
+| Banco de dados | Se o banco responde e em quanto tempo | Demora mais de 200 ms | Não responde |
+| Migrações | Se o banco está na versão do código | Há migração pendente | — |
+| Espaço dos anexos | Espaço livre no volume dos anexos | Menos de 10% livre | Menos de 3% livre |
+| E-mail | Falhas de envio nas últimas 24 horas | Qualquer falha | 5 tentativas ou mais e metade falhou |
+| Fila de e-mail | E-mail esperando para sair | Espera há mais de 10 min | Espera há mais de 30 min |
+| Segredo do e-mail | Validade do segredo do envio pela Microsoft, ou da chave do Google quando você informou a validade | Sem data informada, ou vence em até 30 dias | Vence em até 7 dias, ou já venceu |
+| Segredo do login corporativo | Validade do segredo do login com Microsoft ou Google | Sem data informada, ou vence em até 30 dias | Vence em até 7 dias, ou já venceu |
+| Token de integração | Validade do token mais novo de cada integração ativa | Vence em até 30 dias | Vence em até 7 dias, ou já venceu |
+| Segredo dos webhooks | Validade do segredo mais novo de cada assinatura ativa | Vence em até 30 dias | Vence em até 7 dias, ou já venceu |
+| Entrega dos webhooks | Falhas e pendências dos avisos | Falha definitiva nas últimas 24 horas, ou aviso esperando há mais de 15 minutos | Assinatura suspensa por falhas seguidas |
+| Worker | Sinal de vida do processamento em segundo plano | Sem sinal há mais de 3 min | Sem sinal há mais de 10 min |
+| API | Sinal de vida e atraso interno | Sem sinal há mais de 3 min, ou atraso acima de 200 ms | Sem sinal há mais de 10 min |
+
+Alguns itens só contam quando o recurso está em uso:
+
+- Com o envio de e-mail desligado (o estado de fábrica), o item **E-mail** <Regra id="RN-93">aparece "em ordem", só como informação</Regra>.
+- Os itens de segredo <Regra id="RN-100">só valem em uso</Regra>: sem o envio pela Microsoft (ou pelo Google com validade informada) ou sem login corporativo ligado, aparecem como "não se aplica".
+- **Token de integração** segue a mesma régua e só vale com a API de integração ligada e ao menos uma integração ativa. <Regra id="RN-113">O token antigo de uma rotação não pesa</Regra>. Veja [Integrações: configurar](/pt-BR/admin/integracoes/).
+- Os dois itens de webhooks <Regra id="RN-123">só valem com a chave dos webhooks ligada e ao menos uma assinatura</Regra>. Veja [Webhooks: configurar](/pt-BR/admin/webhooks/).
+
+<Dica>
+  A tela se atualiza sozinha: a saúde e o uso a cada minuto, e o bloco **Agora** a cada 15 segundos.
+</Dica>
+
+## O que a API atendeu desde que subiu?
+
+O bloco **Agora** conta o que a API atendeu desde que foi iniciada e zera quando ela reinicia. O histórico, logo abaixo, não zera.
+
+- **Requisições**: quantos pedidos chegaram.
+- **Erros 5xx**: falha do sistema, quando o ITS não conseguiu atender. É o número mais importante, e o ideal é zero.
+- **Erros 4xx**: pedido recusado (sem permissão, ideia que não existe, dado inválido). Alguns são normais; muitos de uma vez merecem uma olhada.
+- **Bloqueios por excesso (429)**: alguém pediu demais, rápido demais, e foi segurado.
+- **Tempo mediano (p50)** e **Tempo p95**: metade das respostas levou até o p50, e 95% delas não passaram do p95. O p95 mostra a lentidão que algumas pessoas sentem e a média esconde.
+- **Entradas** e **Entradas recusadas**: logins com sucesso e tentativas recusadas.
+
+O gráfico mostra as requisições por minuto na última hora. Use as setas do teclado para ler cada valor, ou abra a tabela.
+
+<Atencao>
+  Os tempos são o limite da faixa de medição onde o valor caiu (5, 10, 25, 50, 100, 250, 500 ms, 1, 2,5, 5 e 10 s), sempre arredondado para cima. "> 10 s" quer dizer que passou da última faixa.
+</Atencao>
+
+## O que aconteceu nas últimas horas e dias?
+
+No **Histórico**, escolha **24 horas** (por hora), **7 dias** (a cada 6 horas) ou **30 dias** (por dia). São quatro gráficos:
+
+1. **Requisições**: o ritmo de uso. Picos em horário de trabalho são esperados.
+2. **Erros 5xx**: cada coluna é um período com falha. Uma coluna isolada pode ter sido um deploy; uma sequência pede investigação.
+3. **Tempo de resposta (p95)**: uma linha que sobe aos poucos indica que o sistema está ficando lento.
+4. **Memória da API (pico)**: uma linha que só sobe ao longo dos dias pode indicar vazamento. Reiniciar resolve por um tempo, mas avise quem mantém o ITS.
+
+Abaixo deles ficam **Ver os números em tabela** (os mesmos dados, para quem prefere ou usa leitor de tela), as **Rotas mais lentas**, as **Rotas com erro 5xx** e o quadro **Worker**, com quantos disparos houve, quanto demoraram e quantos e-mails foram enviados, repetidos ou falharam. As rotas aparecem como moldes, como `GET /api/ideas/:ref`, nunca com o código de uma ideia.
+
+<Regra id="RN-92">O histórico fica guardado</Regra> pelo número de dias definido em **Configurações > Operação** (padrão 30, até 90).
+
+## O que mostra Uso e segurança?
+
+As contas ativas, as sessões abertas, as entradas, as entradas recusadas e as contas bloqueadas por tentativas nas últimas 24 horas, o tamanho do banco e as tabelas que só crescem (o log de auditoria e o histórico das ideias nunca são apagados). São só contagens: para saber quem foi, use a [Auditoria](/pt-BR/admin/auditoria-e-privacidade/).
+
+## O que faço quando algo foge do normal?
+
+| Você viu | Causa provável | O que fazer |
+|---|---|---|
+| **Worker** em falha ou atenção | O processamento em segundo plano parou | Quem instala reinicia o serviço; veja [Operação e alertas](/pt-BR/ti/operacao-e-alertas/) |
+| **Segredo** do e-mail ou do login a vencer | O segredo do aplicativo na Microsoft vence (o Entra não avisa), ou a chave do Google chegou à validade que você informou | Crie um segredo novo no provedor e cadastre o **Valor** e a **nova validade** em [E-mail](/pt-BR/admin/email/) ou [Acesso corporativo](/pt-BR/admin/acesso-corporativo/); veja [Envio de e-mail pela Microsoft](/pt-BR/ti/envio-pela-microsoft/) |
+| **Fila de e-mail** parada | O worker parou, ou o servidor de e-mail não responde | Confira o worker e o teste de envio em [E-mail](/pt-BR/admin/email/) |
+| **E-mail** com falhas | A senha do provedor mudou, ou o servidor saiu do ar | Use o filtro **Com falha** em **E-mail > Envios**, que mostra o motivo; veja [E-mail](/pt-BR/admin/email/) |
+| **Erros 5xx** aparecendo | Falha do sistema | Anote o horário e peça o log da API a quem instala |
+| **p95** e **memória** subindo | Sistema sobrecarregado ou com vazamento | Reiniciar a API alivia; avise quem mantém o ITS |
+| Muitos **4xx** e **429** | Alguém testando limites, ou um sistema externo insistindo | Compare com as entradas recusadas e com a Auditoria |
+| **Entradas recusadas** e **bloqueios** em alta | Tentativa de adivinhar senhas | Veja a Auditoria e considere reforçar a política de senha em **Configurações > Senhas e acesso** |
+| **Espaço dos anexos** baixo | Anexos acumulando | Peça mais espaço no servidor ou limpe anexos antigos |
+| **Migrações** pendentes | Atualização aplicada pela metade | Reinicie a API; ela aplica sozinha |
+
+## Quem recebe os alertas?
+
+Quando um item entra em falha, todo mundo que tem a permissão recebe um aviso no sino do ITS, que não dá para desligar. Se o envio de e-mail estiver ligado, recebe também um e-mail na hora, fora do resumo diário. Atenção não avisa. <Regra id="RN-94">O aviso de que voltou ao normal só vem depois de duas conferências seguidas sem falha</Regra> (cerca de 10 minutos), e o mesmo item não avisa falha duas vezes em menos de 30 minutos.
+
+<Atencao>
+  Se o banco de dados cair, o ITS não consegue guardar nem enviar o aviso. Para esse caso, quem instala deve monitorar o endereço de saúde; veja [Operação e alertas](/pt-BR/ti/operacao-e-alertas/).
+</Atencao>
+
+## Como dou acesso a outra pessoa?
+
+Em **Perfis**, no grupo **Administração**, marque **Ver a saúde e as métricas do sistema** no perfil que deve ver a tela, por exemplo um perfil "Operação" criado só para isso. Cada pessoa com a permissão passa a receber os alertas. Veja [Usuários, perfis e escopo](/pt-BR/admin/usuarios-e-perfis/).

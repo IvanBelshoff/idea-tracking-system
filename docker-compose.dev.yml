@@ -1,0 +1,15 @@
+# Sobreposição SOMENTE para desenvolvimento: publica o Postgres em 127.0.0.1 (a suíte de testes conecta
+# por esta porta).
+# Uso, só o banco (para os testes do backend):
+#   docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d db
+# A pilha inteira montada do código, com o banco publicado:
+#   docker compose -f docker-compose.yml -f docker-compose.build.yml -f docker-compose.dev.yml up -d --build
+# Nunca usar em instalações reais (o banco não deve ficar acessível pela rede).
+#
+# O banco entra também na rede padrão: uma rede "internal" não publica porta no computador. A
+# publicação é só em 127.0.0.1 (RN-140).
+services:
+  db:
+    networks: [internal, default]
+    ports:
+      - "127.0.0.1:5433:5432"

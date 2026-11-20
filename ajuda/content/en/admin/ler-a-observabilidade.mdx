@@ -1,0 +1,107 @@
+export const meta = {
+  title: 'Reading observability',
+  description: 'How to read the Observability screen: health, traffic, history, usage and security, what each signal means and what to do when something is off.',
+};
+
+# Reading observability
+
+The **Observability** screen, under **Administration**, shows whether ITS is healthy: database, email, background processing and API traffic. Only people with the **See system health and metrics** permission see it; out of the box, only the Administrator.
+
+The data stays in ITS's own database. <Regra id="RN-92">Nothing is sent out, and no measurement identifies a person, an idea or an address</Regra>.
+
+<Captura nome="observabilidade" alt="ITS Observability screen: health by item, traffic now with the requests-per-minute chart, and the start of the history." />
+
+## What's working right now?
+
+At the top of the screen, **Health** shows the overall state, which is that of the worst item. Each item has an icon, a word and an explanation, and never relies on color alone:
+
+- **OK**: nothing to do.
+- **Attention**: it still works, but take a look soon. It doesn't raise an alert.
+- **Failed**: something stopped or is close to stopping. <Regra id="RN-94">It raises an alert</Regra>.
+
+| Item | What it checks | Attention when | Failed when |
+|---|---|---|---|
+| Database | Whether the database answers and how fast | Takes more than 200 ms | Doesn't answer |
+| Migrations | Whether the database matches the code version | A migration is pending | — |
+| Attachment space | Free space on the attachments volume | Under 10% free | Under 3% free |
+| Email | Send failures in the last 24 hours | Any failure | 5 or more attempts and half failed |
+| Email queue | Email waiting to go out | Waiting over 10 min | Waiting over 30 min |
+| Email secret | Expiry of the Microsoft sending secret, or of the Google key when you entered an expiry date | No date entered, or expires in 30 days or less | Expires in 7 days or less, or already expired |
+| Corporate sign-in secret | Expiry of the Microsoft or Google sign-in secret | No date entered, or expires in 30 days or less | Expires in 7 days or less, or already expired |
+| Integration token | Expiry of the newest token of each active integration | Expires in 30 days or less | Expires in 7 days or less, or already expired |
+| Webhook secret | Expiry of the newest secret of each active subscription | Expires in 30 days or less | Expires in 7 days or less, or already expired |
+| Webhook delivery | Failures and backlog of notices | Definitive failure in the last 24 hours, or a notice waiting over 15 minutes | Subscription suspended after consecutive failures |
+| Worker | Sign of life of background processing | No sign for over 3 min | No sign for over 10 min |
+| API | Sign of life and internal delay | No sign for over 3 min, or delay above 200 ms | No sign for over 10 min |
+
+Some items only count when the feature is in use:
+
+- With email sending off (the factory state), the **Email** item <Regra id="RN-93">shows "OK", as information only</Regra>.
+- The secret items <Regra id="RN-100">only apply when in use</Regra>: without Microsoft sending (or Google sending with an expiry date entered) or without corporate sign-in turned on, they show "not applicable".
+- **Integration token** follows the same scale and only applies with the integration API on and at least one active integration. <Regra id="RN-113">The old token from a rotation doesn't count</Regra>. See [Integrations: setting up](/en/admin/integracoes/).
+- The two webhook items <Regra id="RN-123">only apply with the webhooks switch on and at least one subscription</Regra>. See [Webhooks: setting up](/en/admin/webhooks/).
+
+<Dica>
+  The screen refreshes on its own: health and usage every minute, and the **Now** block every 15 seconds.
+</Dica>
+
+## What has the API served since it started?
+
+The **Now** block counts what the API has served since it was started and resets when the API restarts. The history, just below, doesn't reset.
+
+- **Requests**: how many requests arrived.
+- **5xx errors**: a system failure, when ITS couldn't serve the request. It's the most important number, and ideally it's zero.
+- **4xx errors**: a refused request (no permission, an idea that doesn't exist, invalid data). Some are normal; many at once deserve a look.
+- **Blocked for excess (429)**: someone asked for too much, too fast, and was held back.
+- **Median time (p50)** and **p95 time**: half the responses took up to the p50, and 95% of them didn't go past the p95. The p95 shows the slowness that some people feel and that an average hides.
+- **Sign-ins** and **Refused sign-ins**: successful sign-ins and refused attempts.
+
+The chart shows requests per minute over the last hour. Use the arrow keys to read each value, or open the table.
+
+<Atencao>
+  Times are the upper limit of the measuring band the value fell into (5, 10, 25, 50, 100, 250, 500 ms, 1, 2.5, 5 and 10 s), always rounded up. "> 10 s" means it went past the last band.
+</Atencao>
+
+## What happened over the last hours and days?
+
+In **History**, choose **24 hours** (per hour), **7 days** (every 6 hours) or **30 days** (per day). There are four charts:
+
+1. **Requests**: the pace of use. Peaks during work hours are expected.
+2. **5xx errors**: each column is a period with failures. One isolated column may have been a deploy; a streak calls for investigation.
+3. **Response time (p95)**: a line that slowly climbs means the system is getting slower.
+4. **API memory (peak)**: a line that only climbs over the days may mean a leak. Restarting helps for a while, but tell whoever maintains ITS.
+
+Below them are **See the numbers as a table** (the same data, for anyone who prefers it or uses a screen reader), **Slowest routes**, **Routes with 5xx errors** and the **Worker** panel, with how many runs there were, how long they took and how many emails were sent, retried or failed. Routes appear as templates, such as `GET /api/ideas/:ref`, never with an idea code.
+
+<Regra id="RN-92">The history is kept</Regra> for the number of days set in **Settings > Operation** (default 30, up to 90).
+
+## What does Usage and security show?
+
+Active accounts, open sessions, sign-ins, refused sign-ins and accounts locked by attempts in the last 24 hours, the database size and the tables that only grow (the audit log and the idea history are never deleted). These are only counts: to find out who it was, use [Audit](/en/admin/auditoria-e-privacidade/).
+
+## What do I do when something is off?
+
+| You saw | Likely cause | What to do |
+|---|---|---|
+| **Worker** failed or on attention | Background processing stopped | Whoever installed ITS restarts the service; see [Operation and alerts](/en/ti/operacao-e-alertas/) |
+| Email or sign-in **secret** about to expire | The application's secret at Microsoft expires (Entra doesn't warn), or the Google key reached the expiry date you entered | Create a new secret at the provider and enter the **Value** and the **new expiry date** in [Email](/en/admin/email/) or [Corporate access](/en/admin/acesso-corporativo/); see [Sending email through Microsoft](/en/ti/envio-pela-microsoft/) |
+| **Email queue** stuck | The worker stopped, or the email server doesn't answer | Check the worker and the send test in [Email](/en/admin/email/) |
+| **Email** with failures | The provider password changed, or the server went down | Use the **Failed** filter in **Email > Sends**, which shows the reason; see [Email](/en/admin/email/) |
+| **5xx errors** showing up | System failure | Note the time and ask whoever installed ITS for the API log |
+| **p95** and **memory** climbing | System overloaded or leaking | Restarting the API relieves it; tell whoever maintains ITS |
+| Many **4xx** and **429** | Someone probing limits, or an outside system insisting | Compare with refused sign-ins and with Audit |
+| **Refused sign-ins** and **locks** rising | An attempt to guess passwords | Check Audit and consider a stronger password policy in **Settings > Passwords and access** |
+| Low **Attachment space** | Attachments piling up | Ask for more space on the server or clear old attachments |
+| **Migrations** pending | An update applied halfway | Restart the API; it applies them on its own |
+
+## Who gets the alerts?
+
+When an item goes into failure, everyone with the permission gets a notification in the ITS bell, which can't be turned off. If email sending is on, they also get an email right away, outside the daily summary. Attention doesn't notify anyone. <Regra id="RN-94">The notification that things are back to normal only comes after two checks in a row without failure</Regra> (about 10 minutes), and the same item doesn't report a failure twice within 30 minutes.
+
+<Atencao>
+  If the database goes down, ITS can't save or send the notification. For that case, whoever installs ITS should monitor the health address; see [Operation and alerts](/en/ti/operacao-e-alertas/).
+</Atencao>
+
+## How do I give someone else access?
+
+In **Roles**, in the **Administration** group, tick **See system health and metrics** on the role that should see the screen, for example an "Operations" role created just for that. Everyone with the permission starts getting the alerts. See [Users, roles and scope](/en/admin/usuarios-e-perfis/).

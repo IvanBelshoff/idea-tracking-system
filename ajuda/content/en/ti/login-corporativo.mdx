@@ -1,0 +1,95 @@
+export const meta = {
+  title: 'Corporate sign-in',
+  description: 'For IT: how to register ITS with Microsoft (Entra) and Google, what to prepare on the server (return address, HTTPS, network, proxy and key), the secret expiry date and what to do when sign-in fails.',
+};
+
+# Corporate sign-in
+
+This page is for whoever installs and maintains ITS and looks after your organization's Microsoft or Google. Whoever administers ITS uses the [Corporate access](/en/admin/acesso-corporativo/) screen; this page covers what must exist **before** it.
+
+ITS uses **OpenID Connect**, server to server. With the feature off (the default), ITS doesn't talk to anything outside. When it's on, the API only talks to the [provider](/en/referencia/glossario/#provedor) when someone signs in: to discover the addresses, exchange the code and read the public keys.
+
+<Dica>
+  To send email through Microsoft 365, use **a different application**, only for sending and restricted to one mailbox. See [Sending email through Microsoft](/en/ti/envio-pela-microsoft/).
+</Dica>
+
+## What do I need to prepare first?
+
+| Item | Why |
+|---|---|
+| **System address** on `https://` (in **Settings > Notifications and email**) | Microsoft and Google only accept `http` on `localhost`. The [return address](/en/referencia/glossario/#endereco-de-retorno) is built from it |
+| **`APP_SECRET_KEY`** in `.env` | The client secret is stored encrypted with it. If the key changes, register the secret again |
+| **Outbound network access** from the API server | To `login.microsoftonline.com` (Microsoft), `accounts.google.com` and `www.googleapis.com` (Google), on port 443 |
+| **Organization domains** registered | Corporate sign-in only works for emails from those domains |
+
+### What is the return address?
+
+It's the system address plus the provider's path:
+
+- Microsoft: `https://ideas.yourcompany.com/api/auth/sso/microsoft/callback`
+- Google: `https://ideas.yourcompany.com/api/auth/sso/google/callback`
+
+The **Corporate access** screen shows the exact address, ready to copy. The address registered with the provider must be **identical** to it.
+
+### What if the server goes out through a proxy?
+
+If the server only reaches the internet through a proxy, set this in `.env`:
+
+```bash
+NODE_USE_ENV_PROXY=1
+HTTPS_PROXY=http://proxy.yourcompany.local:3128
+NO_PROXY=localhost,127.0.0.1,db,api
+```
+
+Then bring the services up again (`docker compose ... up -d`). Without a proxy, set nothing.
+
+## How do I register ITS with Microsoft (Entra ID)?
+
+<Regra id="RN-96">ITS works with a single tenant</Regra>, your organization's.
+
+1. In the **Microsoft Entra admin center**, open **Applications > App registrations > New registration**.
+2. Name: `ITS`. Under **Supported account types**, choose **Accounts in this organizational directory only (single tenant)**.
+3. Under **Redirect URI**, choose the **Web** platform and enter the Microsoft return address.
+4. Under **Overview**, copy the **Application (client) ID** and the **Directory (tenant) ID**. On the ITS screen, they go in **Client (application) ID** and **Tenant (directory) ID**.
+5. Under **Certificates & secrets > New client secret**, create a secret and copy the **Value** (not the secret ID). It's shown **only once**.
+6. Under **Token configuration > Add optional claim**, choose the **ID** token type and select `email`. That way the token carries the email.
+7. To limit **who** can sign in: under **Enterprise applications > ITS > Properties**, turn on **Assignment required** and, under **Users and groups**, add the authorized group.
+
+The default permissions (`openid`, `profile`, `email`) are enough; ITS reads nothing beyond the sign-in.
+
+If the ITS administrator turns on **Offer the profile photo**, add the delegated permission **Microsoft Graph > User.Read** to the application (under *API permissions*). Without it, sign-in keeps working, but the photo doesn't come. ITS fetches the photo from the server, only at `graph.microsoft.com`, and <Regra id="RN-144">doesn't keep the access token</Regra>.
+
+## How do I register ITS with Google?
+
+1. In the **Google Cloud Console**, choose (or create) a project and open **APIs & Services > OAuth consent screen**.
+2. Under **User type**, choose **Internal**, which restricts access to your Google Workspace, and fill in the app name and the support email.
+3. Under **Credentials > Create credentials > OAuth client ID**, choose the **Web application** type.
+4. Under **Authorized redirect URIs**, enter the Google return address.
+5. Copy the **Client ID** and the **Client secret**.
+6. To limit **who** can sign in, control access to the app by **organizational unit** in the **Google Workspace Admin Console**.
+
+ITS only accepts Workspace accounts from the **registered domains**. A personal account (gmail.com) can't sign in.
+
+## What do I do when the secret expires?
+
+The [client secret](/en/referencia/glossario/) **expires**. On Microsoft, it lasts 24 months at most. Note the date and enter it in **Secret expiry date**, on the **Corporate access** screen, so ITS health warns you before it expires.
+
+When the secret expires, corporate sign-in stops working. Create a new secret at the provider and register it in **Corporate access**. Meanwhile, people with [emergency access](/en/referencia/glossario/#acesso-de-emergencia) (the administrators) keep signing in with a password. Replacing the secret turns the provider off: after saving the new one, run the test and click **Turn on**, and corporate sign-in is back to normal.
+
+## What do I do when sign-in fails?
+
+The reason appears on the sign-in screen and is recorded in **Audit** as `Corporate account sign-in refused`.
+
+| Message or symptom | What to check |
+|---|---|
+| "The provider did not finish the sign-in" | Is the registered return address **identical** to the one on the screen? Has the secret expired? See `logs api` |
+| "We could not reach the provider" | Outbound network access to the provider (firewall and proxy). Use **Test address** on the screen |
+| "This account does not belong to the organization" | Is the account from another [tenant](/en/referencia/glossario/#tenant)? Is the tenant ID on the screen the one for the right directory? |
+| "This account's email is not from one of the organization's domains" | Is the domain on the list? On Google, is the account a Workspace account and not a personal one? |
+| "Your email is not registered in ITS yet" | Register the person under **Users** or turn on automatic creation |
+| Everyone refused after changing `APP_SECRET_KEY` | ITS can no longer read the registered secret: register it again |
+| Nobody can sign in in **SSO only** mode | An administrator signs in with a password, changes the mode to **Password only** and fixes the problem |
+
+<Atencao>
+  If the provider goes down, ITS **can't** warn about it on its own. Administrators keep signing in with a password. To follow the installation's health, see [Operation and alerts](/en/ti/operacao-e-alertas/).
+</Atencao>

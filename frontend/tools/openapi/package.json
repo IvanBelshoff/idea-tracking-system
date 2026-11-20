@@ -1,0 +1,11 @@
+{
+  "name": "its-frontend-openapi-tool",
+  "private": true,
+  "description": "Ferramenta isolada: o openapi-typescript precisa da API JS do TypeScript, que o TypeScript 7 (o compilador do projeto) não expõe. Por isso usa TypeScript 6 só aqui.",
+  "type": "module",
+  "packageManager": "pnpm@10.34.9",
+  "devDependencies": {
+    "openapi-typescript": "7.13.0",
+    "typescript": "6.0.3"
+  }
+}

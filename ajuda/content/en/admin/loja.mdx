@@ -1,0 +1,68 @@
+export const meta = {
+  title: 'Manage the store and bonuses',
+  description: 'How to turn the store on, give the permission to HR, set up items, decide orders, pay bonuses outside ITS and adjust balances.',
+};
+
+# Manage the store and bonuses
+
+In the store, people trade their **balance**, which grows with the points they earn, for items and bonuses. This page is for whoever turns the store on and whoever runs it day to day, usually HR or communications. The side of the person ordering is in [Store: trading points](/en/colaborador/loja/).
+
+## How do I turn the store on?
+
+1. In **Administration > Settings**, check that **recognition** is on. <Regra id="RN-159">The store depends on it</Regra>: without it, the store doesn't turn on, and while the store is on, recognition can't be turned off (turn the store off first).
+2. In the **Store** group, tick **Turn on the store (requires recognition)** and click **Save settings**.
+3. If you want, set the **Balance validity (months)**, from 1 to 60. With 0, <Regra id="RN-162">the balance never expires</Regra>.
+
+The first time the store is turned on, <Regra id="RN-161">each person gets an opening balance</Regra> equal to the points they had already earned. After that, every point earned is credited to the balance, even if the store is turned off. Turning it off only hides the store: balances, statements, items and orders are kept and come back when you turn it on again.
+
+<Atencao>
+  Changing the validity applies to **all** credits, including old ones. If you shorten it, points may expire in the very next daily run.
+</Atencao>
+
+## Who runs the store?
+
+The **Manage the store** permission covers the whole store, not one entity, and out of the box only the **Administrator** role has it. Give the permission to the HR or communications role in [Users and roles](/en/admin/usuarios-e-perfis/); the list of permissions is in [Roles and permissions](/en/referencia/perfis-e-permissoes/). People who have it see **Manage store** in the menu.
+
+<Regra id="RN-166">Nobody decides their own order</Regra> or <Regra id="RN-168">adjusts their own balance</Regra>: in those cases, someone else with the permission has to act.
+
+## How do I set up an item?
+
+In the **Items** tab, use **New item**. The name and description are plain text, and the **Cost in points** is a whole number from 1 to 1,000,000. The **Type** decides how the order ends: **Product or service** ends as "Delivered", and **Bonus (informative value)** ends as "Paid". Only a bonus has a money value, which is there for HR to keep track.
+
+An empty **Stock** means unlimited; it goes down with each order and back up with a refund. The **Limit per person** counts per calendar period (month, quarter, semester or year), such as 1 per year. In **Available to**, no entity ticked means the whole organization, and each entity includes its sub-entities. After saving, you can add a photo, with a square crop.
+
+- <Regra id="RN-163">Changing the cost doesn't affect orders already placed</Regra>: each order keeps the cost at the time it was placed. People see only the current cost; the previous one stays in the audit log.
+- Unticking **Active** takes the item out of the catalog, but open orders carry on and can be approved and delivered. The screen tells you how many there are before you save.
+- **Delete** only works for an item with no orders. If it has orders, deactivate it.
+
+## How do I decide orders?
+
+The **Orders** tab opens on the pending ones and can be filtered by status. On a pending order, use **Approve** or **Reject**. <Regra id="RN-166">An approved order moves on to delivery</Regra>, or to payment if it's a bonus. **Deliver** applies to an approved product or service, accepts a note and is final. **Cancel** applies to a pending or approved order.
+
+**Reject** and **Cancel** ask for a reason, which the person sees, and give back the points and the unit in stock. The person is notified of every decision, and whoever manages the store gets <Regra id="RN-171">one notification a day with the new orders</Regra>, instead of one per order.
+
+## How do I pay a bonus?
+
+An approved bonus goes to the **Bonuses** tab, in the **To pay** list. <Regra id="RN-167">Payment happens outside ITS</Regra>:
+
+1. Use **Export CSV** to take the list to HR or payroll.
+2. Pay it the way your organization already does.
+3. Come back and use **Mark paid** on each one, with the **Payment date** and a reference (for example, "payroll 11/2026").
+
+<Atencao>
+  ITS doesn't pay, doesn't calculate tax and isn't connected to payroll. The value is for information only: taxes and labor rules are up to the organization.
+</Atencao>
+
+## How do I adjust someone's balance?
+
+The **Balances** tab lists the people who have a balance. **See statement** shows each movement for one person, and **Adjust balance** enters a credit or a debit (a negative number), with a reason the person sees. <Regra id="RN-168">An adjustment changes only the balance</Regra>: points earned, level and ranking stay the same.
+
+A debit can make the balance negative. <Regra id="RN-169">With a negative balance, the person can't place new orders</Regra> until it covers the cost, and orders already placed don't change. The statement can't be edited or deleted: to correct an adjustment, make another one.
+
+## Who sees balances, and what goes into the audit log?
+
+<Regra id="RN-170">A person's balance, statement and orders</Regra> are seen only by that person and by whoever manages the store. These go to the [Audit](/en/admin/auditoria-e-privacidade/), always with who did it: turning the store on and off, changing the validity, creating, changing, deactivating, reactivating and deleting items, each decision on an order, each bonus marked paid and each adjustment. When a person is anonymized, their statement and orders stay, under the name "Former employee".
+
+## Does the store talk to the HR system?
+
+It can, through the integration API. The **Store (orders)** module lets the HR system follow orders without a spreadsheet. It comes turned off and is flagged as sensitive, because it carries the person's name. It covers the whole store, without the entity scope, and <Regra id="RN-172">the balance and statement never leave</Regra>. There are also webhooks for an approved order, a delivered order and a paid bonus. See [Integrations: setting up](/en/admin/integracoes/) and [Webhooks: setting up](/en/admin/webhooks/); the technical details are in [Integration API: how to consume it](/en/ti/api-de-integracao/).

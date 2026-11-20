@@ -1,0 +1,58 @@
+export const meta = {
+  title: 'Situações da ideia',
+  description: 'As cinco situações de uma ideia no ITS, como ela passa de uma para outra, quem faz cada passo e os avisos que não mudam a situação, com um simulador para praticar.',
+};
+
+# Situações da ideia
+
+A situação diz em que ponto do caminho uma ideia está, do envio ao fim. Toda ideia está sempre em uma das cinco situações abaixo, e quem enviou consegue ver qual é.
+
+## As cinco situações
+
+| Situação | O que quer dizer | Quem faz a ideia sair dela |
+|---|---|---|
+| <Situacao s="submitted" /> | Recebida, esperando alguém da equipe pegar para analisar | Analista: assume a análise, aprova direto ou não autoriza |
+| <Situacao s="in_review" /> | Um analista assumiu e está avaliando | Analista: aprova ou não autoriza |
+| <Situacao s="in_progress" /> | Aprovada e em execução, em etapas | Analista: marca como implementada ou interrompe |
+| <Situacao s="implemented" /> | Executada e encerrada, com o resultado registrado | Só o administrador, reabrindo |
+| <Situacao s="rejected" /> | Não autorizada ou interrompida, sempre com justificativa | Só o administrador, reabrindo |
+
+## Que avisos uma ideia pode ter?
+
+Alguns sinais avisam de um prazo ou de uma espera, e a ideia continua na mesma situação:
+
+- <Situacao s="late" /> aparece numa ideia Em andamento quando a previsão de uma etapa aberta já passou.
+- **Retorno atrasado** aparece numa ideia que continua Enviada depois da previsão de retorno e some quando alguém assume a análise.
+- Enquanto a equipe espera o aval de outra área para aprovar ou implementar a ideia, quem enviou vê só <Regra id="RN-190">"Aguardando aprovação de outra área"</Regra> e, no fim, o resultado. Veja [Pedir aprovação de outra área](/pt-BR/analista/pedir-aprovacao/).
+
+## Como a ideia anda
+
+1. **Alguém envia.** <Regra id="RN-02">Qualquer colaborador pode enviar</Regra>, e a ideia nasce Enviada, com o autor registrado automaticamente. Os campos **Título**, **Situação atual** e **Entidade** são <Regra id="RN-03">obrigatórios</Regra>. Um analista também pode <Regra id="RN-04">cadastrar a ideia em nome de outra pessoa</Regra>, que continua sendo a autora.
+2. **Um analista assume a análise.** A ideia passa para Em análise, e quem enviou já sabe que alguém está olhando.
+3. **Aprovar ou não autorizar.** Para aprovar, o analista <Regra id="RN-06">monta a primeira etapa e escolhe o responsável por ela</Regra>. Uma ideia ainda Enviada também pode ser aprovada direto, e o ITS registra na linha do tempo os dois passos: assumir a análise e aprovar (veja [Aprovar e conduzir etapas](/pt-BR/analista/aprovar-e-etapas/)). Para não autorizar, o analista escreve uma justificativa, e <Regra id="RN-05">a justificativa vai para quem enviou</Regra>.
+4. **Executar em etapas.** Em andamento, a equipe conclui as etapas. Se o trabalho precisar parar, o analista usa **Interromper**, também com justificativa, e a ideia fica Não autorizada.
+5. **Encerrar como implementada.** Só dá <Regra id="RN-07">quando todas as etapas estão concluídas e o resultado obtido foi descrito</Regra>.
+
+Ideias que pedem a mesma coisa podem ser juntadas numa só, e a mais antiga conduz o caminho. Veja [Juntar ideias parecidas](/pt-BR/analista/convergencia/).
+
+<Simulador titulo="leve uma ideia do envio até o fim">
+  <CicloDeVida />
+</Simulador>
+
+<Dica>
+  No simulador, tente não autorizar sem escrever a justificativa. O ITS faz o mesmo: sem o porquê, a ação não vai.
+</Dica>
+
+## Encerrada é encerrada?
+
+Quase. Implementada e Não autorizada são situações encerradas: a ideia fica só para leitura, mas <Regra id="RN-08">ainda dá para comentar</Regra>.
+
+Se for preciso voltar atrás, o administrador pode **reabrir** a ideia, <Regra id="RN-09">sempre com um motivo, que fica no histórico</Regra>. Uma ideia implementada volta para Em andamento; uma não autorizada volta para Em análise.
+
+## Por que não dá para trocar a situação direto?
+
+Porque a situação conta uma história: quem assumiu, quem aprovou, por que parou. Se qualquer pessoa pudesse escolher "Implementada" numa lista, essa história se perderia. Por isso <Regra id="RN-10">a situação só muda pelas ações do fluxo</Regra>, e cada uma fica registrada na linha do tempo da ideia.
+
+## E se alguém excluir uma ideia?
+
+Excluir, no ITS, é arquivar, e o botão se chama **Arquivar**: <Regra id="RN-11">a ideia some das listas, mas continua no histórico</Regra>. Apagar de vez, com **Excluir definitivamente**, é só com o administrador, e isso também fica registrado.

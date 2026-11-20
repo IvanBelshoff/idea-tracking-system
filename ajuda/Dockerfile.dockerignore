@@ -1,0 +1,16 @@
+# Contexto do build da ajuda = raiz do repositório. Nada de dependências, builds ou segredos.
+**/node_modules
+**/.next
+**/out
+**/dist
+**/coverage
+.git
+.github
+.env
+.env.*
+**/*.log
+backend
+docs
+scripts
+frontend/public
+frontend/tools

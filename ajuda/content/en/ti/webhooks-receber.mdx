@@ -1,0 +1,172 @@
+export const meta = {
+  title: 'Webhooks: how to receive',
+  description: 'What the notices ITS sends to other systems are for, with usage examples, how the subscription, events and notice check work, the first receiver step by step, a complete flow and the details of events, headers, retries and network.',
+};
+
+# Webhooks: how to receive
+
+A [webhook](/en/referencia/glossario/#webhook) is a notice ITS sends on its own to another system when something happens, such as an idea or a store order being approved. Instead of your system asking ITS from time to time whether there's anything new, ITS calls an address you provided, at the moment of the event. That call is a `POST` with a JSON body, a text format organized into fields and values.
+
+This page is for whoever builds the receiving side: IT, a developer or whoever creates flows. The administrator creates the subscription in ITS, in [Webhooks: setting up](/en/admin/webhooks/). To compare webhooks with reading and writing, see the table [Read, write or be notified: which should I use?](/en/ti/api-de-integracao/#read-write-or-be-notified-which-should-i-use).
+
+## What is it for?
+
+Some common uses, each with the module it needs (modules are the parts of the API the administrator grants to each integration):
+
+- An area's team wants to see each approved idea in its Teams channel. When one of the area's ideas is approved, ITS notifies a flow. The notice carries only the idea code, so the flow fetches the title through the read API and then posts the message. It uses the **Ideas** module. This case is built step by step in [Example: how do I notify Teams when an idea is approved?](#example-how-do-i-notify-teams-when-an-idea-is-approved).
+- Maintenance wants each approved idea to become a work order. The approval notice reaches the maintenance system, which opens an order linked to the idea code. When the order is finished, the same system can comment on the idea through [writing](/en/ti/escrita-pela-api/). It uses the **Ideas** module.
+- The BI dashboard that refreshes every night can start refreshing right away: on each idea notice, it reads through the API only the idea that changed. It uses the **Ideas** module.
+- HR wants to know as soon as a store order is approved, to set the reward aside. The notice carries the order, the item and the status, and the HR system fetches the rest from the order list in the read API. It uses the **Store (orders)** module.
+
+## How do notices work?
+
+### What is the subscription?
+
+The subscription is the record, created by the administrator, that tells ITS where to send notices and which events matter. It belongs to an integration, which is how ITS registers each connected system, with the modules it can use and the entity scope (the sites and departments) it sees. These concepts are explained in [How does reading work?](/en/ti/api-de-integracao/#how-does-reading-work). You create the address that goes in the subscription, on your system.
+
+### Which events are there?
+
+An event is the kind of occurrence that triggers a notice, such as an idea submitted (`idea.submitted`) or a change in the idea's status (`idea.status_changed`). Each event belongs to a module, and the subscription only offers events from the modules the integration has. The scope also applies: <Regra id="RN-119">the integration only receives the event of an idea (or campaign) it can see at that moment</Regra>. The full list is in [Which events can I subscribe to?](#which-events-can-i-subscribe-to).
+
+In a status change, the status comes as a code: Submitted (`submitted`), In review (`in_review`), In progress (`in_progress`), Implemented (`implemented`) and Not approved (`rejected`). Approving an idea means moving it from In review to In progress.
+
+### Why doesn't the notice carry the idea's title?
+
+The notice leaves ITS and reaches systems ITS doesn't control. That's why the `data` field <Regra id="RN-119">carries only identifiers and the state</Regra>, never a title, text, name, email or amount. Whoever needs the details fetches them through the [read API](/en/ti/api-de-integracao/), with the token of the integration that owns the subscription. The token is the secret key the integration identifies itself with when calling the API, and with it each system only sees what the integration's scope allows.
+
+### How do I know the notice really came from ITS?
+
+Anyone who finds out the address of your receiver can send a `POST` to it. To tell a genuine notice from a fake one, ITS signs each notice with a secret, a key that starts with `whsec_`, which the administrator hands you only once and which <Regra id="RN-120">only ITS and your system know</Regra>.
+
+The signature is a code calculated with the HMAC-SHA256 method, which combines the notice content with the secret. Without the secret, nobody can produce a code that matches, and any change to the notice, even a single character, changes the result. Your system redoes the calculation and compares it with the code that came in the `X-ITS-Signature` header. The steps are in [How do I check the signature?](#how-do-i-check-the-signature).
+
+### What happens if my system doesn't answer?
+
+<Regra id="RN-121">Delivery is at least once</Regra>: if your system is slow or answers with an error, ITS sends the same notice again later, a few times. So the same notice can arrive more than once. Each notice has an identifier that stays the same across all attempts, so you can ignore what you've already processed. The order of arrival isn't guaranteed either. The timings and cases are in [How do I handle retries, duplicates and order?](#how-do-i-handle-retries-duplicates-and-order).
+
+## How do I set up the first receiver?
+
+1. Create an address on your system that accepts a `POST` with a JSON body and that the ITS server can reach over the network. In a flow tool, this address usually comes from a trigger that receives an HTTP call.
+2. Ask the administrator to register that address in a subscription, tick the events and hand you the secret (`whsec_`) through a secure channel. The address's server must be on the ITS list of allowed destinations.
+3. When a notice arrives, read the body exactly as it came, check the signature (see [How do I check the signature?](#how-do-i-check-the-signature)) and answer with a success code (`2xx`) within 10 seconds.
+4. Ask the administrator to use **Send test** on the subscription. ITS sends a `webhook.ping` event, with an empty `data` field, <Regra id="RN-122">through the same path as real notices</Regra>, and shows on screen the HTTP code your system answered. If your system accepted the signature and the screen shows `2xx`, the receiver is ready.
+
+### What does a notice look like?
+
+After the test, real notices arrive like this (the data is made up):
+
+```json
+{
+  "id": "0b6f1c1e-7c1e-4b0a-9a53-5f6c2f0e8d11",
+  "type": "idea.status_changed",
+  "created_at": "2026-11-12T14:03:22.000Z",
+  "data": {
+    "idea_code": "ITS-2026-0042",
+    "entity_id": "7d9e6a0e-3a11-4f55-8f4a-2a0c4c7b9a10",
+    "from": "in_review",
+    "to": "in_progress"
+  }
+}
+```
+
+Each notice carries the event identifier (`id`, the same value as the `X-ITS-Event-Id` header), the type (`type`), the date and time in UTC (`created_at`) and the data (`data`), which varies by event. In this example, an idea being approved, the data is the idea code, its entity and the statuses before and after (`from` and `to`). The possible type values are in [Which events can I subscribe to?](#which-events-can-i-subscribe-to).
+
+## Example: how do I notify Teams when an idea is approved?
+
+The flow that posts to the area's channel, end to end:
+
+1. The administrator creates an integration with the Ideas module and the scope on the area's entity. In it, they create a subscription with the status change event (`idea.status_changed`), pointing to the flow's address, and hand over the token and the secret.
+2. When one of the area's ideas changes status, the notice reaches the flow. The first step checks the signature; if it doesn't match, the flow stops.
+3. The flow answers `200` right away, so ITS doesn't treat the delay as a failure.
+4. The flow checks whether the event identifier (`X-ITS-Event-Id`) has already been processed. If it has, the flow stops here.
+5. The flow looks at the data and only continues if the idea went from `in_review` to `in_progress`, which is the approval.
+6. With the integration token, the flow reads the idea by its code, with a call such as `GET /integration/v1/ideas/ITS-2026-0042`, and gets the title and the entity name.
+7. The flow posts a message to the channel such as "Idea ITS-2026-0042 approved: Replace the conveyor roller (Shipping)" and saves the event identifier.
+
+## Reference details
+
+### Which events can I subscribe to?
+
+Each event belongs to an integration module, and the subscription only offers events from the modules the integration has.
+
+| Event | When | Integration module |
+|---|---|---|
+| `idea.submitted` | An idea was submitted | Ideas |
+| `idea.status_changed` | The idea's status changed, including when it's reopened (carries the before and after) | Ideas |
+| `idea.archived` | An idea was archived | Ideas |
+| `idea.deleted` | An idea was deleted for good (only the code and the entity) | Ideas |
+| `idea.converged` | An idea was merged into another | Ideas |
+| `gain.validated` | A gain was validated | Indicators and gains |
+| `highlight.created`, `highlight.revoked` | A highlight entered or left the Hall of fame | Hall and recognition |
+| `campaign.status_changed` | A campaign's status changed | Campaigns |
+| `mural.published`, `mural.withdrawn` | An idea was published on the idea wall or removed from it (only the code and the entity, <Regra id="RN-157">never the reason</Regra>) | Ideas |
+| `approval.requested`, `approval.decided` | Approval from another area was requested, or the request ended: approved, not approved, expired or canceled (only the code, the entity, the request and the status; <Regra id="RN-191">never names, emails or comments</Regra>) | Ideas |
+| `store.order_approved`, `store.order_delivered`, `store.bonus_paid` | A store order was approved or delivered, or a bonus was paid (only the order, the item and the status; <Regra id="RN-172">never the person or the amount</Regra>) | Store (orders) |
+
+The scope applies at the moment of the event. When the integration itself caused the event, by writing through the API, the notice doesn't go back to it; the subscriptions of other integrations receive it normally.
+
+### Which headers come with the notice?
+
+| Header | What it is |
+|---|---|
+| `X-ITS-Event` | The event type |
+| `X-ITS-Event-Id` | The event identifier. It's the same on every retry: use it to ignore duplicates |
+| `X-ITS-Timestamp` | Seconds since 1970, used in the signature |
+| `X-ITS-Signature` | `v1=<signature>`. While a secret is being replaced, two come, separated by a comma |
+
+### How do I check the signature?
+
+Check the signature of every notice, in these steps:
+
+1. Read the body exactly as it arrived, before parsing it as JSON. Any extra space changes the signature.
+2. Reject the notice if the timestamp (`X-ITS-Timestamp`) is more than 5 minutes from now, in either direction. This stops someone from replaying an old notice they captured.
+3. Compute the HMAC-SHA256 of `<timestamp>.<body>` with the secret and compare the result with each `v1=` in the header, in constant time (a comparison that takes the same time whether it matches or not, so it gives no clues to someone trying to guess). One match is enough.
+4. Answer `2xx` right away and process later.
+
+A Node.js example (the names are up to you; what matters are the steps):
+
+```js
+import { createHmac, timingSafeEqual } from 'node:crypto';
+
+export function verify(headers, rawBody, secret) {
+  const timestamp = headers['x-its-timestamp'];
+  if (Math.abs(Date.now() / 1000 - Number(timestamp)) > 300) return false;
+  const expected = createHmac('sha256', secret).update(`${timestamp}.${rawBody}`).digest();
+  return String(headers['x-its-signature'])
+    .split(',')
+    .some((part) => {
+      const [version, value] = part.trim().split('=');
+      return (
+        version === 'v1' &&
+        /^[0-9a-f]{64}$/.test(value ?? '') &&
+        timingSafeEqual(Buffer.from(value, 'hex'), expected)
+      );
+    });
+}
+```
+
+<Dica>
+  In flow tools (n8n, Power Automate), checking the signature usually requires a code step or a custom function right after the receiving trigger. Keep the secret in the tool's vault, not written in the flow.
+</Dica>
+
+### How do I handle retries, duplicates and order?
+
+If your system takes more than 10 seconds or answers with a server error (`5xx`), `408` or `429`, ITS retries the notice after 30 seconds, 2 minutes, 10 minutes, 1 hour, 3 hours, 6 hours, 12 hours and 24 hours, always with the same body and the same `X-ITS-Event-Id`. Keep the `X-ITS-Event-Id` values you've already processed and ignore repeats.
+
+Order isn't guaranteed: two notices in a row can arrive swapped. Use the notice's `created_at` to put them in order.
+
+Answering `4xx` (except 408 and 429) or redirecting (`3xx`) counts as a definitive failure: ITS doesn't retry or follow the redirect. A delivery that runs out of retries also counts as a definitive failure. After 20 definitive failures in a row, the subscription is suspended. A delivery that goes 48 hours without success becomes a failure, and the administrator can resend it on the screen with **Resend**.
+
+<Atencao>
+  Answer fast. If processing takes long, put the notice in a queue and return `200` right away: a slow receiver is treated as a failure and triggers retries.
+</Atencao>
+
+### What does IT need to open on the network?
+
+- The notices are sent by the ITS worker, the process that runs background tasks, and by the API, for the **Send test** button. Both need to reach your address. This is the only new outbound network traffic from ITS.
+- ITS connects directly, without going through a proxy, because a proxy would divert the connection away from the address ITS checked. If your network only allows outbound traffic through a proxy, notices only reach destinations the server can reach directly, such as those on the internal network.
+- ITS only calls what the administrator allowed in the destination list, and never calls the computer itself, link-local addresses (including the cloud metadata one), `0.0.0.0` or multicast.
+- Prefer `https://`. `http://` only works for an internal network destination that's on the list.
+- ITS doesn't follow redirects: register the final address.
+- On the ITS server's outbound firewall, open only the address and port of your receiver.
+- The receiver must answer within 10 seconds.

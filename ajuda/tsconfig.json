@@ -1,0 +1,37 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "jsx": "react-jsx",
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": true,
+    "allowJs": false,
+    "incremental": true,
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ],
+    "types": ["node", "mdx"],
+    "paths": {
+      "~/*": ["./src/*"],
+      "@/*": ["../frontend/src/*"],
+      "react": ["./node_modules/@types/react"],
+      "react/*": ["./node_modules/@types/react/*"],
+      "radix-ui": ["./node_modules/radix-ui"],
+      "cn": ["./node_modules/cn"],
+      "class-variance-authority": ["./node_modules/class-variance-authority"],
+      "lucide-react": ["./node_modules/lucide-react"]
+    },
+    "esModuleInterop": true
+  },
+  "include": ["next-env.d.ts", "src", "content", "next.config.ts", ".next/types/**/*.ts", ".next/dev/types/**/*.ts"],
+  "exclude": ["node_modules", "out"]
+}

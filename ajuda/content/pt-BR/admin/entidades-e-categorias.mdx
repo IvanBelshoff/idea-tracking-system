@@ -1,0 +1,36 @@
+export const meta = {
+  title: 'Entidades e categorias',
+  description: 'Como montar a árvore de entidades, cadastrar e ordenar as categorias e o que acontece quando você inativa uma delas.',
+};
+
+# Entidades e categorias
+
+As entidades dizem **onde** a ideia acontece, e as categorias dizem **que tipo** de melhoria ela é. As duas aparecem no envio, nos filtros e nos indicadores.
+
+## Como monto as entidades?
+
+As <Regra id="RN-25">entidades formam uma árvore</Regra>: a organização, as unidades e os setores. Toda ideia pertence a uma entidade, e os perfis valem por entidade (com ou sem as sub-entidades). Por isso, monte a árvore do jeito que a organização funciona de verdade, seguindo quem responde por quem.
+
+<Captura nome="entidades" alt="Tela de entidades do ITS, com a árvore da organização em unidades e setores." />
+
+## Como mudo uma entidade de lugar?
+
+Arraste a entidade pela alça, à esquerda da linha, e solte sobre a nova entidade-pai. Com o teclado, Espaço pega, as setas escolhem o destino e Espaço solta. Se preferir não arrastar, use **Mover** no menu da linha.
+
+Como mover muda quem enxerga o quê, o ITS <Regra id="RN-141">pede confirmação antes de gravar</Regra>, e as sub-entidades vão junto. A raiz não se move, e uma entidade não vai para dentro dela mesma nem de uma descendente: esses destinos ficam desabilitados durante o arraste.
+
+## Como cadastro as categorias?
+
+Para cada categoria, você define <Regra id="RN-24">o nome, a cor e se ela está ativa</Regra>. Para começar rápido, importe um conjunto pronto: **Segurança + [QDCEP](/pt-BR/referencia/glossario/#qdcep)** (Qualidade, Entrega, Custo, Meio ambiente e Pessoas) ou **Genérico**. Uma ideia tem uma categoria principal e pode ter outras.
+
+## Como mudo a ordem das categorias?
+
+A ordem é a mesma das listas e dos formulários. Arraste a linha pela alça, use os botões **Subir** e **Descer** ou mova pelo teclado. <Regra id="RN-137">A nova ordem vale para a lista toda de uma vez</Regra> e fica registrada na auditoria.
+
+## Por que inativar em vez de apagar?
+
+Use **Inativar**: <Regra id="RN-26">entidade ou categoria inativa não recebe ideias novas</Regra>, mas as antigas continuam visíveis e filtráveis. É o jeito certo de tirar de uso um setor que fechou sem perder a história.
+
+## Como funciona o código das ideias?
+
+Cada ideia recebe um <Regra id="RN-22">código sequencial por ano</Regra>, como `ITS-2026-0042`, que o ITS gera e que nunca muda. O prefixo ("ITS") se troca em **Configurações**. Se a sua organização tem um controle próprio, use o campo opcional de <Regra id="RN-23">referência externa</Regra> para ligar os dois.

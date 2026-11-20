@@ -1,0 +1,25 @@
+# Sobreposição para montar as imagens a partir do código, em vez de baixá-las prontas.
+# Uso (na raiz do repositório):
+#   docker compose -f docker-compose.yml -f docker-compose.build.yml up -d --build
+# É o que o desenvolvimento usa, e o caminho para testar uma mudança na pilha inteira antes de publicar.
+# As imagens ficam só nesta máquina (its-api:local, its-web:local e its-ajuda:local).
+services:
+  api:
+    build: ./backend
+    image: its-api:local
+
+  worker:
+    # Reutiliza a imagem construída pelo serviço "api" (mesmo código, outro comando).
+    image: its-api:local
+    pull_policy: never
+
+  web:
+    build: ./frontend
+    image: its-web:local
+
+  docs:
+    # A ajuda usa tokens e componentes do frontend: o contexto é a raiz do repositório.
+    build:
+      context: .
+      dockerfile: ajuda/Dockerfile
+    image: its-ajuda:local

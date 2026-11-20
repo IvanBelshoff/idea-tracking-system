@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Ajuda do ITS · ITS Help</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <script>
+      // Escolhe o idioma da ajuda: o mesmo do ITS (guardado neste navegador) ou o do navegador.
+      (function () {
+        var lang;
+        try {
+          lang = localStorage.getItem('its-lang');
+        } catch (e) {}
+        if (lang !== 'pt-BR' && lang !== 'en') {
+          lang = /^en\b/i.test(navigator.language || '') ? 'en' : 'pt-BR';
+        }
+        location.replace('/ajuda/' + lang + '/');
+      })();
+    </script>
+    <style>
+      :root { color-scheme: light dark; font-family: system-ui, sans-serif; }
+      body { display: grid; place-items: center; min-height: 100svh; margin: 0; }
+      main { text-align: center; }
+      a { color: #5458c8; font-weight: 600; margin: 0 0.75rem; }
+      @media (prefers-color-scheme: dark) { a { color: #9ea6ff; } }
+    </style>
+  </head>
+  <body>
+    <main>
+      <p>Ajuda do ITS · ITS Help</p>
+      <p><a href="/ajuda/pt-BR/" hreflang="pt-BR">Português</a><a href="/ajuda/en/" hreflang="en" lang="en">English</a></p>
+    </main>
+  </body>
+</html>

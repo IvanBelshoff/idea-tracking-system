@@ -1,0 +1,177 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+/* Fontes livres, servidas pelo próprio projeto (sem serviços externos). */
+@import "@fontsource-variable/geist";
+@import "@fontsource-variable/geist-mono";
+
+/* Tokens e tema do ITS, os mesmos do sistema (decisões em its/docs/DESIGN.md). */
+@import "../../../frontend/src/tokens.css";
+@import "../../../frontend/src/theme.css";
+
+/* Classes usadas pelos componentes compartilhados do ITS. */
+@source "../../../frontend/src/components";
+
+/*
+ * Texto da ajuda (superfície de leitura). Só os filhos diretos do artigo: simuladores e avisos
+ * ("not-doc") ficam com o visual do ITS, sem herdar a tipografia de leitura.
+ */
+@layer components {
+  .doc > h1 {
+    font-family: var(--font-display);
+    font-size: 2rem;
+    line-height: 1.15;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    text-wrap: balance;
+    max-width: 30ch;
+  }
+  .doc > h2 {
+    margin-top: 3rem;
+    font-family: var(--font-display);
+    font-size: 1.375rem;
+    line-height: 1.25;
+    font-weight: 700;
+    scroll-margin-top: 5rem;
+    text-wrap: balance;
+  }
+  .doc > h3 {
+    margin-top: 2rem;
+    font-size: 1.0625rem;
+    line-height: 1.35;
+    font-weight: 600;
+    scroll-margin-top: 5rem;
+  }
+  .doc > p,
+  .doc > ul,
+  .doc > ol,
+  .doc > blockquote {
+    margin-top: 1rem;
+    /* ~75 caracteres por linha: o "ch" mede o algarismo 0, mais largo que a letra média. */
+    max-width: 38rem;
+    line-height: 1.65;
+  }
+  /* Sem palavra sozinha na última linha (texto corrido e avisos). */
+  .doc p,
+  .doc li {
+    text-wrap: pretty;
+  }
+  .doc > h1 + p {
+    margin-top: 0.75rem;
+    max-width: 36rem;
+    font-size: 1.125rem;
+    color: var(--muted-foreground);
+  }
+  .doc > h2 + *,
+  .doc > h3 + * {
+    margin-top: 0.75rem;
+  }
+  .doc > ul {
+    list-style: disc;
+    padding-left: 1.25rem;
+  }
+  .doc > ol {
+    list-style: decimal;
+    padding-left: 1.4rem;
+  }
+  .doc > ul > li + li,
+  .doc > ol > li + li {
+    margin-top: 0.35rem;
+  }
+  .doc > ul li::marker,
+  .doc > ol li::marker {
+    color: var(--muted-foreground);
+  }
+  .doc > blockquote {
+    border-left: 1px solid var(--border);
+    padding-left: 1rem;
+    color: var(--muted-foreground);
+  }
+  .doc :is(p, li, td) > a,
+  .doc :is(p, li, td) > :is(strong, em) > a,
+  .doc .table-wrap a {
+    color: var(--primary);
+    text-decoration: underline;
+    text-decoration-color: color-mix(in oklch, var(--primary) 40%, transparent);
+    text-underline-offset: 4px;
+  }
+  .doc :is(p, li, td) > a:hover,
+  .doc :is(p, li, td) > :is(strong, em) > a:hover {
+    text-decoration-color: currentColor;
+  }
+  .doc :is(p, li, td) > code {
+    font-family: var(--font-code);
+    font-size: 0.85em;
+    padding: 0.1em 0.35em;
+    border-radius: 0.3rem;
+    background: var(--muted);
+  }
+  .doc strong {
+    font-weight: 600;
+  }
+  /* Comandos (trilha de TI): rolam na horizontal dentro do bloco, nunca a página. */
+  .doc > pre {
+    margin-top: 1rem;
+    max-width: 100%;
+    overflow-x: auto;
+    padding: 0.875rem 1rem;
+    border: 1px solid var(--border);
+    border-radius: 0.5rem;
+    background: var(--muted);
+    font-family: var(--font-code);
+    font-size: 0.8125rem;
+    line-height: 1.6;
+  }
+  .doc > pre code {
+    font-family: inherit;
+  }
+  .doc > pre:focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+  .doc > .table-wrap {
+    margin-top: 1.25rem;
+    overflow-x: auto;
+  }
+  .doc .table-wrap table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+  }
+  .doc .table-wrap th {
+    text-align: left;
+    font-weight: 600;
+    padding: 0.5rem 1rem 0.5rem 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .doc .table-wrap td {
+    padding: 0.6rem 1rem 0.6rem 0;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+    line-height: 1.55;
+  }
+}
+
+/*
+ * Trilho de navegação: a barra de rolagem da marca (theme.css) fica fina e só aparece ao passar o
+ * mouse, para não disputar atenção com o texto. A da página continua a do ITS.
+ */
+.rail-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: transparent transparent;
+}
+.rail-scroll:hover,
+.rail-scroll:focus-within {
+  scrollbar-color: color-mix(in oklch, var(--brand) 60%, transparent) transparent;
+}
+.rail-scroll::-webkit-scrollbar {
+  width: 6px;
+}
+.rail-scroll::-webkit-scrollbar-thumb {
+  background: transparent;
+}
+.rail-scroll:hover::-webkit-scrollbar-thumb,
+.rail-scroll:focus-within::-webkit-scrollbar-thumb {
+  background: color-mix(in oklch, var(--brand) 60%, transparent);
+}

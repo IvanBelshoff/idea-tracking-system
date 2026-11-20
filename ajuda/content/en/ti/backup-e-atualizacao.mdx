@@ -1,0 +1,68 @@
+export const meta = {
+  title: 'Backup and updates',
+  description: 'What to keep in an ITS backup, how to restore it, how to update to a new version and what to check when something fails.',
+};
+
+# Backup and updates
+
+A backup that was never restored is a gamble. This page says what to keep, how to get back and how to update without surprises.
+
+## What to keep
+
+There are three things, and without any of them a restore is incomplete:
+
+| What | Where it is | How to copy |
+|---|---|---|
+| Database | `its_pgdata` volume | `pg_dump` |
+| Attachments, photos and organization logo | `its_storage` volume | `.tar.gz` file |
+| Configuration | the `.env` file, with the `POSTGRES_PASSWORD` and the `APP_SECRET_KEY` | copy it somewhere safe, off the machine |
+
+The volume names come from the <Regra id="RN-140">`its` Docker Compose project</Regra>. Run the commands in the `docker-compose.yml` folder:
+
+```bash
+mkdir -p backup
+STAMP=$(date +%Y%m%d-%H%M)
+docker compose exec -T db \
+  sh -c 'pg_dump -U "$POSTGRES_USER" -Fc "$POSTGRES_DB"' > backup/its-$STAMP.dump
+docker run --rm -v its_storage:/dados -v "$PWD/backup":/saida alpine \
+  tar czf /saida/its-arquivos-$STAMP.tar.gz -C /dados .
+```
+
+Schedule these commands to run every day and **copy the files off the machine**.
+
+## Restore
+
+On a machine with `docker-compose.yml` and the same `.env`:
+
+1. Start only the database: `docker compose up -d db`.
+2. Restore the database with `pg_restore --clean --if-exists`.
+3. Restore the attachments, photos and logo into the `its_storage` volume.
+4. Start the rest: `docker compose up -d`.
+
+The full commands are in `docs/INSTALACAO.md`. Do a full restore on a separate machine at least once.
+
+## Update
+
+1. Back up **first**.
+2. Download the new images: `docker compose pull`.
+3. Start with them: `docker compose up -d`.
+
+With `ITS_VERSION=1`, this brings the latest version 1. To move to a major version, like 2, read the CHANGELOG first, do what it asks, change `ITS_VERSION` in `.env` and run the same two commands. When a version changes `docker-compose.yml`, the CHANGELOG says so: download the file again before the `pull`.
+
+The API applies the database migrations on its own when it starts. Follow with `docker compose logs -f api` and look for "Migrações aplicadas" or "Esquema em dia" (the logs are in Portuguese). Anyone with the app open sees a notice about the new version and picks when to update.
+
+If something goes wrong, go back to the previous version: pin it in `.env` (for example `ITS_VERSION=1.2.0`), restore the backup made in step 1 and run `docker compose up -d`.
+
+## When something fails
+
+| Symptom | What to check |
+|---|---|
+| Compose stops saying a variable is missing | Fill in `POSTGRES_PASSWORD` and `APP_SECRET_KEY` in `.env`. |
+| The images don't download | The internet connection and Docker's proxy. If GitHub is blocked, use `ITS_REGISTRY=docker.io/ivanbelshoff` in `.env`. A pinned version that doesn't exist also gives `not found`. |
+| The page does not open | `docker compose ps`: are `web` and `api` `healthy`? Do the `api` logs show an error? |
+| The API does not start | Is the `.env` `POSTGRES_PASSWORD` the same as when the database was created? |
+| The help says "unavailable" | Is the `docs` service up? `docker compose ps docs`. |
+| Wrong dates and times | The time zone in Settings and the `.env` `TZ`. |
+| Email does not go out | **Email > Sends** shows the reason. |
+
+Logs are in Portuguese: `docker compose logs api worker`.

@@ -1,0 +1,45 @@
+export const meta = {
+  title: 'Users, roles and scope',
+  description: 'How to create users, give roles per entity, what scope and sub-entities are, and how to disable and anonymize accounts.',
+};
+
+# Users, roles and scope
+
+In ITS, nobody has access to everything by default. Each person gets a **role** (what they can do) **in** one or more **entities** (where they can do it). Once that's clear, almost every "why can't so-and-so see that idea?" question goes away.
+
+## How do I create a user?
+
+In **Users**, click **New user** and enter the name and email. ITS shows a **Link to set the password**: hand that link to the person. <Regra id="RN-42">Sign-in is by email and password</Regra>, with your organization's password policy and a temporary lock after failed attempts.
+
+If your organization uses Microsoft or Google sign-in, see [Corporate access](/en/admin/acesso-corporativo/) and, for the routine, [Corporate access: day to day](/en/admin/acesso-corporativo-no-dia-a-dia/). In **SSO only** mode, registering a person doesn't create a password link, and on the person's page you see the linked accounts.
+
+<Captura nome="usuarios" alt="ITS users screen, with the list of people, their roles and the status of each account." />
+
+## What is a role?
+
+A role is a set of permissions. Five come out of the box: Employee, Analyst, Manager, Results validator and Administrator. In **Roles**, you edit these and create others. The full matrix is in [Roles and permissions](/en/referencia/perfis-e-permissoes/).
+
+<Captura nome="perfis" alt="ITS roles screen, with the five built-in roles, a description of each, the number of permissions and users, and the New role button." />
+
+<Regra id="RN-01">Every action is checked on the server</Regra>: hiding a button is never the only protection.
+
+## What is scope?
+
+It's where the role applies. When you give a role, under **Roles per entity**, you choose the **Entity** and tick **Include sub-entities** if the role also applies below it. A person can have different roles in different places, such as employee in department A and analyst at site B. And whoever submits an idea always sees it, whatever the scope.
+
+<Simulador titulo="find out who sees an idea">
+  <QuemEnxerga />
+</Simulador>
+
+<Dica>
+  In the simulator, turn on "including sub-entities" for Gil and see what changes. It's the most common fix when a manager says they "can't see the area's ideas".
+</Dica>
+
+## How do I remove someone from ITS?
+
+- **Disable:** the person is signed out right away and can't sign in again, but <Regra id="RN-41">stays linked to the ideas they submitted</Regra>. You can enable them again later.
+- **Anonymize:** only for disabled accounts. It replaces the name and email with neutral values, deletes the photo and can't be undone. The ideas' history stays, and <Regra id="RN-40">the person shows up as "Former employee"</Regra>.
+
+## What if the person forgets their password?
+
+With email turned on, they can use **I forgot my password** on the sign-in screen themselves. Without email, use **Generate new password link** on the user's page.

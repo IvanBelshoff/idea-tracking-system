@@ -1,0 +1,44 @@
+export const meta = {
+  title: 'User custom fields',
+  description: 'How to create fields such as employee ID, tax ID or department, require people to fill them in and use them in reports.',
+};
+
+# User custom fields
+
+Does your organization need each person's employee ID, tax ID or department? In **Administration > User fields**, people with the permission to manage users create <Regra id="RN-193">up to 8 active fields</Regra>. No field comes out of the box: each organization creates its own.
+
+<Atencao>
+  Collect only what has a purpose. Every piece of personal data you store is a responsibility of the organization (data protection law).
+</Atencao>
+
+## What kinds of field are there?
+
+- **Open**, where the person types and ITS checks the type: <Regra id="RN-194">text, number, date or masked text</Regra>. The mask can be CPF (Brazilian tax ID; ITS checks its digits), phone or your own format: `9` is a digit, `A` is a letter and `*` is a letter or digit. Everything else, including `0` and spaces, is fixed: an employee ID like `AB-1234` uses the format `AA-9999`, and a mobile number, `(99) 99999-9999`. The mask applies while the person types.
+- **Closed**, where the person <Regra id="RN-195">picks from a list</Regra> you register, such as Department or Shift. An option that no longer applies is deactivated: people who already have it keep it.
+
+The unit and sector that define what each person sees are still the **entities**. A "Unit" field is just data; it doesn't grant access to anything.
+
+## What does each field option do?
+
+- **Required in the profile:** people who haven't filled it in see a dialog when they sign in, including through corporate sign-in, and <Regra id="RN-197">can only use ITS after filling it in</Regra>. Administrators can leave it for later.
+- **Searchable:** the user list search and the people picker also look in the field. Typing the employee ID finds the person.
+- **Sensitive data:** the value <Regra id="RN-199">opens hidden, with the eye</Regra>, and never goes to exports, integrations or the people picker.
+- **Only administrators change it once filled:** the person fills it in once, and after that only you change it. Useful for the employee ID, for example.
+- **Goes to integrations:** the field shows in the Users module of the integration API. Sensitive data never goes out.
+- **Unique value:** two people can't have the same value.
+
+## Who fills them in?
+
+Each person fills in <Regra id="RN-196">their own data</Regra> in **My account > My data**. You fill in and correct anyone's data in the user details, in the **Custom fields** section.
+
+In the user list, people with an empty required field show the <Regra id="RN-198">Incomplete profile</Regra> badge, and the "Only incomplete profiles" filter shows how many there are. Each closed field also becomes a filter on the list.
+
+## What about reports?
+
+When someone submits an idea, ITS stores in it the values of the author's closed fields at that moment. In **Indicators**, the **Author field** filter and the "Ideas by Department" charts count each idea <Regra id="RN-201">by the value at the time of submission</Regra>: if the person changes department, their old ideas stay where they were. The queue export gets one column per closed field. Open fields don't go into reports.
+
+## Can I change or delete a field?
+
+You can rename a field and change its hint, limits and options at any time. Deactivating hides the field everywhere and keeps the values; reactivating brings it back. What you can't do is change the type or delete the field once someone has filled it in.
+
+Drag the fields (or use the move up and down buttons) to change the order in which people see them.

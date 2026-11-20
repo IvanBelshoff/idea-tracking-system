@@ -1,0 +1,90 @@
+export const meta = {
+  title: 'Glossário',
+  description: 'Os termos do ITS explicados sem jargão: ideia, situação, etapa, entidade, perfil, convergência, integração e outros.',
+};
+
+# Glossário
+
+Os termos que aparecem no ITS e nesta Ajuda, explicados sem jargão.
+
+## A ideia e o trabalho
+
+| Termo | O que é |
+|---|---|
+| **Ideia** | Uma proposta de melhoria enviada por alguém. Ela se chama ideia do envio ao fim da execução; o que muda é a situação. |
+| **Código da ideia** | O número de cada ideia, como `ITS-2026-0042`, que as telas mostram como **Código**. É o jeito mais fácil de falar de uma ideia específica, e é por ele que outros sistemas a encontram pela API. |
+| **Situação** | Em que ponto do caminho a ideia está: Enviada, Em análise, Em andamento, Implementada ou Não autorizada. Veja [Situações da ideia](/pt-BR/referencia/situacoes/). |
+| **Etapa** | Um passo da execução, com responsável, datas e conclusão. Uma ideia em andamento tem uma ou mais etapas. |
+| **Atrasada** | O sinal que uma ideia Em andamento ganha quando a etapa aberta passa da data prevista; no dia da prevista, ela ainda está no prazo. A situação continua Em andamento: Atrasada é só um aviso de prazo. |
+| **Interromper** | Parar uma ideia Em andamento antes do fim, sempre com uma justificativa, que quem enviou vê. A ideia termina como Não autorizada. |
+| **Reabrir** | Devolver ao fluxo uma ideia encerrada (Implementada ou Não autorizada), sempre com um motivo, que fica no histórico. Por padrão, só o administrador reabre; a Implementada volta para Em andamento, e a Não autorizada, para Em análise. |
+| **Arquivar e excluir** | Excluir uma ideia, no ITS, é arquivar (o botão é **Arquivar**): ela some das listas, mas continua no histórico. Apagar de vez, com **Excluir definitivamente**, é só com o administrador e fica registrado. |
+| **Ganho declarado** | O valor de ganho informado para a ideia, pela equipe ou por uma integração, com periodicidade e custo de implementação. Ainda não conta nos indicadores oficiais: vira ganho validado quando alguém com permissão confere e confirma. Veja [Validar ganhos](/pt-BR/gestor/ganhos/). |
+| **Ganho validado** | O ganho de uma ideia implementada, confirmado por quem tem permissão para validar (por exemplo, a controladoria). Só ele entra nos indicadores oficiais. |
+| **Texto formatado** | O texto longo escrito no editor, com negrito, itálico, listas, citação e link. O ITS guarda também uma cópia em texto puro, usada na busca e no PDF. |
+| **Aprovação de outra área** | O aval de quem responde pela mudança ou pela área afetada, pedido pela equipe de melhoria antes de aprovar ou implementar a ideia. Quem aprova pode não ter usuário no ITS. Veja [Pedir aprovação de outra área](/pt-BR/analista/pedir-aprovacao/). |
+| **Campo personalizado** | Um dado sobre a pessoa que a própria organização cria, como matrícula, CPF ou departamento. Pode ser obrigatório no cadastro. Veja [Campos personalizados do usuário](/pt-BR/admin/campos-do-usuario/). |
+| **Campo oculto** | Um dado de configuração que abre mascarado e só aparece quando o administrador clica no olho. |
+
+## Pessoas e organização
+
+| Termo | O que é |
+|---|---|
+| **Entidade** | Uma parte da estrutura da organização, que forma uma árvore: empresa, unidades, setores. As que ficam abaixo de outra são as sub-entidades dela, e toda ideia pertence a uma entidade. |
+| **Categoria** | O tipo de melhoria, configurado pela organização: Segurança, Qualidade, Custo, Meio ambiente e assim por diante. |
+| <span id="qdcep" className="scroll-mt-20">**QDCEP**</span> | Sigla, em inglês, de cinco frentes comuns em programas de melhoria: **Q**uality (Qualidade), **D**elivery (Entrega), **C**ost (Custo), **E**nvironment (Meio ambiente) e **P**eople (Pessoas). O conjunto pronto **Segurança + QDCEP** cria uma categoria para cada uma, mais a de Segurança. |
+| **Perfil** | Um conjunto de permissões, que dizem o que a pessoa pode fazer no ITS. Os de fábrica são Colaborador, Analista, Gestor, Validador de resultados e Administrador, e a organização pode editá-los e criar outros. |
+| **Escopo** | A entidade onde um perfil vale, com ou sem as sub-entidades: uma pessoa pode ser colaboradora num setor e analista em outra unidade. Quem enviou uma ideia sempre a vê, seja qual for o escopo. |
+| **Co-autor** | Quem divide a autoria de uma ideia com quem a enviou: quem apoiou a ideia, quem pediu a mesma coisa e teve o pedido juntado a ela ou alguém que a equipe incluiu. O co-autor acompanha a ideia em **Minhas ideias** e recebe os avisos. |
+
+## Triagem, reconhecimento e transparência
+
+| Termo | O que é |
+|---|---|
+| **Triagem** | A análise inicial das ideias que chegam: assumir, avaliar, aprovar ou não autorizar. |
+| **Previsão de retorno** | A data até quando a equipe de melhoria deve dar a primeira resposta a uma ideia. Ela sai do prazo que a organização definiu, e quem enviou a vê desde o envio. |
+| **Retorno atrasado** | O sinal de uma ideia que continua Enviada depois da previsão de retorno. O analista e o gestor são avisados, e o sinal some quando alguém assume a análise. |
+| **Convergência** | Juntar ideias parecidas numa só. A mais antiga vira a principal, e quem enviou as outras vira co-autor. Veja [Juntar ideias parecidas](/pt-BR/analista/convergencia/). |
+| **Campanha** | Um desafio temático com período, foco e meta, para puxar ideias sobre um objetivo da organização. |
+| **Hall de destaques** | O mural de reconhecimento com as melhores ideias, com o consentimento de quem aparece. |
+| **Mural de ideias** | O Início do ITS, quando ligado: ideias Em andamento e Implementadas que a equipe de melhoria publicou, para todos reagirem, conversarem e compartilharem. O autor só aparece se consentir. |
+| **Aviso na tela** | Mensagem rápida no canto da tela que confirma o resultado de uma ação (deu certo ou deu erro) e some sozinha. Não é a notificação do sino, que fica guardada. |
+| **Tela de login** | As telas de entrar, esqueci a senha e definir a senha, que a organização personaliza com layout, fundo e textos. Veja [Personalizar a tela de login](/pt-BR/admin/tela-de-login/). |
+| **Saldo da loja** | O que cada pessoa tem para trocar na loja, separado dos pontos ganhos: resgatar reduz o saldo, nunca os pontos, o nível ou o ranking. |
+| **Bonificação** | Item da loja com valor em dinheiro apenas informativo (bônus, ticket, vale): o ITS acompanha até o RH marcar como paga, mas nunca paga. |
+| **Código de acompanhamento** | Um código que permite consultar o andamento de uma ideia sem entrar no sistema, quando a organização liga a consulta pública. Mostra só o andamento, nunca nomes ou dados pessoais. |
+
+## Entrar no sistema
+
+| Termo | O que é |
+|---|---|
+| **Login corporativo (SSO)** | Entrar com a conta da empresa (Microsoft ou Google), sem criar outra senha. SSO quer dizer "entrada única". Fica desligado até o administrador ligar. Veja [Acesso corporativo](/pt-BR/admin/acesso-corporativo/). |
+| <span id="provedor" className="scroll-mt-20">**Provedor**</span> | O serviço que confirma quem a pessoa é: a Microsoft ou o Google. |
+| <span id="tenant" className="scroll-mt-20">**Tenant**</span> | O "diretório" da organização na Microsoft. O ITS só aceita contas do tenant que o administrador informou. |
+| <span id="endereco-de-retorno" className="scroll-mt-20">**Endereço de retorno**</span> | Para onde o provedor devolve a pessoa depois de entrar. O TI registra esse endereço no provedor. Veja [Login corporativo](/pt-BR/ti/login-corporativo/). |
+| <span id="acesso-de-emergencia" className="scroll-mt-20">**Acesso de emergência**</span> | A senha que os administradores mantêm mesmo no modo "Só SSO", para o caso de o provedor sair do ar. |
+
+## E-mail e segredos
+
+| Termo | O que é |
+|---|---|
+| **Caixa compartilhada** | Uma caixa de e-mail do Exchange sem pessoa dona e sem licença, boa para o ITS enviar notificações. Veja [Envio de e-mail pela Microsoft](/pt-BR/ti/envio-pela-microsoft/). |
+| **RBAC for Applications** | A forma de o Exchange permitir que um aplicativo envie por uma caixa específica, em vez de por todas. É por ele que o aplicativo do ITS fica restrito a uma caixa. |
+| **Segredo do cliente** | A "senha" do aplicativo na Microsoft. Vence numa data, e o que o ITS precisa é o **Valor** dele, não o "ID do segredo". |
+| **Conta de serviço (Google)** | Uma "conta de robô" do Google Cloud, com uma chave em arquivo JSON, que o ITS usa para enviar e-mail pelo Google Workspace. Veja [Envio de e-mail pelo Google](/pt-BR/ti/envio-pelo-google/). |
+| **Delegação em todo o domínio** | A autorização, dada no Admin Console do Google, para a conta de serviço agir em nome dos usuários do domínio. Como ela vale para o domínio inteiro, e não para uma caixa só, o ITS pede apenas a permissão de enviar e-mail (`gmail.send`). |
+| **Validade do segredo** | A data em que o segredo vence. O ITS guarda essa data e avisa na saúde do sistema a partir de 30 dias antes. |
+
+## Integrações
+
+| Termo | O que é |
+|---|---|
+| **Integração** | Um sistema externo (painel de BI, Power Automate, n8n, ERP) ligado ao ITS pela API de integração: ele pode ler dados, gravar em quatro ações pequenas (enviar ideia em nome de uma pessoa, comentar, atualizar a referência externa e registrar ganho declarado) e receber avisos pelos webhooks. Não é um usuário e não entra na tela do ITS; tem módulos, escopo de entidades e tokens próprios. Veja [Integrações: configurar](/pt-BR/admin/integracoes/). |
+| **Escopo da integração** | As entidades que a integração enxerga, escolhidas pelo administrador, com ou sem as sub-entidades. O que fica fora do escopo não existe para ela, e sem nenhuma entidade ela não vê nada. |
+| **Módulo** | Uma parte da API de integração, separada por assunto, como **Ideias**, **Indicadores e ganhos** ou **Loja (pedidos)**. O administrador liga os módulos um a um e escolhe quais cada integração recebe; ela só usa esses. |
+| **Módulo de escrita** | Um módulo que grava no ITS: **Enviar ideias e comentar**, que também atualiza a referência externa, ou **Registrar ganhos declarados**. Vem desligado, e a tela o marca como "grava". |
+| <span id="token-de-integracao" className="scroll-mt-20">**Token de integração**</span> | A chave secreta, que começa com `its_`, com que a integração se identifica em cada chamada. Tem validade, aparece uma única vez e pode ser trocada sem derrubar a integração. |
+| **Chave de repetição** | Um texto único que a integração manda junto com uma gravação, no cabeçalho `Idempotency-Key`, para a mesma gravação nunca acontecer duas vezes. Se a chamada se repetir com a mesma chave e o mesmo corpo, o ITS devolve a resposta da primeira vez e não grava de novo. Veja [Escrita pela API](/pt-BR/ti/escrita-pela-api/). |
+| **Referência externa** | O número do item correspondente em outro sistema, como um chamado do service desk, guardado na ideia para ligar os dois. Aparece na página da ideia, e cada mudança fica no histórico. |
+| <span id="webhook" className="scroll-mt-20">**Webhook**</span> | Um aviso que o ITS manda, por conta própria, a um endereço de outro sistema quando algo acontece, como uma ideia enviada ou uma mudança de situação. O aviso é mínimo e assinado, e quem recebe busca o detalhe pela API de leitura. Veja [Webhooks: configurar](/pt-BR/admin/webhooks/). |
+| **Segredo do webhook** | A chave secreta, que começa com `whsec_`, com que o ITS assina cada aviso, para o sistema que recebe conferir que ele veio mesmo do ITS. Tem validade e aparece uma única vez. |

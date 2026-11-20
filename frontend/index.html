@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#5458c8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <!-- Ícone do iPhone na cor da organização (lido só ao "Adicionar à Tela de Início"). -->
+    <link rel="apple-touch-icon" href="/api/branding/icons/apple-touch-icon.png" />
+    <meta name="description" content="Envie ideias de melhoria e acompanhe cada passo até a implementação." />
+    <title>ITS</title>
+    <script>
+      // Antes do React: tema (claro/escuro), fonte, cor da marca e favicon guardados, para nada piscar.
+      (() => {
+        var d = document.documentElement;
+        var ok = /^oklch\([0-9. ]+\)$/;
+        var mode, font, fav, icon, b, s, meta;
+        var vars = (p) =>
+          '--brand:' + p.brand + ';--brand-fg:' + p.brandFg + ';--shell-active:' + p.shellActive +
+          ';--shell-active-foreground:' + p.shellActiveFg;
+        try {
+          mode = localStorage.getItem('its-theme-mode');
+          if (mode === 'dark' || (mode !== 'light' && matchMedia('(prefers-color-scheme: dark)').matches)) {
+            d.classList.add('dark');
+          }
+          font = localStorage.getItem('its-font');
+          if (font === 'inter' || font === 'atkinson' || font === 'plex') d.dataset.font = font;
+          fav = localStorage.getItem('its-favicon');
+          icon = document.querySelector('link[rel="icon"]');
+          if (icon && fav && fav.indexOf('data:image/svg+xml,') === 0) icon.setAttribute('href', fav);
+          b = JSON.parse(localStorage.getItem('its-branding') || 'null');
+          if (!b?.light || !b.dark) return;
+          if (![b.light, b.dark].every((p) => [p.brand, p.brandFg, p.shellActive, p.shellActiveFg].every((v) => ok.test(v)))) return;
+          s = document.createElement('style');
+          s.id = 'org-brand';
+          s.textContent =
+            `html:root{${vars(b.light)}}html:root.dark{${vars(b.dark)}}`;
+          document.head.appendChild(s);
+          meta = document.querySelector('meta[name="theme-color"]');
+          if (meta && /^#[0-9a-f]{6}$/i.test(b.lightHex)) meta.content = b.lightHex;
+        } catch {}
+      })();
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

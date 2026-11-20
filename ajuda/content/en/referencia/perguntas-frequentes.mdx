@@ -1,0 +1,102 @@
+export const meta = {
+  title: 'Frequently asked questions',
+  description: 'Short answers to the most common questions about ITS, from people who submit ideas to the people who run the system and handle integrations.',
+};
+
+# Frequently asked questions
+
+## For people who submit ideas
+
+### I submitted an idea. When will I hear back?
+
+Right after you submit, ITS shows the **Expected reply**: the date by which the team should give its first answer. You're notified when an analyst takes on the review. See [Follow your idea](/en/colaborador/acompanhar/).
+
+### My idea wasn't approved. Now what?
+
+The justification is in the idea's timeline. If something has changed, comment on the idea itself or submit a new one with what's different. Reopening a closed idea is up to the administrator.
+
+### Someone already had the same idea as me.
+
+Support the existing idea: you become a co-author and follow everything. See [Support an idea](/en/colaborador/apoiar/).
+
+### "Your email is not registered in ITS yet" shows up when I sign in with Microsoft or Google.
+
+Your organization only lets in people the administrator has registered. Ask them to register your email (see [Sign in with Microsoft or Google](/en/colaborador/entrar-com-microsoft-ou-google/)).
+
+### I don't want my name to show up in the Hall of fame.
+
+In **My account**, tick "Hide my name in boards and rankings". And when one of your ideas is highlighted, you still choose whether it shows your name.
+
+### What's that message in the corner of the screen?
+
+It's the **on-screen notice**: it confirms what you just did ("Item saved", "Order approved") or shows the error, which <Regra id="RN-174">on a form also appears next to the field</Regra>. <Regra id="RN-175">It goes away by itself after a few seconds</Regra> (errors stay longer), stops counting down while the mouse is over it or the keyboard focus is on it, and has a **Close** button. It isn't the bell notification, which is kept.
+
+### Can I choose the theme before signing in?
+
+Yes. The theme button in the corner of the sign-in screen switches between Automatic, Light and Dark right away, and <Regra id="RN-181">the theme you chose becomes your account's theme when you sign in</Regra>.
+
+### Why does ITS ask for my data when I sign in?
+
+Your organization marked some profile data as required, such as employee ID or department. While that data is empty, ITS shows the "Complete your profile" screen and <Regra id="RN-197">only goes on after you fill it in</Regra>. Only you and the administration see this data; later, you can check it in **My account > My data**. See [User custom fields](/en/admin/campos-do-usuario/).
+
+## For the improvement team
+
+### Why does an idea show "Reply overdue"?
+
+It's still Submitted after its expected reply date. Taking the review solves it: the flag goes away. See [Queue and triage](/en/analista/triagem/).
+
+### Why does an idea show "Submitted by integration"?
+
+It came from another company system, such as the service desk or a suggestion form, which submitted it through the write actions of the integration API. The idea belongs to the person it was submitted on behalf of, who appears as the author, and it follows the same path as an idea submitted on screen. The integration's name appears alongside, and <Regra id="RN-133">everything the integration writes carries the origin "via Integration X"</Regra>. See [Writing through the API](/en/ti/escrita-pela-api/).
+
+### I can't create a new step.
+
+Steps run in sequence: complete the open step first. See [Approve and run steps](/en/analista/aprovar-e-etapas/).
+
+### I merged two ideas by mistake.
+
+You can undo the convergence; the idea gets its own flow back. See [Merge similar ideas](/en/analista/convergencia/).
+
+## For administrators
+
+### A manager says they can't see their area's ideas.
+
+It's almost always the scope: their role was given on the site, but without the sub-entities. See the simulator in [Users, roles and scope](/en/admin/usuarios-e-perfis/).
+
+### Someone forgot their password and email is turned off.
+
+Open the user's page and generate a new password link; the previous one stops working.
+
+### Someone can't sign in with the company account.
+
+The message on the sign-in screen gives the reason, and **Audit** keeps the same reason (look for "Corporate account sign-in refused"). The common cases are an email from another domain, an account from another tenant, a disabled user and an unregistered email. See [Corporate access: day to day](/en/admin/acesso-corporativo-no-dia-a-dia/).
+
+### Someone left the company. How do I end their access?
+
+Disable the person in **Users**: their ITS session ends right away, and their ideas and history stay. Also ask IT to disable the account at the provider. See [Corporate access: day to day](/en/admin/acesso-corporativo-no-dia-a-dia/).
+
+### Emails stopped going out, and sending is through Microsoft.
+
+Open **Email > Sends** and check the reason for the failure, which shows only the error code. The most common cause is an expired application secret (`invalid_client`): create another one at the provider and register its **Value** and the new expiry date. See [Sending email through Microsoft](/en/ti/envio-pela-microsoft/) or, if sending is through Google, [Sending email through Google](/en/ti/envio-pelo-google/).
+
+### "Email secret" or "Corporate sign-in secret" shows attention or failure in system health.
+
+To send email and to confirm sign-in through Microsoft or Google, ITS uses a secret, a kind of application password at the provider, which expires on a set date. The **Email secret** item covers sending through Microsoft, and sending through Google when the key's expiry date was entered; the **Corporate sign-in secret** item covers sign-in with Microsoft or Google. <Regra id="RN-100">Both go into attention at 30 days or less before expiry and into failure at 7 days or less</Regra>, or once expired. For sending through Microsoft and for sign-in, attention also shows up when nobody entered the expiry date.
+
+Create a new secret at the provider and register it in ITS with the new expiry date, in [Email](/en/admin/email/) or in [Corporate access](/en/admin/acesso-corporativo/). At Microsoft, you register the secret's **Value**; for sending through Google, the new key file. When an item goes into failure, <Regra id="RN-94">people with the **See system health and metrics** permission get a notification in the bell</Regra> and, with email turned on, an email. See [Reading observability](/en/admin/ler-a-observabilidade/).
+
+### The names in ITS don't match the ones in this Help.
+
+The organization may have changed labels, colors and the logo. It works the same way; this Help uses the default names.
+
+## For people who handle integrations
+
+### The integration gets a 401 error.
+
+The integration identifies itself with its token, the secret key that goes with every call, and a 401 means ITS didn't accept that identification. <Regra id="RN-104">ITS always returns the same 401, without saying why</Regra>, so from the outside you can't tell apart a wrong, expired or revoked token, a suspended integration and an IP that isn't on the allowed list. The administrator is the one who can find out: in **Administration > Integrations**, they open the integration and check its status, the token's expiry date and the **Allowed IPs**. On the calling side, also check that the token goes in the `Authorization` header, because anywhere else ITS treats the call as if it had no token. See [Integration API: how to consume it](/en/ti/api-de-integracao/).
+
+### Webhook notices stopped arriving.
+
+A webhook is the notice ITS sends to another system when something happens, and the subscription is the record that says where to send those notices. After 20 definitive failures in a row, <Regra id="RN-121">ITS suspends the subscription</Regra>, and system health shows the **Webhook delivery** item in failure. A definitive failure is a delivery ITS won't retry anymore, either because the receiving system answered with an error that retrying won't fix or because the retries ran out. Fix the destination, use **Send test** on the subscription and then **Reactivate**.
+
+A delivery that goes 48 hours without success becomes a failure, and the administrator can send it again with **Resend**. If no subscription was suspended for failures, check that the webhooks switch is on and that the integration hasn't been suspended or revoked: in any of those cases, no notice goes out. See [Webhooks: setting up](/en/admin/webhooks/) and, for whoever builds the receiving side, [Webhooks: how to receive](/en/ti/webhooks-receber/).

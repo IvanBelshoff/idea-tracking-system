@@ -1,0 +1,102 @@
+export const meta = {
+  title: 'Perguntas frequentes',
+  description: 'Respostas curtas para as dúvidas mais comuns sobre o ITS, de quem envia ideias a quem administra e cuida das integrações.',
+};
+
+# Perguntas frequentes
+
+## Para quem envia ideias
+
+### Enviei uma ideia. Quando vou ter retorno?
+
+Logo depois de enviar, o ITS mostra a **previsão de retorno**: a data até quando a equipe deve dar a primeira resposta. Você é avisado quando um analista assumir. Veja [Acompanhar sua ideia](/pt-BR/colaborador/acompanhar/).
+
+### Minha ideia não foi autorizada. E agora?
+
+A justificativa está na linha do tempo da ideia. Se algo mudou, comente na própria ideia ou envie uma nova, com o que for diferente. Reabrir uma ideia encerrada é com o administrador.
+
+### Alguém já teve a mesma ideia que eu.
+
+Apoie a ideia que já existe: você vira co-autor e acompanha tudo. Veja [Apoiar uma ideia](/pt-BR/colaborador/apoiar/).
+
+### Aparece "Seu e-mail ainda não está cadastrado" ao entrar com a Microsoft ou o Google.
+
+A sua organização só deixa entrar quem o administrador cadastrou. Peça para ele cadastrar o seu e-mail (veja [Entrar com Microsoft ou Google](/pt-BR/colaborador/entrar-com-microsoft-ou-google/)).
+
+### Não quero que meu nome apareça no Hall.
+
+Em **Minha conta**, marque "Ocultar meu nome em murais e rankings". E, quando uma ideia sua for destacada, você ainda escolhe se aparece com o nome.
+
+### Que mensagem é essa que aparece no canto da tela?
+
+É o **aviso na tela**: ele confirma o que você acabou de fazer ("Item salvo", "Pedido aprovado") ou mostra o erro, que <Regra id="RN-174">num formulário aparece também junto do campo</Regra>. <Regra id="RN-175">Ele some sozinho em alguns segundos</Regra> (o de erro fica mais tempo), para de contar com o mouse em cima ou com o foco do teclado nele e tem o botão **Fechar**. Não é a notificação do sino, que fica guardada.
+
+### Dá para escolher o tema antes de entrar?
+
+Sim. O botão de tema no canto da tela de entrada troca entre Automático, Claro e Escuro na hora, e <Regra id="RN-181">o tema escolhido passa a ser o da sua conta quando você entra</Regra>.
+
+### Por que o ITS pede meus dados ao entrar?
+
+A sua organização marcou alguns dados do cadastro como obrigatórios, como a matrícula ou o departamento. Enquanto eles estiverem vazios, o ITS mostra a tela "Complete o seu cadastro" e <Regra id="RN-197">só segue depois que você preencher</Regra>. Quem vê esses dados é você e a administração; depois, você os confere em **Minha conta > Meus dados**. Veja [Campos personalizados do usuário](/pt-BR/admin/campos-do-usuario/).
+
+## Para a equipe de melhoria
+
+### Por que uma ideia aparece como "Retorno atrasado"?
+
+Ela continua Enviada depois da previsão de retorno. Assumir a análise já resolve: o atraso some. Veja [Fila e triagem](/pt-BR/analista/triagem/).
+
+### Por que uma ideia aparece como "Enviada pela integração"?
+
+Ela veio de outro sistema da empresa, como o service desk ou um formulário de sugestões, que a enviou pela escrita da API de integração. A ideia é da pessoa em nome de quem foi enviada, que aparece como autora, e segue o mesmo caminho de uma ideia enviada pela tela. O nome da integração aparece junto, e <Regra id="RN-133">tudo o que ela grava leva a origem "via Integração X"</Regra>. Veja [Escrita pela API](/pt-BR/ti/escrita-pela-api/).
+
+### Não consigo criar uma etapa nova.
+
+As etapas são em sequência: conclua a etapa aberta antes. Veja [Aprovar e conduzir etapas](/pt-BR/analista/aprovar-e-etapas/).
+
+### Juntei duas ideias por engano.
+
+Dá para desfazer a convergência; a ideia volta a ter fluxo próprio. Veja [Juntar ideias parecidas](/pt-BR/analista/convergencia/).
+
+## Para quem administra
+
+### Um gestor diz que não vê as ideias da área.
+
+Quase sempre é o escopo: o perfil dele foi dado na unidade, mas sem as sub-entidades. Veja o simulador em [Usuários, perfis e escopo](/pt-BR/admin/usuarios-e-perfis/).
+
+### Alguém esqueceu a senha e o e-mail está desligado.
+
+Abra a página do usuário e gere um novo link de senha; o anterior deixa de valer.
+
+### Alguém não consegue entrar com a conta da empresa.
+
+A mensagem na tela de entrada diz o motivo, e a **Auditoria** guarda o mesmo (procure por "Entrada pela conta corporativa recusada"). Os casos comuns são e-mail de outro domínio, conta de outro tenant, usuário desativado e e-mail não cadastrado. Veja [Acesso corporativo: no dia a dia](/pt-BR/admin/acesso-corporativo-no-dia-a-dia/).
+
+### Alguém saiu da empresa. Como encerro o acesso?
+
+Desative a pessoa em **Usuários**: a sessão dela no ITS termina na hora, e as ideias e o histórico ficam. Peça também ao TI para desativar a conta no provedor. Veja [Acesso corporativo: no dia a dia](/pt-BR/admin/acesso-corporativo-no-dia-a-dia/).
+
+### Os e-mails pararam de sair e o envio é pela Microsoft.
+
+Abra **E-mail > Envios** e veja o motivo da falha, que aparece só com o código do erro. O mais comum é o segredo do aplicativo ter vencido (`invalid_client`): crie outro no provedor e cadastre o **Valor** dele e a nova validade. Veja [Envio de e-mail pela Microsoft](/pt-BR/ti/envio-pela-microsoft/) ou, se o envio for pelo Google, [Envio de e-mail pelo Google](/pt-BR/ti/envio-pelo-google/).
+
+### Apareceu "Segredo do e-mail" ou "Segredo do login corporativo" em atenção ou falha na saúde.
+
+Para enviar e-mail e para confirmar o login pela Microsoft ou pelo Google, o ITS usa um segredo, uma espécie de senha do aplicativo no provedor, que vence numa data. O item **Segredo do e-mail** vale para o envio pela Microsoft e para o envio pelo Google quando a validade da chave foi informada; o item **Segredo do login corporativo** vale para o login com Microsoft ou Google. <Regra id="RN-100">Os dois entram em atenção a 30 dias ou menos do vencimento e em falha a 7 dias ou menos</Regra>, ou depois de vencidos. No envio pela Microsoft e no login, a atenção aparece também quando ninguém informou a validade.
+
+Crie um segredo novo no provedor e cadastre-o no ITS com a nova validade, em [E-mail](/pt-BR/admin/email/) ou em [Acesso corporativo](/pt-BR/admin/acesso-corporativo/). Na Microsoft, o que se cadastra é o **Valor** do segredo; no envio pelo Google, o arquivo da chave nova. Quando um item entra em falha, <Regra id="RN-94">quem tem a permissão **Ver a saúde e as métricas do sistema** recebe um aviso no sino</Regra> e, com o e-mail ligado, um e-mail. Veja [Ler a observabilidade](/pt-BR/admin/ler-a-observabilidade/).
+
+### Os nomes no ITS não batem com os desta Ajuda.
+
+A organização pode ter trocado rótulos, cores e o logo. O funcionamento é o mesmo; esta Ajuda usa os nomes padrão.
+
+## Para quem cuida das integrações
+
+### A integração recebe o erro 401.
+
+A integração se identifica pelo token, a chave secreta que vai em cada chamada, e o 401 quer dizer que o ITS não aceitou essa identificação. <Regra id="RN-104">O ITS responde sempre o mesmo 401, sem dizer o motivo</Regra>, então de fora não dá para distinguir token errado, vencido ou revogado, integração suspensa e IP fora da lista. Quem descobre é o administrador: em **Administração > Integrações**, ele abre a integração e confere o estado, a validade do token e a lista de IPs. Do lado de quem chama, confira também se o token vai no cabeçalho `Authorization`, porque em qualquer outro lugar o ITS trata a chamada como se não tivesse token. Veja [API de integração: como consumir](/pt-BR/ti/api-de-integracao/).
+
+### Os avisos do webhook pararam de chegar.
+
+O webhook é o aviso que o ITS manda a outro sistema quando algo acontece, e a assinatura é o cadastro que diz para onde mandar esses avisos. Depois de 20 falhas definitivas seguidas, <Regra id="RN-121">o ITS suspende a assinatura</Regra>, e a saúde do sistema mostra o item **Entrega dos webhooks** em falha. Falha definitiva é a entrega que o ITS não repete mais, porque o sistema que recebe respondeu com um erro que não adianta repetir ou porque as repetições acabaram. Corrija o destino, use **Enviar teste** na assinatura e depois **Reativar**.
+
+A entrega que passa 48 horas sem sucesso vira falha, e o administrador pode mandá-la de novo com **Reenviar**. Se nenhuma assinatura foi suspensa por falhas, confira se a chave dos webhooks está ligada e se a integração não foi suspensa ou revogada: em qualquer desses casos, nenhum aviso sai. Veja [Webhooks: configurar](/pt-BR/admin/webhooks/) e, para quem monta o recebimento, [Webhooks: como receber](/pt-BR/ti/webhooks-receber/).

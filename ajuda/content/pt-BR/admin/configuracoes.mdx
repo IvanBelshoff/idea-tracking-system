@@ -1,0 +1,39 @@
+export const meta = {
+  title: 'Configurações e identidade',
+  description: 'O que você ajusta em Configurações (regras, prazos, anexos, senhas e módulos), na identidade visual e no endereço da Ajuda.',
+};
+
+# Configurações e identidade
+
+Prazos, módulos, nomes e cores mudam de uma organização para outra sem mexer no código. Cada alteração fica registrada na auditoria.
+
+## O que fica em cada grupo de Configurações?
+
+- **Organização:** nome, fuso, idioma padrão e endereço da Ajuda. O idioma padrão vale nas telas sem login, para quem você cadastra e nos e-mails a quem não tem conta; cada pessoa troca o seu em **Minha conta**.
+- **Ideias:** prefixo do código, categoria obrigatória, prazo de retorno da triagem (10 dias, por exemplo, corridos ou úteis) e outras regras do envio. A atribuição automática fica em **Atribuição**; veja como a equipe usa as duas coisas em [Fila e triagem](/pt-BR/analista/triagem/).
+- **Reconhecimento (pontos e ranking)** e **Hall de destaques:** ligar os módulos e ajustar as regras.
+- **Mural de ideias:** vem desligado. <Regra id="RN-148">Ligado, o Início vira o mural</Regra>, e a equipe de melhoria publica ideias nele. Veja [Publicar e moderar o mural](/pt-BR/analista/mural/).
+- **Loja:** <Regra id="RN-159">só liga com o reconhecimento ligado</Regra>. A <Regra id="RN-162">validade do saldo</Regra> é em meses, e 0 quer dizer que não vence. Veja [Gerenciar a loja e as bonificações](/pt-BR/admin/loja/).
+- **Aprovação de outras áreas:** o que acontece <Regra id="RN-188">quando alguém não aprova</Regra> (devolver ao analista, de fábrica, ou bloquear), o <Regra id="RN-185">código de confirmação por e-mail</Regra> (vem desligado), se aceita aprovadores com e-mail de fora dos domínios da empresa e o prazo padrão. Veja [Pedir aprovação de outra área](/pt-BR/analista/pedir-aprovacao/).
+- **Etapas e anexos:** como o progresso é calculado (pelas etapas ou pelo tempo) e os tipos e o tamanho dos anexos.
+- **Consulta pública e foto do perfil:** ligar a consulta pública e o tamanho da foto.
+- **Notificações e e-mail:** antecedência dos avisos de prazo, horário do resumo diário e endereço do sistema usado nos links.
+- **Senhas e acesso:** política de senha, tentativas, bloqueio, validade do link de senha e duração da sessão, mais curta para quem entra com Microsoft ou Google. O login corporativo em si fica em [Acesso corporativo](/pt-BR/admin/acesso-corporativo/).
+
+<Captura nome="configuracoes" alt="Tela de configurações do ITS, com os grupos Organização, Ideias, Etapas e anexos e outros." />
+
+## Que módulos dá para desligar?
+
+Pontos, níveis, conquistas, ranking, curtidas, Hall, mural, loja e consulta pública. O resto do ITS funciona sem eles, e ninguém vê o que está desligado.
+
+## Como coloco a cara da organização no ITS?
+
+Em **Identidade visual**, escolha a **Cor da marca** (o ITS calcula o tema escuro e, se preciso, ajusta o tom para o texto continuar legível), envie o **Logo da organização**, que aparece ao lado do símbolo do ITS, e escolha a **Fonte** da interface. Ali também fica a <Regra id="RN-176">tela de login</Regra>, com layout, fundo (cor, imagem ou vídeo) e textos próprios. Veja [Personalizar a tela de login](/pt-BR/admin/tela-de-login/).
+
+<Captura nome="identidade" alt="Tela de identidade visual do ITS, com a escolha da cor da marca e as amostras nos temas claro e escuro." />
+
+Com **Permitir que cada pessoa escolha a cor e a fonte da própria tela** ligada (vem desligada), cada pessoa escolhe em **Minha conta** uma de <Regra id="RN-145">8 cores conferidas para leitura</Regra> e uma das 4 fontes. O logo, os PDFs, os e-mails e as telas públicas continuam com a identidade da organização.
+
+## E se a Ajuda estiver em outro endereço?
+
+Por padrão, a Ajuda fica em `/ajuda/`, no mesmo endereço do ITS. Se ela estiver hospedada em outro lugar, informe o caminho ou um endereço `https://` em **Configurações > Organização > Endereço da ajuda**.

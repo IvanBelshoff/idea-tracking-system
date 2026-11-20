@@ -1,0 +1,68 @@
+export const meta = {
+  title: 'Gerenciar a loja e as bonificações',
+  description: 'Como ligar a loja, dar a permissão ao RH, cadastrar itens, decidir pedidos, pagar bonificações fora do ITS e ajustar saldos.',
+};
+
+# Gerenciar a loja e as bonificações
+
+Na loja, as pessoas trocam o **saldo**, que cresce com os pontos ganhos, por itens e bonificações. Esta página é para quem liga a loja e para quem cuida dela no dia a dia, em geral o RH ou a comunicação. O lado de quem pede está em [Loja: trocar pontos](/pt-BR/colaborador/loja/).
+
+## Como ligo a loja?
+
+1. Em **Administração > Configurações**, confira se o **reconhecimento** está ligado. <Regra id="RN-159">A loja depende dele</Regra>: sem ele, a loja não liga, e com a loja ligada o reconhecimento não desliga (desligue a loja antes).
+2. No grupo **Loja**, marque **Ligar a loja (exige o reconhecimento)** e clique em **Salvar configurações**.
+3. Se quiser, defina a **Validade do saldo (meses)**, de 1 a 60. Com 0, <Regra id="RN-162">o saldo não vence</Regra>.
+
+Na primeira vez que a loja é ligada, <Regra id="RN-161">cada pessoa recebe um saldo inicial</Regra> igual aos pontos que já tinha ganho. Depois, cada ponto ganho credita o saldo, mesmo que a loja seja desligada. Desligar só esconde a loja: saldos, extrato, itens e pedidos ficam guardados e voltam quando você religar.
+
+<Atencao>
+  Mudar a validade vale para **todos** os créditos, inclusive os antigos. Se você encurtar a validade, pontos podem vencer já na próxima rodada diária.
+</Atencao>
+
+## Quem cuida da loja?
+
+A permissão **Gerenciar a loja** vale para a loja inteira, não para uma entidade, e de fábrica só o **Administrador** a tem. Dê a permissão ao perfil do RH ou da comunicação em [Usuários e perfis](/pt-BR/admin/usuarios-e-perfis/); a lista de permissões está em [Perfis e permissões](/pt-BR/referencia/perfis-e-permissoes/). Quem a tem vê **Gerenciar loja** no menu.
+
+<Regra id="RN-166">Ninguém decide o próprio pedido</Regra> nem <Regra id="RN-168">ajusta o próprio saldo</Regra>: nesses casos, outra pessoa com a permissão precisa agir.
+
+## Como cadastro um item?
+
+Na aba **Itens**, use **Novo item**. O nome e a descrição são texto simples, e o **Custo em pontos** é um inteiro de 1 a 1.000.000. O **Tipo** decide como o pedido termina: **Produto ou serviço** termina em "entregue", e **Bonificação (valor informativo)** termina em "paga". Só a bonificação tem o valor em dinheiro, que serve para o RH acompanhar.
+
+**Estoque** vazio é ilimitado; ele baixa a cada pedido e volta no estorno. O **Limite por pessoa** conta por período do calendário (mês, trimestre, semestre ou ano), como 1 por ano. Em **Vale para**, nenhuma entidade marcada é a organização toda, e cada entidade inclui as sub-entidades. Depois de salvar, dá para adicionar uma foto, com recorte quadrado.
+
+- <Regra id="RN-163">Mudar o custo não mexe nos pedidos já feitos</Regra>: cada pedido guarda o custo da hora. A pessoa vê só o custo atual; o anterior fica na auditoria.
+- Desmarcar **Ativo** tira o item da vitrine, mas os pedidos em aberto continuam e podem ser aprovados e entregues. A tela avisa quantos são antes de salvar.
+- **Excluir** só funciona para item sem pedidos. Com pedidos, desative.
+
+## Como decido os pedidos?
+
+A aba **Pedidos** abre nos pendentes e se filtra por situação. Em um pedido pendente, use **Aprovar** ou **Recusar**. <Regra id="RN-166">O aprovado segue para entrega</Regra>, ou para pagamento, se for bonificação. **Entregar** vale para produto ou serviço aprovado, aceita uma observação e é final. **Cancelar** vale para pedido pendente ou aprovado.
+
+**Recusar** e **Cancelar** pedem um motivo, que a pessoa vê, e devolvem os pontos e a unidade ao estoque. A pessoa é avisada de cada decisão, e quem gerencia recebe <Regra id="RN-171">um aviso por dia com os pedidos novos</Regra>, em vez de um por pedido.
+
+## Como pago uma bonificação?
+
+A bonificação aprovada vai para a aba **Bonificações**, na lista **A pagar**. <Regra id="RN-167">O pagamento acontece fora do ITS</Regra>:
+
+1. Use **Exportar CSV** para levar a lista ao RH ou à folha.
+2. Pague como a sua organização já faz.
+3. Volte e use **Marcar paga** em cada uma, com a **Data do pagamento** e uma referência (por exemplo, "folha 11/2026").
+
+<Atencao>
+  O ITS não paga, não calcula imposto e não se liga à folha. O valor é só informativo: tributo e regra trabalhista são da organização.
+</Atencao>
+
+## Como ajusto o saldo de alguém?
+
+A aba **Saldos** lista as pessoas com saldo. **Ver extrato** mostra cada movimento de uma pessoa, e **Ajustar saldo** lança um crédito ou um débito (número negativo), com um motivo que a pessoa vê. <Regra id="RN-168">O ajuste mexe só no saldo</Regra>: os pontos ganhos, o nível e o ranking não mudam.
+
+Um débito pode deixar o saldo negativo. <Regra id="RN-169">Com saldo negativo, a pessoa não faz pedidos novos</Regra> até cobrir o custo, e os pedidos já feitos não mudam. O extrato não se edita nem se apaga: para corrigir um ajuste, faça outro.
+
+## Quem vê os saldos e o que fica na auditoria?
+
+<Regra id="RN-170">O saldo, o extrato e os pedidos de uma pessoa</Regra> só são vistos por ela e por quem gerencia a loja. Vão para a [Auditoria](/pt-BR/admin/auditoria-e-privacidade/), sempre com quem fez: ligar e desligar a loja, mudar a validade, criar, alterar, desativar, reativar e excluir item, cada decisão sobre pedido, cada bonificação marcada como paga e cada ajuste. Quando uma pessoa é anonimizada, o extrato e os pedidos dela ficam, com o nome "Ex-colaborador".
+
+## A loja conversa com o sistema do RH?
+
+Pode conversar, pela API de integração. O módulo **Loja (pedidos)** deixa o sistema do RH acompanhar os pedidos sem planilha. Ele vem desligado e é marcado como sensível, porque traz o nome da pessoa. Vale para a loja inteira, sem o escopo de entidades, e <Regra id="RN-172">o saldo e o extrato nunca saem</Regra>. Também há webhooks para pedido aprovado, pedido entregue e bonificação paga. Veja [Integrações: configurar](/pt-BR/admin/integracoes/) e [Webhooks: configurar](/pt-BR/admin/webhooks/); os detalhes técnicos estão em [API de integração: como consumir](/pt-BR/ti/api-de-integracao/).

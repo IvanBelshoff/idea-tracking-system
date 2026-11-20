@@ -1,0 +1,44 @@
+export const meta = {
+  title: 'Campos personalizados do usuário',
+  description: 'Como criar campos como matrícula, CPF ou departamento, exigir que as pessoas preencham e usar nos relatórios.',
+};
+
+# Campos personalizados do usuário
+
+Sua organização precisa saber a matrícula, o CPF ou o departamento de cada pessoa? Em **Administração > Campos do usuário**, quem tem a permissão de gerenciar usuários cria <Regra id="RN-193">até 8 campos ativos</Regra>. Nenhum campo vem de fábrica: cada organização cria os seus.
+
+<Atencao>
+  Colete só o que tem finalidade. Cada dado pessoal guardado é uma responsabilidade da organização (LGPD).
+</Atencao>
+
+## Que tipos de campo existem?
+
+- **Abertos**, em que a pessoa digita e o ITS confere o tipo: <Regra id="RN-194">texto, número, data ou texto com máscara</Regra>. A máscara pode ser CPF (o ITS confere os dígitos), telefone ou um formato seu: `9` é dígito, `A` é letra e `*` é letra ou dígito. O resto, inclusive o `0` e o espaço, fica fixo: uma matrícula como `AB-1234` usa o formato `AA-9999`, e um celular, `(99) 99999-9999`. A máscara se aplica enquanto a pessoa digita.
+- **Fechados**, em que a pessoa <Regra id="RN-195">escolhe numa lista</Regra> que você cadastra, como Departamento ou Turno. Uma opção que não vale mais é desativada: quem já a tem continua com ela.
+
+A unidade e o setor que definem o que cada pessoa vê continuam sendo as **entidades**. Um campo "Unidade" é só um dado; não dá acesso a nada.
+
+## O que cada opção do campo faz?
+
+- **Obrigatório no cadastro:** quem não preencheu vê um diálogo ao entrar, também pelo login corporativo, e <Regra id="RN-197">só usa o ITS depois de preencher</Regra>. Quem administra pode deixar para depois.
+- **Pesquisável:** a busca da lista de usuários e do seletor de pessoas também procura no campo. Digitar a matrícula encontra a pessoa.
+- **Dado sensível:** o valor <Regra id="RN-199">abre oculto, com o olho</Regra>, e nunca sai na exportação, na integração nem no seletor de pessoas.
+- **Só a administração altera depois de preenchido:** a pessoa preenche uma vez, e depois só você muda. Serve para a matrícula, por exemplo.
+- **Sai na integração:** o campo aparece no módulo Usuários da API de integração. Dado sensível nunca sai.
+- **Valor único:** duas pessoas não podem ter o mesmo valor.
+
+## Quem preenche?
+
+Cada pessoa preenche os <Regra id="RN-196">próprios dados</Regra> em **Minha conta > Meus dados**. Você preenche e corrige os de qualquer pessoa no detalhe do usuário, na seção **Campos personalizados**.
+
+Na lista de usuários, quem tem um campo obrigatório vazio aparece com o selo <Regra id="RN-198">Cadastro incompleto</Regra>, e o filtro "Só cadastros incompletos" mostra quantos são. Cada campo fechado também vira um filtro da lista.
+
+## E os relatórios?
+
+Ao enviar uma ideia, o ITS grava nela o valor dos campos fechados do autor naquele momento. Em **Indicadores**, o filtro **Campo do autor** e os gráficos "Ideias por Departamento" contam cada ideia <Regra id="RN-201">pelo valor da hora do envio</Regra>: se a pessoa mudar de departamento, as ideias antigas continuam onde estavam. A exportação da fila ganha uma coluna por campo fechado. Campos abertos não entram nos relatórios.
+
+## Dá para mudar ou apagar um campo?
+
+Dá para renomear, mudar a dica, os limites e as opções a qualquer hora. Desativar esconde o campo de todo lugar e guarda os valores; reativar devolve. Só não dá para mudar o tipo nem excluir o campo depois que alguém preencheu.
+
+Arraste os campos (ou use os botões de subir e descer) para mudar a ordem em que aparecem para as pessoas.

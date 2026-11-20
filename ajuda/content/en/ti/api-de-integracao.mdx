@@ -1,0 +1,223 @@
+export const meta = {
+  title: 'Integration API: how to consume it',
+  description: 'What reading ITS data from other systems is for, with usage examples, the concepts of integration, token, module, scope and list, the first call step by step, a complete flow and the details of routes, limits, errors and network.',
+};
+
+# Integration API: how to consume it
+
+The integration API lets another system in your company fetch data from ITS without anyone opening the screen. The system calls an ITS address and gets the answer in JSON, a text format organized into fields and values that spreadsheets, BI dashboards and tools such as Power Automate and n8n can read.
+
+This page is for whoever builds that side: IT, a developer or whoever creates flows in Power Automate or n8n. The administrator grants access in ITS, in [Integrations: setting up](/en/admin/integracoes/).
+
+## Read, write or be notified: which should I use?
+
+ITS talks to other systems in three ways, each with its own page:
+
+| Way | How it works | What it's for | Where |
+|---|---|---|---|
+| Reading | Your system asks ITS, whenever it wants | Dashboards, spreadsheets, reports and looking up the details of an idea | This page |
+| Writing | Your system writes to ITS | Turning a ticket into an idea, commenting on an idea, declaring a gain | [Writing through the API](/en/ti/escrita-pela-api/) |
+| Webhook | ITS notifies your system when something happens | Reacting right away, such as posting in Teams when an idea is approved | [Webhooks: how to receive](/en/ti/webhooks-receber/) |
+
+The three work together. The webhook notice says only what changed, such as the idea code and the new status, and your system uses reading to fetch the title and the rest. In the same way, a service desk can create an idea through writing and, days later, get a webhook notice that it was approved.
+
+## What is it for?
+
+Reading takes ITS data to where people already work. Some common uses, each with the module it needs (modules are explained just below):
+
+- The improvement team wants a BI dashboard with the program's numbers by area: how many ideas each area submitted, what status they're in and how much gain has been validated. Every night, the dashboard calls ITS and gets the indicators ready, calculated the same way as the reports on screen. It uses the **Indicators and gains** module, which also serves the finance team when it needs to check validated gains idea by idea.
+- A plant tracks its own ideas in a SharePoint list, with the title and status of each one. Every morning, a Power Automate flow asks ITS only for what changed since the day before and updates the rows. It uses the **Ideas** module, with the scope limited to the plant, so the integration can't see ideas from other sites.
+- HR delivers the rewards people redeem in the ITS store. The HR system reads the orders, sees which ones were approved and organizes delivery. It uses the **Store (orders)** module, which returns orders from the whole store. <Regra id="RN-172">People's balance and statement never leave</Regra>.
+- The intranet home page shows the ideas featured in the Hall of fame and the praise they received. A routine reads the highlights once a day and builds the panel. It uses the **Hall and recognition** module, in which praise comes without the name of whoever wrote it.
+
+## How does reading work?
+
+### What is an integration?
+
+For ITS, each connected system is an integration: the BI dashboard is one, the plant's flow is another. The administrator creates each integration on the **Integrations** screen and decides what it can see. An integration isn't a user: it has no sign-in or role and never opens the ITS screens. It identifies itself with its token.
+
+### What is the token?
+
+The [token](/en/referencia/glossario/#token-de-integracao) is the integration's secret key, a long text that starts with `its_`. ITS shows it only once to the administrator, who hands it to you. It goes in every call, in a header, which is a line of information sent along with the call, separate from the address:
+
+```
+Authorization: Bearer YOUR_TOKEN
+```
+
+<Regra id="RN-104">The token goes only in the header</Regra>. If it goes in the address or the body, ITS treats the call as having no token. Keep it like a password: in the Power Automate vault, in an n8n credential or in a secrets manager. The token also has an expiry date. Before it expires, the administrator generates a new one, and the old one keeps working for 24 hours (up to 72, if the administrator chooses), so you have time to switch.
+
+### What are modules?
+
+The API is divided into modules, one per subject: **Ideas**, **Indicators and gains**, **Campaigns**, **Hall and recognition**, **Entities and categories**, **Users** and **Store (orders)**. Each module has its routes, which are the addresses you call (the ideas route is `/integration/v1/ideas`). The administrator chooses which modules each integration gets, and it can only use those. The BI dashboard, for example, only needs Indicators and gains and has no reason to read the list of people.
+
+### What is the entity scope?
+
+In ITS, the organization's structure is a tree of entities (company, sites, departments), and every idea belongs to one of them. The scope is the set of entities the integration sees, chosen by the administrator, with or without sub-entities. An integration whose scope is one plant only receives that plant's ideas, and the indicators it reads are calculated only from those ideas. With no entity in the scope, the integration sees nothing.
+
+For the integration, whatever is outside the scope doesn't exist: asking for an idea from another site returns the same error as asking for one that doesn't exist (`404`). The exception is the Store (orders) module, which has no entity scope, because the store doesn't belong to an entity.
+
+### How is the idea status shown?
+
+Every idea is in one of five statuses, and the API shows each one as a code in the `status` field:
+
+| On screen | In the API | What it means |
+|---|---|---|
+| Submitted | `submitted` | Received, waiting for someone on the team to review it |
+| In review | `in_review` | An analyst took it on and is evaluating it |
+| In progress | `in_progress` | Approved and being carried out, in steps |
+| Implemented | `implemented` | Carried out and closed |
+| Not approved | `rejected` | Not approved or stopped |
+
+Approving an idea means moving it from In review to In progress, so the API has no "approved" status. Separately from the status, the `pending_approval` field tells whether the idea is <Regra id="RN-191">waiting for approval from another area</Regra>. The full path is in [Idea statuses](/en/referencia/situacoes/).
+
+### How do long lists arrive?
+
+A list can have thousands of items, so it arrives in pages of up to 200 items each (50 if you don't say how many). Besides the items, each page carries a marker called a cursor, in the `next_cursor` field. To get the next page, you repeat the call and send that marker; on the last page, it comes empty (`null`). Every list has this shape:
+
+```json
+{ "data": [ ... ], "next_cursor": "abc..." }
+```
+
+The order is stable, from the oldest change to the newest. If you go through the list to the end, you get each item once, without skipping or repeating, even if new ideas arrive along the way. Dates come in ISO 8601 format, always in UTC, such as `2026-11-05T09:30:00.000000Z`.
+
+### How do I sync only what changed?
+
+To avoid downloading everything on each run, use the `updated_since` parameter, which makes the list return only what changed from a given date on:
+
+1. On the first run, read the whole list, following `next_cursor` until it comes back null.
+2. Save the date of the last read. The safest choice is the largest `updated_at` among the items received, because it comes from the ITS clock and is the value the filter compares.
+3. On the next run, call the list with that date in `updated_since` and follow `next_cursor` until it comes back null.
+
+The filter includes what changed exactly at the date given, so an item can come back from one run to the next. Save each idea by its code and update the record if it already exists.
+
+Three cases need attention:
+
+- An archived idea stays in the list, marked `archived: true`, so you know it left the ITS lists.
+- A merged idea, one that was joined to another (the main one), comes with the main idea's code in `converged_into` and without the text of whoever submitted it.
+- An idea deleted for good no longer appears, and reading doesn't announce the deletion. To find out right away, subscribe to the `idea.deleted` event (see [Webhooks: how to receive](/en/ti/webhooks-receber/#which-events-can-i-subscribe-to)).
+
+## How do I make the first call?
+
+Ask the administrator for:
+
+1. The ITS address, for example `https://its.company.com`. The API is at `/integration/v1`, after it.
+2. The integration token, handed over through a secure channel.
+3. The integration's modules and scope. For a first test, the Ideas module and an entity with few ideas are enough.
+
+With that, make the call. In the terminal, with curl:
+
+```
+curl -H "Authorization: Bearer YOUR_TOKEN" "https://its.company.com/integration/v1/ideas?limit=50"
+```
+
+Replace `YOUR_TOKEN` with the token and the address with your ITS address. The call asks for the first page of the idea list, with up to 50 items. If it works, the answer comes with code `200` and a body like this one (the data is made up, and each idea has more fields than shown here):
+
+```json
+{
+  "data": [
+    {
+      "code": "ITS-2026-0042",
+      "title": "Replace the conveyor roller",
+      "status": "in_progress",
+      "entity": { "id": "7d9e6a0e-3a11-4f55-8f4a-2a0c4c7b9a10", "name": "Shipping" },
+      "category": { "id": "2c1f0f6e-8a9b-4a3e-9f10-7c5d3e2a1b00", "name": "Safety" },
+      "external_ref": "TICKET-4711",
+      "author": "Maria Souza",
+      "updated_at": "2026-11-05T09:30:00.000000Z"
+    }
+  ],
+  "next_cursor": "abc..."
+}
+```
+
+Each item is an idea, with the code, title, status, entity, category, external reference (the number of the item linked to the idea in another system, such as a ticket, when there is one), the name of whoever submitted it and the date of the last change. The name comes empty when the person asked not to appear. The full list of fields, with a description of each one, is in the **Documentation** tab of the **Integrations** screen. The integration itself can also download it in OpenAPI format, by calling `/integration/v1/openapi.json` with the token.
+
+On the ITS side, nothing changes: reading doesn't change data and doesn't go into the audit log. The administrator sees the call counted in the integration's **Usage (last 7 days)** table.
+
+<Atencao>
+  If the answer is `401`, authentication failed. ITS always answers with the same `401`, without saying why, and from outside you can't tell apart a wrong, expired or revoked token, a suspended integration and an IP outside the list. To find out which it was, ask the administrator to check the integration: its status, the token expiry date and the IP list.
+</Atencao>
+
+## Example: how do I keep the plant's list up to date?
+
+The plant's flow that updates the SharePoint list every morning works like this, end to end:
+
+1. The administrator creates the "Plant list" integration, with the Ideas module and the scope on the plant's entity, including sub-entities, and hands over the token.
+2. The flow runs at a fixed time every morning and reads the date it saved on the previous run (in a file or in an item of the list itself, for example).
+3. It calls the idea list with that date in `updated_since`. On the first run, with no saved date, the whole list comes back.
+4. While the response carries a `next_cursor`, the flow repeats the call, passing that value in the `cursor` parameter.
+5. For each idea, the flow looks for the row with the same code in the list. If it finds one, it updates the title and status; if not, it creates the row. The status goes in with the name shown on screen, following the [status table](#how-is-the-idea-status-shown).
+6. An idea with `archived: true` is marked as archived. One with `converged_into` filled in gets a note that it was merged into another; since it arrives without a title, the flow keeps the title already in the row.
+7. At the end, the flow saves the largest `updated_at` received, for the next morning.
+
+In Power Automate, each call in steps 3 and 4 is the **HTTP** action:
+
+- **Method**: `GET`.
+- **URI**: `https://its.company.com/integration/v1/ideas`, with `updated_since` and, from the second page on, `cursor` as query parameters.
+- **Headers**: name `Authorization` and value `Bearer ` followed by the token. Keep the token in a secure variable or in the vault, not written in the flow.
+
+In n8n, the same work fits in an **HTTP Request** node:
+
+- **Method**: `GET`, **URL**: `https://its.company.com/integration/v1/ideas`.
+- **Authentication**: *Generic Credential Type* > *Header Auth*, with name `Authorization` and value `Bearer ` followed by the token.
+- Under **Pagination**, choose to update a parameter on each request: the `cursor` parameter receives the previous response's `next_cursor`, and pagination stops when it comes back empty.
+
+## Reference details
+
+### Which routes exist?
+
+The routes in the table only answer `GET`, and any other method gets `405`. The only routes that write are in [Writing through the API](/en/ti/escrita-pela-api/). Where `<identifier>` appears, use the idea code, such as `ITS-2026-0042`.
+
+| Module | Route | What it returns |
+|---|---|---|
+| Ideas | `/integration/v1/ideas`, `/integration/v1/ideas/<identifier>` | Ideas in the scope, with steps; `pending_approval` tells whether the idea is waiting for approval from another area |
+| Indicators and gains | `/integration/v1/indicators/summary`, `/engagement`, `/results`, `/integration/v1/gains` | Aggregated indicators and validated gains |
+| Campaigns | `/integration/v1/campaigns` | Active and closed campaigns |
+| Hall and recognition | `/integration/v1/hall` | Highlights and praise |
+| Entities and categories | `/integration/v1/entities`, `/integration/v1/categories` | The scope tree and the categories |
+| Users | `/integration/v1/users` | People in the scope (email only if allowed); `custom_fields` carries the custom fields marked **Goes to integrations**, <Regra id="RN-202">never the sensitive ones</Regra> |
+| Store (orders) | `/integration/v1/store/orders` | Orders from the whole store (no entity scope; email only if allowed). Balance and statement never leave |
+| (the contract) | `/integration/v1/openapi.json` | The OpenAPI, only for the integration's modules |
+
+<Regra id="RN-106">The contract is stable</Regra>: everything in `/integration/v1` keeps working as it is, and future changes only add things (a new field, a new route). Changing what already exists means a `v2`, announced in advance.
+
+The parameters, the fields and an example of each route are in ITS itself, in the **Documentation** tab of the **Integrations** screen.
+
+### Which parameters do lists accept?
+
+| Parameter | What for |
+|---|---|
+| `limit` | Items per page: from 1 to 200 (default 50) |
+| `cursor` | The `next_cursor` of the previous page. On the last page it comes as `null` |
+| `updated_since` | Only what changed from this date on (ISO 8601). Use it to sync only what's new |
+
+The idea list also filters by status, entity, category and campaign, and the indicators filter by period, entity and category. The names of these filters are in the **Documentation** tab.
+
+### How many calls can I make?
+
+Each integration has <Regra id="RN-105">a limit of calls per minute</Regra>, 60 by default (the administrator can raise it to 600). Every response carries the `X-RateLimit-Limit` header, with the limit, and `X-RateLimit-Remaining`, with what's left. If you go over the limit, the answer is `429`, with the `Retry-After` header saying how many seconds to wait.
+
+Attempts with an invalid token are also limited, counted per IP: 20 per minute.
+
+### Which errors does the API return?
+
+Errors come in the format `{ "code": "...", "message": "..." }`.
+
+| Status | When |
+|---|---|
+| `401` | Authentication failed (always the same, without saying why) |
+| `403` | The module is on, but this integration doesn't have access to it (`module_not_allowed`) |
+| `404` | Module off, an item that doesn't exist or an item outside the scope (which one isn't revealed) |
+| `405` | A method other than `GET` |
+| `422` | Invalid parameter (`limit` outside 1 to 200, invalid `cursor` or `updated_since`) |
+| `429` | Calls-per-minute limit |
+
+### What does IT need to open on the network?
+
+- This API only receives calls; it doesn't call anything. The only new outbound network traffic from ITS is webhooks, off out of the box and only to destinations the administrator allowed (see [Webhooks: how to receive](/en/ti/webhooks-receber/)).
+- The ITS `web` container already forwards `/integration/` to the API, along with `/api/`. If there's another proxy in front (Caddy, Traefik, a load balancer), forward `/integration/` too, keeping the `Authorization`, `Host` and `X-Forwarded-For` headers.
+- ITS only turns the API on when the system address is on `https://` (or `localhost`), so the token doesn't travel in the open.
+- The integration's IP list applies to the real origin IP, which comes from the trusted proxy's `X-Forwarded-For`.
+- There's no CORS. Call the API from a server (flow, script, BI), never directly from someone's browser: a browser should never hold the token.
+
+To block the whole API on the network, for example while you're not using it, don't open the `/integration/` path. Out of the box, ITS also keeps it turned off.

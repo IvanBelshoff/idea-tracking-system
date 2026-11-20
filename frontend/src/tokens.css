@@ -1,0 +1,134 @@
+/*
+ * TOKENS DO ITS – identidade escolhida no M0V: o padrão da categoria, com acabamento GitHub/Notion.
+ * Decisões e motivos: its/docs/DESIGN.md.
+ *
+ *   --brand / --brand-fg   cor de marca (trocável por organização; ver [data-brand="org"])
+ *   --shell-*              trilho lateral e barra superior
+ *   --st-<status>          tinta do status, segura para TEXTO (AA 4,5:1 sobre card e fundo)
+ *   --st-<status>-fill     preenchimento de marcadores e barras (padrão = a própria tinta)
+ *   --chart-1..5           série categórica (ordem fixa; 1 e 2 validados p/ daltonismo, claro e escuro)
+ */
+
+/* .theme-light: o tema claro dentro de uma página escura (a prévia da tela de login, M23). */
+:root,
+.theme-light {
+  --font-body: "Geist Variable", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Geist Variable", ui-sans-serif, system-ui, sans-serif;
+  --font-figures: "Geist Variable", ui-sans-serif, system-ui, sans-serif;
+  --font-code: "Geist Mono Variable", ui-monospace, monospace;
+  --radius: 0.5rem;
+
+  --background: oklch(0.99 0.002 270);
+  --foreground: oklch(0.21 0.015 270);
+  --card: oklch(1 0 0);
+  --muted: oklch(0.96 0.004 270);
+  --muted-foreground: oklch(0.49 0.015 270);
+  --border: oklch(0.915 0.006 270);
+  --input: oklch(0.65 0.012 270);
+
+  --brand: oklch(0.52 0.17 277);
+  --brand-fg: oklch(0.99 0 0);
+
+  --shell: oklch(0.97 0.004 270);
+  --shell-foreground: oklch(0.25 0.015 270);
+  --shell-muted: oklch(0.47 0.015 270);
+  --shell-active: oklch(0.925 0.012 277);
+  --shell-active-foreground: oklch(0.2 0.03 277);
+  --shell-border: oklch(0.915 0.006 270);
+
+  --st-submitted: oklch(0.47 0.03 255);
+  --st-review: oklch(0.5 0.11 65);
+  --st-progress: oklch(0.5 0.15 255);
+  --st-done: oklch(0.48 0.12 155);
+  --st-rejected: oklch(0.51 0.18 25);
+  --st-late: oklch(0.5 0.16 45);
+  --st-on: oklch(0.99 0 0);
+
+  --chart-1: oklch(0.52 0.17 277);
+  --chart-2: oklch(0.6 0.12 200);
+  --chart-3: oklch(0.63 0.13 75);
+  --chart-4: oklch(0.6 0.15 340);
+  --chart-5: oklch(0.55 0.03 270);
+}
+
+.dark {
+  --background: oklch(0.165 0.008 270);
+  --foreground: oklch(0.95 0.005 270);
+  --card: oklch(0.2 0.01 270);
+  --muted: oklch(0.25 0.012 270);
+  --muted-foreground: oklch(0.72 0.012 270);
+  --border: oklch(1 0 0 / 10%);
+  --input: oklch(1 0 0 / 34%);
+
+  --brand: oklch(0.74 0.13 277);
+  --brand-fg: oklch(0.18 0.03 277);
+
+  --shell: oklch(0.14 0.008 270);
+  --shell-foreground: oklch(0.93 0.005 270);
+  --shell-muted: oklch(0.7 0.012 270);
+  --shell-active: oklch(0.26 0.03 277);
+  --shell-active-foreground: oklch(0.97 0.01 277);
+  --shell-border: oklch(1 0 0 / 8%);
+
+  --st-submitted: oklch(0.78 0.03 255);
+  --st-review: oklch(0.82 0.12 80);
+  --st-progress: oklch(0.76 0.12 255);
+  --st-done: oklch(0.78 0.13 155);
+  --st-rejected: oklch(0.74 0.15 25);
+  --st-late: oklch(0.78 0.14 50);
+  --st-on: oklch(0.16 0.01 260);
+
+  --chart-1: oklch(0.66 0.15 277);
+  --chart-2: oklch(0.66 0.12 200);
+  --chart-3: oklch(0.82 0.12 80);
+  --chart-4: oklch(0.74 0.13 340);
+  --chart-5: oklch(0.65 0.02 270);
+}
+
+/* Cor de marca de outra organização (exemplo fictício do protótipo). Só --brand muda. */
+[data-brand="org"] {
+  --brand: oklch(0.47 0.1 168);
+  --brand-fg: oklch(0.99 0 0);
+}
+[data-brand="org"].dark {
+  --brand: oklch(0.79 0.11 168);
+  --brand-fg: oklch(0.17 0.03 168);
+}
+
+/* Derivados: shadcn/ui lê estes nomes. Recalculados também nos escopos .dark e .theme-light (a prévia
+   da tela de login muda o tema só dentro dela, M23). */
+:root,
+.dark,
+.theme-light {
+  --st-submitted-fill: var(--st-submitted);
+  --st-review-fill: var(--st-review);
+  --st-progress-fill: var(--st-progress);
+  --st-done-fill: var(--st-done);
+  --st-rejected-fill: var(--st-rejected);
+  --st-late-fill: var(--st-late);
+  --st-submitted-on: var(--st-on);
+  --st-review-on: var(--st-on);
+  --st-progress-on: var(--st-on);
+  --st-done-on: var(--st-on);
+  --st-rejected-on: var(--st-on);
+  --st-late-on: var(--st-on);
+  --primary: var(--brand);
+  --primary-foreground: var(--brand-fg);
+  --ring: var(--brand);
+  --sidebar: var(--shell);
+  --sidebar-foreground: var(--shell-foreground);
+  --sidebar-primary: var(--brand);
+  --sidebar-primary-foreground: var(--brand-fg);
+  --sidebar-accent: var(--shell-active);
+  --sidebar-accent-foreground: var(--shell-active-foreground);
+  --sidebar-border: var(--shell-border);
+  --sidebar-ring: var(--brand);
+  --popover: var(--card);
+  --popover-foreground: var(--card-foreground);
+  --card-foreground: var(--foreground);
+  --secondary: var(--muted);
+  --secondary-foreground: var(--foreground);
+  --accent: var(--muted);
+  --accent-foreground: var(--foreground);
+  --destructive: var(--st-rejected);
+}

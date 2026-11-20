@@ -1,0 +1,106 @@
+# ITS – Sistema de Acompanhamento de Ideias: instalação com Docker Compose.
+#
+#   cp .env.example .env      (preencha POSTGRES_PASSWORD e APP_SECRET_KEY)
+#   docker compose up -d      (baixa as imagens prontas e sobe tudo)
+#   abra http://127.0.0.1:8080 e siga o assistente de instalação
+#
+# Atualizar: docker compose pull && docker compose up -d   (faça o backup antes)
+#
+# As imagens vêm prontas do GitHub (ghcr.io) ou do Docker Hub, na versão maior ITS_VERSION (padrão 1:
+# recebe as correções sem mudanças que quebram). Para montar a partir do código, veja
+# docker-compose.build.yml. Sem o .env preenchido, o Compose para com uma mensagem: não existe senha
+# padrão para trocar depois.
+
+# Nome do projeto: contêineres its-api-1, its-db-1... e volumes its_pgdata e its_storage (RN-140).
+name: its
+
+x-backend-env: &backend-env
+  DATABASE_URL: postgresql://${POSTGRES_USER:-its}:${POSTGRES_PASSWORD:?Defina POSTGRES_PASSWORD no .env (copie o .env.example e preencha)}@db:5432/${POSTGRES_DB:-its}
+  APP_SECRET_KEY: ${APP_SECRET_KEY:?Defina APP_SECRET_KEY no .env (gere com openssl rand -base64 32)}
+  NODE_ENV: production
+  # Fuso dos logs e do relógio do processo (ex.: America/Sao_Paulo). Padrão: UTC.
+  TZ: ${TZ:-UTC}
+  # Observabilidade (RN-92): false desliga a contagem de tráfego; a saúde continua.
+  METRICS_ENABLED: ${METRICS_ENABLED:-true}
+  # Login corporativo (RN-96): proxy de saída para falar com Microsoft/Google. Vazio = sem proxy.
+  # Para usar, defina NODE_USE_ENV_PROXY=1 e HTTPS_PROXY (e NO_PROXY) no .env.
+  NODE_USE_ENV_PROXY: ${NODE_USE_ENV_PROXY:-}
+  HTTPS_PROXY: ${HTTPS_PROXY:-}
+  NO_PROXY: ${NO_PROXY:-}
+
+# O banco mora numa rede INTERNA (sem entrada nem saída): só o banco, a API e o worker participam dela.
+# O "web" e a ajuda não a enxergam. A API e o worker também ficam na rede padrão, porque precisam de
+# saída (webhooks, login corporativo, e-mail) (RN-140).
+networks:
+  internal:
+    internal: true
+
+services:
+  db:
+    image: postgres:17
+    restart: unless-stopped
+    networks: [internal]
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-its}
+      POSTGRES_USER: ${POSTGRES_USER:-its}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Defina POSTGRES_PASSWORD no .env (copie o .env.example e preencha)}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-its} -d ${POSTGRES_DB:-its}"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    # O banco NÃO é publicado. Para desenvolvimento, use docker-compose.dev.yml (somente 127.0.0.1).
+
+  api:
+    image: ${ITS_REGISTRY:-ghcr.io/ivanbelshoff}/its-api:${ITS_VERSION:-1}
+    restart: unless-stopped
+    networks: [internal, default]
+    volumes:
+      - storage:/app/storage
+    environment:
+      <<: *backend-env
+      HOST: 0.0.0.0
+      PORT: 3000
+    depends_on:
+      db:
+        condition: service_healthy
+    # Sem porta publicada: o acesso é só pelo "web" (mesma origem).
+
+  worker:
+    # A mesma imagem da API (mesmo código, outro comando): as duas sempre na mesma versão.
+    image: ${ITS_REGISTRY:-ghcr.io/ivanbelshoff}/its-api:${ITS_VERSION:-1}
+    restart: unless-stopped
+    networks: [internal, default]
+    command: ["node", "dist/worker.js"]
+    environment:
+      <<: *backend-env
+    healthcheck:
+      disable: true # o worker não serve HTTP
+    depends_on:
+      # A API aplica as migrações ao subir; o worker só começa com o esquema em dia.
+      api:
+        condition: service_healthy
+
+  web:
+    image: ${ITS_REGISTRY:-ghcr.io/ivanbelshoff}/its-web:${ITS_VERSION:-1}
+    restart: unless-stopped
+    ports:
+      # Padrão seguro: só nesta máquina. Para expor na rede, defina WEB_BIND=0.0.0.0 no .env
+      # (de preferência atrás de um proxy com HTTPS, como Caddy ou Traefik).
+      - "${WEB_BIND:-127.0.0.1}:${WEB_PORT:-8080}:8080"
+    depends_on:
+      api:
+        condition: service_healthy
+
+  # Ajuda: documentação interativa, estática, servida em /ajuda/ pelo "web" (mesmo endereço do ITS).
+  # Sem porta própria: só o "web" fala com ela pela rede padrão. Se parar, o ITS segue normal.
+  docs:
+    image: ${ITS_REGISTRY:-ghcr.io/ivanbelshoff}/its-ajuda:${ITS_VERSION:-1}
+    restart: unless-stopped
+
+volumes:
+  pgdata:
+  # Anexos, fotos e logo da organização (RN-21). Inclua no backup junto com o banco.
+  storage:

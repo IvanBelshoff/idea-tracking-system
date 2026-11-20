@@ -1,0 +1,49 @@
+export const meta = {
+  title: 'E-mail',
+  description: 'Como ligar o envio de e-mail do ITS com segurança: provedor, e-mail de teste, resumo diário, modelos e falhas de envio.',
+};
+
+# E-mail
+
+O ITS funciona sem e-mail: os avisos chegam no sino. Com o e-mail ligado, eles também chegam num resumo diário, e o **Esqueci minha senha** passa a funcionar.
+
+<Atencao>
+  O envio vem desligado e <Regra id="RN-90">só liga depois de um e-mail de teste que deu certo</Regra>.
+</Atencao>
+
+## Como ligo o envio?
+
+1. Em **Configurações > Notificações e e-mail**, preencha o **Endereço do sistema**: o endereço com que as pessoas abrem o ITS, como `https://ideias.suaempresa.com`. Ele vai nos links dos e-mails.
+2. Em **E-mail > Envio**, escolha o **Tipo de provedor** e preencha os dados do servidor **SMTP** da organização, do **Microsoft 365 (Graph)** ou do **Google Workspace (Gmail)**. A senha, o segredo ou a chave fica cifrado e nunca é mostrado de volta.
+3. Clique em **Enviar teste** e confira a caixa de entrada.
+4. Com o teste certo, clique em **Ligar envio**.
+
+Os campos que identificam a sua organização (tenant, cliente, caixa remetente, usuário do SMTP) <Regra id="RN-135">abrem ocultos</Regra>: clique no olho para ver.
+
+<Captura nome="email" alt="Tela de e-mail do ITS, com a situação do envio e o cadastro do servidor." />
+
+## Como envio pelo Microsoft 365?
+
+Com o tipo **Microsoft 365 (Graph)**, <Regra id="RN-99">o ITS envia por um aplicativo registrado na Microsoft</Regra>, sem usuário e senha de pessoa. Você informa o tenant, o ID do cliente, o segredo, a **Caixa remetente** e, se quiser, o **Responder para**. Criar o aplicativo e liberar a caixa no Exchange é com o TI: veja [Envio de e-mail pela Microsoft](/pt-BR/ti/envio-pela-microsoft/).
+
+Informe também a **Validade do segredo**: <Regra id="RN-100">a saúde avisa 30 dias antes de vencer, e a 7 dias gera um alerta</Regra>. Ao trocar o segredo, informe a nova validade.
+
+## Como envio pelo Google Workspace?
+
+Com o tipo **Google Workspace (Gmail)**, <Regra id="RN-101">o ITS envia por uma conta de serviço do Google</Regra>, sem usuário e senha de pessoa. Você cola a **Chave JSON da conta de serviço**, do arquivo baixado do Google Cloud, informa a **Caixa remetente** (um usuário do Workspace) e, se quiser, o **Remetente (nome)** e o **Responder para**. Depois de salvo, a tela mostra só o e-mail da conta de serviço; a chave nunca volta. Criar a conta e autorizar o envio no Admin Console é com o TI: veja [Envio de e-mail pelo Google](/pt-BR/ti/envio-pelo-google/).
+
+A **Validade da chave** é opcional, porque chaves de conta de serviço não vencem por padrão. Se você informar uma data, <Regra id="RN-100">a saúde avisa 30 dias antes</Regra>.
+
+## Como funciona o resumo diário?
+
+Para ninguém receber um e-mail a cada acontecimento, <Regra id="RN-31">os avisos vão num resumo diário</Regra>, no horário configurado. Cada pessoa escolhe em **Minha conta** o que quer receber.
+
+## Posso mudar o texto dos e-mails?
+
+Pode. Em **E-mail > Modelos**, <Regra id="RN-32">edite o texto de cada e-mail em cada idioma</Regra>: o resumo diário, o link de senha, o e-mail de teste e <Regra id="RN-191">os três da aprovação de outra área</Regra> (pedido, lembrete e código). Sem edição, vale o texto de fábrica.
+
+As variáveis do modelo, como `{{link}}` ou `{{items}}`, ficam embaixo do texto, em forma de peças. Arraste uma até o ponto do texto onde ela deve entrar, ou clique nela (ou use Enter) para inserir onde está o cursor. <Regra id="RN-138">O modelo continua texto puro, com a mesma validação</Regra>: arrastar só escreve a variável.
+
+## O que acontece quando um envio falha?
+
+O ITS tenta de novo algumas vezes. Se não der, a falha aparece em **E-mail > Envios**, com o motivo e o botão **Tentar de novo**.

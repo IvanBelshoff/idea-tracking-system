@@ -1,0 +1,49 @@
+export const meta = {
+  title: 'Publish and moderate the idea wall',
+  description: 'How to publish ideas on the wall and remove them, take care of confidentiality and moderate the conversation and reports.',
+};
+
+# Publish and moderate the idea wall
+
+The idea wall shows the whole organization the improvements that are happening. The improvement team decides what goes on it: no idea goes to the wall on its own.
+
+## How is the wall turned on?
+
+The wall comes **off**, and whoever administers ITS turns it on under **Settings > Idea wall**. When it's on, everyone's Home becomes the wall. When it's off, everything leaves the screen and <Regra id="RN-148">is kept for when it's turned back on</Regra>.
+
+## How do I publish an idea?
+
+You need the **Publish on the idea wall and moderate the conversation** permission, which comes with the Analyst and Administrator roles and applies to the entities in your scope. On the idea page, the **Idea wall** block shows whether the idea is on the wall. To publish it, use **Publish on the wall**. You can only publish an idea that is <Regra id="RN-149">In progress or Implemented</Regra>.
+
+## What shows up on the wall?
+
+The card carries <Regra id="RN-150">only the title, status, category and entity</Regra>. The author and co-authors get a notification and <Regra id="RN-151">stay anonymous until they agree</Regra> to show their name. The team always sees who they are, with the name marked "visible only to the team".
+
+<Dica>
+  Whoever publishes takes care of confidentiality. ITS doesn't mark any category or entity as confidential: if the idea shouldn't be seen by the whole organization, don't publish it. The confirmation reminds you of this before you publish.
+</Dica>
+
+## What about removing an idea?
+
+**Remove from the wall** asks for a reason. Reactions, the conversation and consents are kept, and they come back if the idea is published again. Interrupting or archiving the idea removes it automatically; reopening doesn't publish it again. Publishing and removing are recorded in the idea history and in the audit log.
+
+## How do I moderate the conversation?
+
+In the conversation of an idea on the wall, each comment shows <Regra id="RN-153">**Hide** and **Restore**</Regra> and, if it was edited, **Previous versions**. Hiding asks for a reason: the writer is notified and sees the reason, and everyone else reads "Comment hidden by the team".
+
+## Where are the reports?
+
+In the **Idea wall reports** menu, in the improvement team group. It gathers the reported comments of the entities you moderate, with the reasons and details of each report, but <Regra id="RN-154">without saying who reported</Regra>. For each comment:
+
+- **Hide** hides the comment and resolves its reports.
+- **Dismiss** keeps the comment visible and takes its reports out of the queue.
+
+Hiding, restoring and dismissing are recorded in the audit log, without the comment text. When new reports come in, you get <Regra id="RN-156">one notification per day that groups them</Regra>.
+
+## What about integrations?
+
+Systems integrated with ITS can be notified when an idea goes on or comes off the wall (see [Webhooks: setting up](/en/admin/webhooks/)), and the read API shows whether the idea is on the wall. Reactions, comments and reports <Regra id="RN-157">never leave through the integration</Regra>.
+
+## What about accessibility?
+
+The wall loads in pages and <Regra id="RN-158">works entirely with the keyboard</Regra>, in both themes. Each reaction is a button with a name and a state, and screen readers announce the count.

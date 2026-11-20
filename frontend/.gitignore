@@ -1,0 +1,30 @@
+node_modules/
+dist/
+coverage/
+*.tsbuildinfo
+
+# ambiente (nunca versionar)
+.env
+.env.*
+!.env.example
+
+# artefatos de teste
+playwright-report/
+test-results/
+
+*.log
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/*
+!.vscode/extensions.json
+.pnpm-store/
+
+# ferramenta isolada do gerador OpenAPI
+tools/openapi/node_modules/
+
+# Impeccable (ferramenta de design): instalação e cache locais, reinstaláveis com "npx impeccable install".
+# O resultado do design fica versionado em ../docs/DESIGN.md, src/tokens.css e PRODUCT.md.
+.claude/
+.github/
+.impeccable/

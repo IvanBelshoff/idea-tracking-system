@@ -1,0 +1,58 @@
+export const meta = {
+  title: 'Idea statuses',
+  description: 'The five statuses of an idea in ITS, how it moves from one to the next, who takes each step and the flags that don\'t change the status, with a simulator to practice.',
+};
+
+# Idea statuses
+
+The status says where an idea is on its path, from submission to the end. Every idea is always in one of the five statuses below, and the person who submitted it can see which one.
+
+## The five statuses
+
+| Status | What it means | Who moves the idea out of it |
+|---|---|---|
+| <Situacao s="submitted" /> | Received, waiting for someone on the team to pick it up for review | Analyst: takes the review, approves directly or doesn't approve |
+| <Situacao s="in_review" /> | An analyst took it on and is evaluating it | Analyst: approves or doesn't approve |
+| <Situacao s="in_progress" /> | Approved and being carried out in steps | Analyst: marks it as implemented or interrupts it |
+| <Situacao s="implemented" /> | Done and closed, with the result recorded | Only the administrator, by reopening it |
+| <Situacao s="rejected" /> | Not approved or interrupted, always with a justification | Only the administrator, by reopening it |
+
+## What flags can an idea have?
+
+Some flags warn about a deadline or a wait, and the idea stays in the same status:
+
+- <Situacao s="late" /> shows up on an In progress idea when the due date of an open step has passed.
+- **Reply overdue** shows up on an idea that is still Submitted after its expected reply date, and goes away when someone takes the review.
+- While the team waits for another area's go-ahead to approve or implement the idea, the person who submitted it sees only <Regra id="RN-190">"Waiting for approval from another area"</Regra> and, at the end, the result. See [Request approval from another area](/en/analista/pedir-aprovacao/).
+
+## How an idea moves
+
+1. **Someone submits it.** <Regra id="RN-02">Any employee can submit</Regra>, and the idea starts as Submitted, with the author recorded automatically. The **Title**, **Current situation** and **Entity** fields are <Regra id="RN-03">required</Regra>. An analyst can also <Regra id="RN-04">register the idea on behalf of someone else</Regra>, who is still the author.
+2. **An analyst takes the review.** The idea moves to In review, and the person who submitted it knows someone is looking at it.
+3. **Approve or not approve.** To approve, the analyst <Regra id="RN-06">sets up the first step and chooses its owner</Regra>. An idea that is still Submitted can also be approved directly, and ITS records both moves in the timeline: taking the review and approving (see [Approve and run steps](/en/analista/aprovar-e-etapas/)). To not approve, the analyst writes a justification, and <Regra id="RN-05">the justification goes to the person who submitted the idea</Regra>.
+4. **Carry it out in steps.** While the idea is In progress, the team completes the steps. If the work has to stop, the analyst uses **Interrupt**, also with a justification, and the idea becomes Not approved.
+5. **Close it as implemented.** This is only possible <Regra id="RN-07">when every step is completed and the result achieved has been described</Regra>.
+
+Ideas that ask for the same thing can be merged into one, and the oldest one leads the way. See [Merge similar ideas](/en/analista/convergencia/).
+
+<Simulador titulo="take an idea from submission to the end">
+  <CicloDeVida />
+</Simulador>
+
+<Dica>
+  In the simulator, try not approving without writing a justification. ITS does the same: without the reason, the action doesn't go through.
+</Dica>
+
+## Is closed really closed?
+
+Almost. Implemented and Not approved are closed statuses: the idea becomes read-only, but <Regra id="RN-08">you can still comment on it</Regra>.
+
+If something needs to be undone, the administrator can **reopen** the idea, <Regra id="RN-09">always with a reason that stays in the history</Regra>. An implemented idea goes back to In progress; a not approved one goes back to In review.
+
+## Why can't I change the status directly?
+
+Because the status tells a story: who took it on, who approved it, why it stopped. If anyone could pick "Implemented" from a list, that story would be lost. That's why <Regra id="RN-10">the status only changes through workflow actions</Regra>, and each one is recorded in the idea's timeline.
+
+## What if someone deletes an idea?
+
+In ITS, deleting means archiving, and the button is called **Archive**: <Regra id="RN-11">the idea disappears from the lists but stays in the history</Regra>. Erasing it for good, with **Delete permanently**, is only for the administrator, and that's logged too.

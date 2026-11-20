@@ -1,0 +1,12 @@
+# Atualizações automáticas das actions do GitHub (M28). Os fluxos fixam cada action pelo commit, com a
+# versão no comentário; o Dependabot abre um pull request quando sai versão nova, e a CI roda nele antes
+# de qualquer mudança entrar.
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      actions:
+        patterns: ["*"]

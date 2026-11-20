@@ -1,0 +1,16 @@
+# Varredura de segredos (gitleaks, job "secrets" do ci.yml): as regras padrão, com duas exceções
+# estreitas para o que não é segredo. Qualquer outro achado continua falhando a CI.
+title = "ITS"
+
+[extend]
+useDefault = true
+
+[[allowlists]]
+description = "Exemplos de curl na Ajuda e nos testes: o token é um marcador, não um valor"
+regexTarget = "match"
+regexes = ['''Bearer (SEU_TOKEN|YOUR_TOKEN)"''']
+
+[[allowlists]]
+description = "Senhas fictícias dos testes automatizados do backend (bancos temporários, nunca uma instalação)"
+targetRules = ["generic-api-key"]
+paths = ['''(^|/)backend/test/.+\.spec\.ts$''']

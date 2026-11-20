@@ -1,0 +1,50 @@
+export const meta = {
+  title: 'Acesso corporativo: no dia a dia',
+  description: 'Depois de ligar o login com Microsoft ou Google: como a pessoa é reconhecida, quando alguém não consegue entrar, desvincular uma conta, quem sai da empresa e o provedor fora do ar.',
+};
+
+# Acesso corporativo: no dia a dia
+
+Esta página é para depois de [configurar o acesso corporativo](/pt-BR/admin/acesso-corporativo/): o que acontece quando as pessoas entram e o que fazer quando algo foge do normal.
+
+## Como o ITS reconhece a pessoa?
+
+Na primeira entrada, o ITS procura o e-mail entre os usuários. Se encontra, <Regra id="RN-96">vincula a conta do provedor ao usuário</Regra>, e a pessoa entra normalmente. Daí em diante, ele reconhece a pessoa pela identificação da conta no provedor. Por isso, trocar o e-mail depois não quebra a conta nem a entrega a outra pessoa.
+
+Em **Usuários**, no detalhe da pessoa, o bloco **Acesso** mostra como ela entra e as contas vinculadas.
+
+## Por que alguém não consegue entrar?
+
+A tela de entrada mostra o motivo, e a **Auditoria** guarda o mesmo (procure por "Entrada pela conta corporativa recusada"). Os casos comuns:
+
+| Motivo | O que fazer |
+|---|---|
+| E-mail ainda não cadastrado (criação automática desligada) | Cadastre a pessoa em **Usuários** ou ligue a criação automática |
+| E-mail de outro domínio, ou conta de outro tenant da Microsoft | A pessoa entrou com a conta errada, como a pessoal. Peça para escolher a conta da empresa |
+| E-mail não verificado no Google, ou conta Google pessoal | O ITS só aceita contas do Workspace dos domínios cadastrados |
+| Usuário desativado | Se for o caso, use **Reativar** em **Usuários** |
+| Já vinculado a outra conta do provedor | Desvincule a conta antiga (veja abaixo) e peça para a pessoa entrar de novo |
+| Erro do provedor, ou "não foi possível falar com o provedor" | Veja a tabela de falhas em [Login corporativo](/pt-BR/ti/login-corporativo/) |
+
+## Como desvinculo uma conta?
+
+Quando a pessoa muda de conta no provedor (troca de e-mail corporativo, por exemplo), abra o detalhe dela em **Usuários** e use **Desvincular**. No próximo login corporativo, o vínculo é refeito pelo e-mail.
+
+## O que faço quando alguém sai da empresa?
+
+1. O TI desativa a conta no provedor, o que impede novas entradas.
+2. Você usa **Desativar** na pessoa, em **Usuários**, o que encerra a sessão dela no ITS na hora. As ideias e o histórico dela continuam. Ao desativar alguém com conta vinculada, o ITS lembra você desse segundo passo.
+
+Se o passo 2 for esquecido, a pessoa perde o acesso no máximo quando a sessão dela vencer. É por isso que a sessão de quem entra pelo login corporativo é mais curta: 8 horas de fábrica, ajustável em **Configurações > Senhas e acesso**. A pessoa volta ao provedor todo dia, e é aí que a conta desativada deixa de entrar.
+
+## E se o provedor sair do ar ou estiver mal configurado?
+
+No modo **Só SSO**, os administradores continuam entrando com e-mail e senha: é o [acesso de emergência](/pt-BR/referencia/glossario/#acesso-de-emergencia). Entre, abra **Administração > Acesso corporativo**, volte o modo para **Só senha** (ou **Senha e SSO**) e corrija a configuração. Quando o teste voltar a passar, escolha o modo de novo.
+
+Se o segredo do cliente venceu, crie um novo no provedor e cadastre-o na tela. A validade é explicada em [Login corporativo](/pt-BR/ti/login-corporativo/).
+
+## O que o acesso corporativo não faz?
+
+- Não desativa sozinho quem saiu da empresa: veja o passo a passo acima.
+- Não ajusta perfis nem entidades pelo grupo da pessoa no provedor. Os perfis continuam sendo do ITS.
+- Não repete o MFA (a segunda etapa de segurança): vale o do provedor.

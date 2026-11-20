@@ -1,0 +1,77 @@
+export const meta = {
+  title: 'Installation',
+  description: 'How to install ITS in about 10 minutes with the ready-made Docker images, fill in the .env and put the system on the network with HTTPS.',
+};
+
+# Installation
+
+ITS ships as ready-made Docker images, so you don't need to download the code or build the images. With two files (`docker-compose.yml` and `.env`) and one command, you bring up the database, the API, the `worker` (background processing), the website and this help. The full walkthrough is in the project's `docs/INSTALACAO.md` file.
+
+## What you need
+
+- **Docker** with Compose v2 (`docker compose version` answers).
+- A terminal and internet access to download the images.
+- About 2 GB of free memory and 2 GB of disk to start.
+
+## 1. Download and configure
+
+Create a folder for ITS and download the two files into it:
+
+```bash
+mkdir its && cd its
+curl -fsSLO https://raw.githubusercontent.com/IvanBelshoff/idea-tracking-system/main/docker-compose.yml
+curl -fsSL https://raw.githubusercontent.com/IvanBelshoff/idea-tracking-system/main/.env.example -o .env
+```
+
+If you prefer, clone the repository and copy `.env.example` to `.env` inside it.
+
+In `.env`, two variables come empty on purpose and are required:
+
+| Variable | What to put |
+|---|---|
+| `POSTGRES_PASSWORD` | A strong password for the database (only the system uses it), for example generated with `openssl rand -base64 24`. |
+| `APP_SECRET_KEY` | A long random key, for example generated with `openssl rand -base64 32`. |
+
+If either one is empty, ITS doesn't start: Compose stops and says which one is missing. There's no default password to change later.
+
+Also check `TZ`, the time zone (for example `America/Sao_Paulo`). The other variables already come with a safe default.
+
+<Atencao>
+  Keep `.env` together with your backup. The database created the first time only opens with the `POSTGRES_PASSWORD` from that moment. The `APP_SECRET_KEY` encrypts the email server password and the corporate sign-in secrets, and without it they have to be registered again. Never put `.env` under version control.
+</Atencao>
+
+## 2. Start it
+
+```bash
+docker compose up -d
+docker compose ps
+```
+
+The first time, downloading the images takes a few minutes. When it's done, `db`, `api`, `web` and `docs` show as `healthy`, and `worker` as `Up` (it has no health check in Docker).
+
+The `ITS_VERSION` variable sets the version. The default, `1`, gets the fixes and improvements of version 1 without breaking changes. A full number, like `1.0.0`, pins the version.
+
+The images come from GitHub (`ghcr.io`). If it's blocked on your network, use the same images from Docker Hub with `ITS_REGISTRY=docker.io/ivanbelshoff` in `.env`.
+
+## 3. Installation wizard
+
+Open **http://127.0.0.1:8080**. The wizard asks for the organization name, time zone and language, and creates the administrator account <Regra id="RN-43" />. From there, follow [First steps](/en/admin/primeiros-passos/).
+
+## On the network, with HTTPS
+
+By default, only the machine itself can reach ITS. For other people to use it:
+
+- Put ITS behind an **HTTPS proxy** (Caddy, Traefik or Nginx) pointing at port `8080`.
+- If you will use the **integration API** (optional, off by default), the proxy must also forward the `/integration/` path; see [Integration API: how to consume it](/en/ti/api-de-integracao/).
+- The database is never exposed, and the `docker-compose.dev.yml` file is not for real installations.
+- With HTTPS, browsers offer to **install the app** on phones and computers <Regra id="RN-83" />.
+
+## After installing
+
+To watch ITS day to day (health, worker, space and alerts), see [Operation and alerts](/en/ti/operacao-e-alertas/).
+
+To sign in with a Microsoft or Google account (optional, off by default), see [Corporate sign-in](/en/ti/login-corporativo/). To send email through Microsoft 365 instead of SMTP, see [Sending email through Microsoft](/en/ti/envio-pela-microsoft/). For Google Workspace, see [Sending email through Google](/en/ti/envio-pelo-google/).
+
+## The help
+
+This help comes up too, in the `docs` service, at `/ajuda/` on the same address as ITS. It needs no configuration. If it stops, ITS keeps working and shows a notice instead of the help.

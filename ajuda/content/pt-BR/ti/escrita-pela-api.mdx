@@ -1,0 +1,274 @@
+export const meta = {
+  title: 'Escrita pela API: enviar ideias, comentar e declarar ganhos',
+  description: 'Para que serve a escrita pela API do ITS, com exemplos de uso: enviar ideia em nome de uma pessoa, comentar, guardar a referência externa e declarar ganho. Os conceitos, a primeira ideia passo a passo, um fluxo completo e os detalhes de rotas, chave de repetição, limites e erros.',
+};
+
+# Escrita pela API: enviar ideias, comentar e declarar ganhos
+
+A escrita pela API deixa outro sistema gravar no ITS. São quatro ações pequenas: enviar uma ideia em nome de uma pessoa, comentar numa ideia, guardar na ideia o número do item correspondente no seu sistema e registrar um ganho declarado. Ela usa o mesmo endereço e o mesmo token da leitura, descritos em [API de integração: como consumir](/pt-BR/ti/api-de-integracao/). O token é a chave secreta, que começa com `its_`, com que a integração se identifica em cada chamada.
+
+Quem libera a escrita é o administrador, em [Integrações: configurar](/pt-BR/admin/integracoes/). Se você ainda não sabe se o seu caso pede gravar, ler ou receber avisos, compare as três formas no quadro [Ler, gravar ou ser avisado: qual usar?](/pt-BR/ti/api-de-integracao/#ler-gravar-ou-ser-avisado-qual-usar).
+
+<Atencao>
+  A integração nunca decide. Ela não tria, não aprova, não recusa, não implementa, não arquiva, não exclui, não une ideias, não valida ganho e não destaca no Hall, porque <Regra id="RN-132">essas rotas não existem</Regra>. Toda decisão continua com uma pessoa, na tela do ITS.
+</Atencao>
+
+## Para que serve?
+
+Alguns usos comuns, cada um com o módulo de que precisa (os módulos são explicados logo abaixo):
+
+- No service desk, alguns chamados são, na verdade, sugestões de melhoria. Quando o atendente classifica um chamado como "sugestão de melhoria", um fluxo cria a ideia no ITS em nome de quem abriu o chamado e guarda nela o número do chamado. Quando o chamado é resolvido, o mesmo fluxo comenta na ideia. Usa o módulo **Enviar ideias e comentar**.
+- A equipe já recolhe sugestões num formulário próprio. Cada resposta vira uma ideia no ITS em nome de quem preencheu, sem ninguém redigitar. A pessoa precisa ter conta ativa no ITS e poder enviar ideia naquela entidade. O módulo é o mesmo, **Enviar ideias e comentar**.
+- O sistema de manutenção executa as ordens de serviço que saem das ideias aprovadas. Quando uma ordem termina, ele comenta na ideia correspondente, e o andamento fica registrado na própria ideia, à vista de quem a acompanha. Também usa **Enviar ideias e comentar**.
+- O financeiro calcula numa planilha o ganho das ideias implementadas. Um fluxo lê a planilha e registra cada valor como ganho declarado; depois, uma pessoa com permissão confere e valida o ganho no ITS. Usa o módulo **Registrar ganhos declarados**.
+
+## Como funciona a escrita?
+
+### Quais módulos a integração precisa ter?
+
+A API é dividida em módulos, partes que o administrador libera uma a uma para cada integração. Os dois [módulos de escrita](/pt-BR/referencia/glossario/) são <Regra id="RN-126">separados dos de leitura</Regra>: **Enviar ideias e comentar** (`ideas_write`), que também atualiza a referência externa, e **Registrar ganhos declarados** (`gains_write`). Dá, portanto, para ter uma integração que só grava.
+
+Na prática, quem envia ideias quase sempre pede também o módulo de leitura **Entidades e categorias**, porque é dele que vêm os identificadores da entidade e da categoria (veja [De onde vêm os identificadores da entidade e da categoria?](#de-onde-vem-os-identificadores-da-entidade-e-da-categoria)).
+
+### O que o escopo muda na escrita?
+
+Toda ideia pertence a uma entidade, uma parte da estrutura da organização, como uma unidade ou um setor. O escopo é o conjunto de entidades que a integração enxerga, escolhido pelo administrador, e toda gravação confere o escopo. O ITS recusa o envio de ideia numa entidade fora dele (`422 entity_not_in_scope`). Uma ideia fora do escopo, para a integração, não existe: qualquer gravação nela responde `404`.
+
+### Em nome de quem a ideia é enviada?
+
+A ideia enviada pela API é de uma pessoa, e não da integração. O ITS acha essa pessoa pelo e-mail informado na chamada (`author_email`). Ela precisa ter conta ativa e poder enviar ideias naquela entidade pela tela, porque <Regra id="RN-127">a integração nunca dá a ninguém mais do que a pessoa teria</Regra>. Se a pessoa não existe, foi desativada ou não tem permissão naquela entidade, a chamada é recusada e nada é criado.
+
+### De onde vêm os identificadores da entidade e da categoria?
+
+Para enviar uma ideia, a API pede a entidade e a categoria pelo identificador interno, um código longo como `7d9e6a0e-3a11-4f55-8f4a-2a0c4c7b9a10`, e não pelo nome. A tela do ITS não mostra esse identificador. Ele vem de duas rotas de leitura do módulo Entidades e categorias: a das entidades (`GET /integration/v1/entities`) e a das categorias (`GET /integration/v1/categories`). Cada uma vem inteira, numa resposta só, sem páginas:
+
+| Lista | Campo | O que é |
+|---|---|---|
+| Entidades | `id` | O identificador, que vai no envio como `entity_id` |
+| Entidades | `name` | O nome, como aparece na tela |
+| Entidades | `parent_id` | A entidade pai; vem vazio no topo do escopo |
+| Entidades | `active` | Se a entidade aceita ideias novas |
+| Categorias | `id` | O identificador, que vai no envio como `category_id` |
+| Categorias | `name` | O nome |
+| Categorias | `color` | A cor, como `#2563eb` |
+| Categorias | `active` | Se a categoria aceita ideias novas |
+
+A lista de entidades traz só as do escopo da integração; a de categorias traz todas, inclusive as inativas. O jeito comum é consultar as duas uma vez, montar uma tabela de correspondência entre o nome e o identificador (por exemplo, Expedição e `7d9e6a0e-…`) e usá-la nos envios. Refaça a consulta quando o administrador criar ou renomear uma entidade ou categoria.
+
+### O que é a referência externa?
+
+A referência externa é o número do item no outro sistema, como o chamado do service desk ou a ordem de serviço da manutenção, guardado na ideia para ligar os dois. Ela aparece na página da ideia, e a leitura a devolve em cada ideia (campo `external_ref`). Pode ir no envio da ideia ou ser gravada depois e tem até 100 caracteres. <Regra id="RN-129">Cada mudança vai ao histórico</Regra>, com o valor antigo, o novo e a origem.
+
+### Como aparece o comentário da integração?
+
+O comentário gravado pela API é sempre público, visível para quem acompanha a ideia. O comentário interno, que quem enviou a ideia não vê, não existe pela API. O comentário aparece com o nome da integração como autor ("via Integração X"), nunca em nome de uma pessoa, e tem até 5000 caracteres. <Regra id="RN-128">Dá para comentar em ideia encerrada</Regra>, como na tela.
+
+### Qual a diferença entre ganho declarado e validado?
+
+O ganho de uma ideia é o resultado financeiro que ela traz, com a periodicidade (única, mensal ou anual) e o custo de implementação. Ele começa declarado, quando alguém informa o valor, e vira validado quando uma pessoa com permissão, como a controladoria, confere e confirma no ITS. Só o validado entra nos indicadores oficiais. Veja [Validar ganhos](/pt-BR/gestor/ganhos/).
+
+<Regra id="RN-130">Pela API, o ganho fica declarado</Regra>: a integração nunca valida e não sobrescreve um ganho que uma pessoa já validou. Há dois valores: o estimado, previsto antes da execução, e o realizado, medido depois. A API aceita o estimado enquanto a ideia está Enviada ou Em análise, e o realizado só depois de implementada.
+
+### Como repito uma chamada sem duplicar?
+
+Às vezes a rede cai no meio de uma gravação, e o fluxo fica sem saber se a ideia foi criada. Se ele simplesmente repetir a chamada, pode criar duas ideias iguais. Para evitar isso existe a chave de repetição, enviada no cabeçalho `Idempotency-Key`: um texto único que você escolhe para cada operação. Se a mesma chave chegar de novo com o mesmo corpo, o ITS devolve a resposta da primeira vez e não grava nada, e assim <Regra id="RN-131">uma gravação nunca acontece duas vezes</Regra>.
+
+A chave é obrigatória nas chamadas que criam algo (enviar ideia e comentar, que usam `POST`) e aceita nas que atualizam (referência externa e ganho, que usam `PUT`). Ela tem de 1 a 64 caracteres, entre letras, números, `-` e `_`, e vale por 24 horas, por integração e por rota. O que acontece em cada caso está em [O que acontece em cada caso da chave de repetição?](#o-que-acontece-em-cada-caso-da-chave-de-repeticao).
+
+<Dica>
+  Use como chave um identificador que já exista no seu sistema, como o número do chamado: se o fluxo repetir a chamada, o ITS não cria uma segunda ideia.
+</Dica>
+
+## Como envio a primeira ideia?
+
+### O que peço ao administrador?
+
+1. O endereço do ITS e o token da integração, como na leitura.
+2. A integração com o módulo Enviar ideias e comentar e, para descobrir os identificadores, o módulo de leitura Entidades e categorias.
+3. Um escopo que inclua uma entidade de teste.
+
+A ideia enviada pela API é uma ideia de verdade, que entra na fila de quem faz a triagem. Por isso, faça os primeiros testes numa entidade de teste e com o e-mail de uma pessoa de teste. O administrador vê tudo na [Auditoria](/pt-BR/admin/auditoria-e-privacidade/) e pode excluir a ideia de teste depois.
+
+### Como descubro os identificadores?
+
+Peça a lista de entidades:
+
+```
+curl -H "Authorization: Bearer SEU_TOKEN" "https://its.empresa.com.br/integration/v1/entities"
+```
+
+A resposta traz as entidades do escopo (os dados são inventados):
+
+```json
+{
+  "data": [
+    { "id": "7d9e6a0e-3a11-4f55-8f4a-2a0c4c7b9a10", "name": "Expedição", "parent_id": null, "active": true }
+  ],
+  "next_cursor": null
+}
+```
+
+Faça o mesmo com `/integration/v1/categories` para achar a categoria.
+
+### Como monto e envio a ideia?
+
+O corpo da chamada é um JSON com os dados da ideia:
+
+```json
+{
+  "author_email": "maria.souza@empresa.com.br",
+  "title": "Trocar o rolo da esteira",
+  "description": "O rolo atual trava a cada semana.",
+  "entity_id": "7d9e6a0e-3a11-4f55-8f4a-2a0c4c7b9a10",
+  "category_id": "2c1f0f6e-8a9b-4a3e-9f10-7c5d3e2a1b00",
+  "external_ref": "CHAMADO-4711"
+}
+```
+
+O corpo leva a autora pelo e-mail (`author_email`), o título (`title`), o texto da ideia, que no formulário da tela é o campo **Situação atual** (`description`), a entidade e a categoria pelos identificadores do passo anterior (`entity_id` e `category_id`) e, se você quiser, a referência externa (`external_ref`). A solução proposta (`proposed_solution`) e a campanha (`campaign_id`) também são opcionais.
+
+Além do token, a chamada leva o tipo do corpo e a chave de repetição:
+
+```
+Authorization: Bearer SEU_TOKEN
+Content-Type: application/json
+Idempotency-Key: UMA-CHAVE-UNICA-123
+```
+
+O `Content-Type` avisa que o corpo vai em JSON. O `Idempotency-Key` é obrigatório nos `POST` e aceito nos `PUT` (veja [como repetir uma chamada sem duplicar](#como-repito-uma-chamada-sem-duplicar)). Com o curl, a chamada inteira fica assim:
+
+```
+curl -X POST \
+  -H "Authorization: Bearer SEU_TOKEN" \
+  -H "Idempotency-Key: CHAMADO-4711" \
+  -H "Content-Type: application/json" \
+  -d '{"author_email":"maria.souza@empresa.com.br","title":"Trocar o rolo da esteira","description":"O rolo atual trava a cada semana.","entity_id":"7d9e6a0e-3a11-4f55-8f4a-2a0c4c7b9a10","category_id":"2c1f0f6e-8a9b-4a3e-9f10-7c5d3e2a1b00"}' \
+  "https://its.empresa.com.br/integration/v1/ideas"
+```
+
+### O que volta e o que acontece no ITS?
+
+Resposta `201`:
+
+```json
+{ "code": "ITS-2026-0042", "status": "submitted", "entity_id": "7d9e6a0e-3a11-4f55-8f4a-2a0c4c7b9a10" }
+```
+
+O código `201` quer dizer que a ideia foi criada. A resposta é mínima: o código da ideia nova, a situação e a entidade. Guarde o código no seu sistema, porque é com ele que você comenta, atualiza a referência e lê a ideia depois. Para ver a ideia inteira, use a leitura.
+
+No ITS, a ideia segue o mesmo caminho de uma enviada pela tela:
+
+- Ela nasce Enviada (`submitted`), com o mesmo histórico e os mesmos avisos.
+- Ela entra na **Fila de ideias** de quem faz a triagem naquela entidade (veja [Fila e triagem](/pt-BR/analista/triagem/)).
+- A pessoa autora recebe o aviso de recebimento.
+- A página da ideia mostra que ela foi **Enviada pela integração**, com o nome da integração. <Regra id="RN-133">Tudo o que a integração grava leva a origem "via Integração X"</Regra>: a ideia, o comentário e o histórico.
+
+## Exemplo: como transformar um chamado em ideia?
+
+O fluxo do service desk, de ponta a ponta:
+
+1. O administrador cria a integração "Service desk", com os módulos Enviar ideias e comentar e Entidades e categorias e o escopo nas unidades atendidas, e entrega o token.
+2. Uma vez, o fluxo lê as listas de entidades e categorias e monta a correspondência entre os nomes usados no service desk e os identificadores do ITS.
+3. Quando um chamado é classificado como "sugestão de melhoria", o fluxo envia a ideia. O e-mail de quem abriu o chamado vai como autora, o resumo vira o título, a descrição do chamado vai no campo **Situação atual** e a unidade vira a entidade. O número do chamado vai como referência externa e também como chave de repetição.
+4. O fluxo grava no chamado o código da ideia que voltou na resposta.
+5. Se a resposta for `422 author_not_found` ou `422 author_cannot_submit`, a pessoa não tem conta ativa ou não pode enviar naquela unidade. O fluxo registra no chamado que a ideia não foi criada e por quê, para o atendente resolver.
+6. Quando o chamado é resolvido, o fluxo comenta na ideia, pelo código guardado, com um texto como "Chamado atendido pela equipe de manutenção.". A chave de repetição desse comentário é outra, como o número do chamado seguido de `-resolvido`.
+7. Para saber quando a ideia for aprovada, o service desk pode receber os avisos do ITS (veja [Webhooks: como receber](/pt-BR/ti/webhooks-receber/)).
+
+No Power Automate, cada chamada é a ação **HTTP**:
+
+- **Método**: `POST`.
+- **URI**: `https://its.empresa.com.br/integration/v1/ideas`.
+- **Cabeçalhos**: `Authorization` (`Bearer ` e o token, guardado no cofre), `Content-Type` (`application/json`) e `Idempotency-Key` (um valor único da operação, como o identificador do item que disparou o fluxo).
+- **Corpo**: o JSON da ação.
+
+Se o fluxo repetir a chamada, o ITS devolve a mesma resposta em vez de criar outra ideia.
+
+No n8n, use o nó **HTTP Request**:
+
+- **Method**: `POST`.
+- **Send Headers**: os mesmos três cabeçalhos.
+- **Send Body**: o corpo em JSON.
+
+A autenticação pode ser *Header Auth*, com `Authorization: Bearer SEU_TOKEN`.
+
+## Detalhes para consulta
+
+### Quais ações a API faz?
+
+Onde aparece `<identificador>`, vai o código da ideia, como `ITS-2026-0042`.
+
+| Ação | Rota | Módulo |
+|---|---|---|
+| Enviar ideia | `POST /integration/v1/ideas` | `ideas_write` |
+| Comentar | `POST /integration/v1/ideas/<identificador>/comments` | `ideas_write` |
+| Atualizar a referência externa | `PUT /integration/v1/ideas/<identificador>/external-ref` | `ideas_write` |
+| Registrar ganho declarado | `PUT /integration/v1/ideas/<identificador>/gain` | `gains_write` |
+
+A resposta de cada uma é mínima, só o necessário para você guardar o resultado.
+
+### Quais regras valem no envio de ideia?
+
+- O e-mail da autora é obrigatório. Se a pessoa não existe, está desativada ou foi anonimizada, a resposta é `422 author_not_found`; se ela não tem permissão na entidade, `422 author_cannot_submit`.
+- A entidade precisa estar no escopo da integração (`422 entity_not_in_scope`) e ativa (`422 validation_failed`). A categoria é obrigatória quando a instalação a exige. A campanha só vale se estiver aberta para a entidade e a categoria.
+- Campo desconhecido no corpo, como `status` ou `author_id`, é recusado com `422`. Os limites de tamanho são os da tela (título de 200 caracteres, por exemplo).
+
+### Como comento uma ideia?
+
+```json
+{ "body": "Chamado atendido pela equipe de manutenção." }
+```
+
+Resposta `201`: `{ "id": "...", "idea_code": "ITS-2026-0042", "created_at": "..." }`.
+
+### Como atualizo a referência externa?
+
+```json
+{ "external_ref": "CHAMADO-4711" }
+```
+
+Resposta `200`: `{ "idea_code": "ITS-2026-0042", "external_ref": "CHAMADO-4711" }`.
+
+Use `null` para limpar; o máximo é 100 caracteres. Em ideia encerrada ou arquivada, a resposta é `409 idea_closed`, e em ideia unida a outra, `409 idea_converged`. Mandar a mesma referência de novo responde `200`, sem registro novo no histórico.
+
+### Como registro o ganho declarado?
+
+```json
+{ "periodicity": "once", "estimated": 12000, "implementation_cost": 3000 }
+```
+
+Resposta `200`: `{ "idea_code": "ITS-2026-0042", "status": "declared" }`.
+
+- A periodicidade (`periodicity`) é `once`, `monthly` ou `yearly`. Se você não informar a moeda (`currency`), vale a da instalação.
+- O estimado (`estimated`) só entra enquanto a ideia está Enviada ou Em análise, e o realizado (`realized`) só depois de implementada. Fora disso, a resposta é `409`. Os valores não podem ser negativos.
+- Ideia não autorizada ou arquivada responde `409 idea_closed`, e ideia unida a outra, `409 idea_converged`.
+- Um ganho que uma pessoa já validou não é sobrescrito (`409 gain_validated`). O ganho declarado não entra nos indicadores oficiais nem na lista de ganhos da leitura.
+
+### O que acontece em cada caso da chave de repetição?
+
+- Se a chave faltar num `POST`, a resposta é `422 idempotency_key_required`; fora do formato, `422 invalid_idempotency_key`.
+- Se a chave e o corpo se repetem, o ITS devolve a mesma resposta, com o cabeçalho `Idempotent-Replay: true`, e não grava de novo.
+- Se a chave se repete com outro corpo, a resposta é `422 idempotency_key_reused`.
+- Se a primeira chamada com a mesma chave ainda está rodando, a resposta é `409 request_in_progress`. Tente de novo em instantes.
+- Se a primeira tentativa falhou por erro do servidor (`5xx`), a chave é liberada e você pode repetir. Erro de negócio (`4xx`) volta igual na repetição.
+
+### Quantas gravações posso fazer por minuto?
+
+A escrita tem <Regra id="RN-134">um limite próprio de 30 chamadas por minuto</Regra>, além do limite de chamadas por minuto da integração. Se passar, a resposta é `429`, com `Retry-After` em segundos. As leituras não gastam esse limite.
+
+### Quais erros a escrita devolve?
+
+| Status | Código | Quando |
+|---|---|---|
+| `401` | `unauthenticated` | Token ausente, inválido, vencido ou revogado |
+| `403` | `module_not_allowed` | O módulo está ligado, mas esta integração não o tem |
+| `404` | `not_found` | Módulo desligado, ideia inexistente ou fora do escopo |
+| `405` | `method_not_allowed` | Método que a rota não aceita (o `Allow` diz qual) |
+| `409` | `idea_closed`, `idea_converged`, `gain_validated`, `realized_not_yet`, `estimate_closed`, `request_in_progress` | A regra de negócio ou a chave em andamento impede |
+| `422` | `idempotency_key_required`, `invalid_idempotency_key`, `idempotency_key_reused`, `author_not_found`, `author_cannot_submit`, `entity_not_in_scope`, `validation_failed` | Dado inválido |
+| `429` | `too_many_requests`, `too_many_writes` | Limite de chamadas |
+
+### O que fica registrado e quem é avisado?
+
+- Cada gravação vai para a [Auditoria](/pt-BR/admin/auditoria-e-privacidade/) com a integração e o código da ideia, sem o texto do comentário nem o corpo da chamada.
+- Com os [webhooks](/pt-BR/ti/webhooks-receber/) ligados, o evento causado por uma integração não volta para ela mesma, para ela não reagir à própria gravação num ciclo sem fim. As outras assinaturas recebem o evento.

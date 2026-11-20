@@ -1,0 +1,105 @@
+export const meta = {
+  title: 'Integrações: configurar',
+  description: 'Como liberar a API do ITS para outros sistemas, só para ler ou também para gravar: chave geral, módulos, escopo, tokens, consumo e o que nunca sai.',
+};
+
+# Integrações: configurar
+
+Sistemas como Power Automate, n8n, painéis de BI e ERP muitas vezes precisam ler dados do ITS. Para isso existe a **API de integração**, separada da que a tela usa e com um contrato estável. Ela lê e, se você quiser, grava em quatro ações pequenas, e quem decide o que ela faz é você.
+
+A tela fica em **Administração > Integrações** e só aparece para quem tem a permissão **Gerenciar as integrações (API e webhooks)** (de fábrica, o Administrador).
+
+<Atencao>
+  A API de integração vem desligada. Enquanto você não ligar a chave geral, <Regra id="RN-102">qualquer chamada responde "não encontrado"</Regra>. De fábrica ela só lê. A escrita fica em módulos próprios, que você liga, e nunca decide nada: não tria, não aprova, não valida ganho, não exclui.
+</Atencao>
+
+## Quem decide o que cada integração enxerga?
+
+São três camadas, e vale sempre o menor resultado entre elas:
+
+1. A **chave geral** liga ou desliga a API inteira.
+2. Os **módulos** são partes da API (ideias, indicadores e ganhos, campanhas, Hall, entidades e categorias, usuários, loja), e você liga um a um.
+3. Cada sistema que consulta o ITS é uma **integração**, com os módulos que ela pode usar e <Regra id="RN-103">o escopo de entidades que ela enxerga</Regra>.
+
+<Dica>
+  Uma integração não é um usuário: não tem perfil nem senha e não entra na tela do ITS. Ela só tem um [token](/pt-BR/referencia/glossario/#token-de-integracao).
+</Dica>
+
+## Como libero a API?
+
+### 1. Ligar a chave geral
+
+O bloco **Chave geral** mostra o que falta. Para ligar, o **Endereço do sistema** (em **Configurações > Notificações e e-mail**) precisa começar com `https://` (ou ser `localhost`), para o token nunca trafegar aberto. Depois, clique em **Ligar a API de integração**.
+
+### 2. Ligar os módulos
+
+Na aba **Módulos**, marque o que a sua organização quer oferecer e clique em **Salvar módulos**. Os módulos **Usuários** e **Loja (pedidos)** vêm marcados como sensíveis, porque devolvem pessoas.
+
+| Módulo | O que oferece |
+|---|---|
+| **Ideias** | Ideias das entidades do escopo, com as etapas. Nunca comentários, anexos nem histórico |
+| **Indicadores e ganhos** | Os mesmos números dos relatórios e a lista de ganhos validados (nunca o declarado ou estimado) |
+| **Campanhas** | Campanhas ativas e encerradas, com as ideias do escopo. Rascunho e recompensa não saem |
+| **Hall e reconhecimento** | Destaques e elogios, sem o autor do elogio. Pontos, níveis e rankings de pessoas não saem |
+| **Entidades e categorias** | A árvore de entidades do escopo e as categorias |
+| **Enviar ideias e comentar** (grava) | <Regra id="RN-126">Envia ideias em nome de uma pessoa</Regra>, pelo e-mail dela e só se ela puder enviar naquela entidade. Também comenta em nome da integração e atualiza a referência externa |
+| **Registrar ganhos declarados** (grava) | Registra o ganho declarado de uma ideia. Quem valida o ganho é sempre uma pessoa |
+| **Usuários** | Nome, situação e perfis das pessoas do escopo. O e-mail só sai se você marcar a opção na integração |
+| **Loja (pedidos)** | Os pedidos da loja inteira, sem o escopo de entidades, para o sistema do RH acompanhar. <Regra id="RN-172">O saldo e o extrato nunca saem</Regra>. Veja [Gerenciar a loja e as bonificações](/pt-BR/admin/loja/) |
+
+Desligar um módulo corta na hora todas as integrações dele, e você não precisa recriar nada.
+
+### 3. Criar a integração
+
+Clique em **Nova integração** e preencha:
+
+- **Nome** e **Responsável**, quem responde por ela.
+- **Módulos**: só aparecem os ligados.
+- **Escopo de entidades**: as entidades que ela enxerga, com ou sem as sub-entidades. Sem nenhuma entidade, ela não vê nada. Para a organização inteira, marque de forma explícita a entidade raiz com as sub-entidades.
+- **Chamadas por minuto** (padrão 60, até 600) e, se quiser, os **IPs permitidos**.
+- **Incluir o e-mail das pessoas**: desligado de fábrica. Marque só se o sistema realmente precisar; <Regra id="RN-112">a escolha fica na auditoria</Regra>.
+- **Validade do token (dias)**: de 1 a 365.
+
+<Captura nome="integracoes" alt="Tela de integrações do ITS com a chave geral ligada, o endereço da API e uma integração ativa na lista, com módulos, escopo e vencimento do token." />
+
+### 4. Entregar o token
+
+Ao criar, o ITS mostra o token, que começa com `its_`, <Regra id="RN-104">uma única vez</Regra>. Copie e entregue ao responsável pelo sistema por um caminho seguro. Depois que você fecha a janela, só o início do token fica visível, e não há como recuperar o valor.
+
+<Atencao>
+  Trate o token como uma senha: não mande por e-mail aberto nem cole em chat. Quem tem o token consulta o que a integração enxerga.
+</Atencao>
+
+Quem vai usar o token precisa da página [API de integração: como consumir](/pt-BR/ti/api-de-integracao/) e, se a integração for gravar, de [Escrita pela API](/pt-BR/ti/escrita-pela-api/).
+
+## Como troco o token?
+
+Abra a integração e use **Gerar token novo**. O token antigo continua valendo por uma janela (padrão 24 horas, até 72), para você trocar no sistema sem derrubar a integração. Cada integração tem no máximo 2 tokens ativos. Quando terminar a troca, use **Revogar token** no antigo.
+
+## Como suspendo ou revogo uma integração?
+
+**Suspender** pausa a integração, e nada passa até você usar **Reativar**. **Revogar integração** é definitivo: os tokens morrem e a integração não volta. Se o sistema ainda precisar, crie outra.
+
+## Como vejo o consumo?
+
+Em cada integração, a tabela **Consumo (últimos 7 dias)** mostra as chamadas por módulo: total, erros 4xx e 5xx e quantas bateram no limite. <Regra id="RN-113">O ITS não guarda o endereço acessado, os parâmetros nem quem foi consultado</Regra>, e as leituras não vão para a auditoria.
+
+## E quando o token vai vencer?
+
+O token tem validade obrigatória, e a saúde do sistema ganha o item **Token de integração**: atenção a 30 dias do vencimento e falha a 7 dias (ou vencido). A falha gera <Regra id="RN-94">o alerta para quem tem a permissão de observabilidade</Regra>. Gere um token novo antes. Veja [Ler a observabilidade](/pt-BR/admin/ler-a-observabilidade/).
+
+## O que fica na auditoria?
+
+Tudo o que você faz fica na [Auditoria](/pt-BR/admin/auditoria-e-privacidade/): ligar ou desligar a chave, mudar módulos, criar, alterar, suspender e revogar integrações, e criar, girar e revogar tokens. <Regra id="RN-114">O valor do token nunca vai para a auditoria</Regra>.
+
+## O que mostra a aba Documentação?
+
+Em **Integrações > Documentação** ficam, só dos módulos ligados, as rotas, os parâmetros, os campos de cada resposta, um exemplo e a chamada `curl` pronta. Com **Ver como**, você vê o que uma integração específica enxerga, e **Baixar OpenAPI (JSON)** baixa o contrato. <Regra id="RN-115">Os exemplos são inventados</Regra>: nenhum dado real nem token aparece ali, e a aba não faz chamadas à API.
+
+## E se o outro sistema precisa saber na hora?
+
+Em vez de o outro sistema consultar de tempos em tempos, o ITS pode avisá-lo assim que algo acontece, num endereço que você permitir. São os webhooks: veja [Webhooks: configurar](/pt-BR/admin/webhooks/).
+
+## O que a API nunca devolve?
+
+Seja qual for a configuração, <Regra id="RN-107">a API nunca devolve</Regra> comentários (públicos ou internos), histórico, anexos, responsável de etapa, ganho que ainda não foi validado, senha, sessão, foto, identificador de login corporativo nem o nome de quem pediu para não aparecer. Quem ligou **Ocultar meu nome em murais e rankings**, e quem foi anonimizado, segue as mesmas regras do Hall.

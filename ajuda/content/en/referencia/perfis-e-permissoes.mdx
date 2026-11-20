@@ -1,0 +1,18 @@
+export const meta = {
+  title: 'Roles and permissions',
+  description: 'What permissions, roles and scope are in ITS, and what each factory role can do, permission by permission.',
+};
+
+# Roles and permissions
+
+A permission allows an action in ITS, such as submitting ideas, triaging ideas, validating gains or seeing system health. A role is a set of permissions, and each person is given a role.
+
+Every role applies in a scope: an entity (a part of the organization's structure, such as a site or a department), either that entity alone or its sub-entities too, which sit below it. That's why someone can be an employee in one department and an analyst at another site. The person who submits an idea always sees it, whatever their role. See [Users, roles and scope](/en/admin/usuarios-e-perfis/).
+
+ITS comes with five factory roles: **Employee**, **Analyst**, **Manager**, **Results validator** and **Administrator**. The table shows what each one can do on a fresh installation. The administrator can edit these roles and create others, so they may be different in your organization.
+
+<TabelaDePerfis />
+
+<Dica>
+  The Administrator automatically gets every new permission added in future versions. The other roles don't change unless you edit them.
+</Dica>

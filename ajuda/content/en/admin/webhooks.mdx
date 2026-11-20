@@ -1,0 +1,109 @@
+export const meta = {
+  title: 'Webhooks: setting up',
+  description: 'How to make ITS notify another system when something happens: switch, allowed destinations, subscriptions, secret, test, deliveries and what never goes in a notice.',
+};
+
+# Webhooks: setting up
+
+Besides being queried through the integration API, ITS can notify another system the moment something happens: an idea submitted, a status change, a validated gain. That notice is a [webhook](/en/referencia/glossario/#webhook), and with it the receiving system doesn't have to keep asking from time to time.
+
+The screen is in **Administration > Integrations > Webhooks** and only shows for people with the **Manage integrations (API and webhooks)** permission (out of the box, the Administrator).
+
+<Atencao>
+  This is the only feature in which ITS calls something outside itself. That's why <Regra id="RN-117">it comes turned off and only calls addresses you allowed</Regra>. The notice is also minimal: it carries identifiers and state, never a title, text, name, email or amount. The receiver fetches the details through the [read API](/en/ti/api-de-integracao/), with the integration's token, and only sees what its scope allows.
+</Atencao>
+
+## What controls the notices?
+
+1. The **webhooks switch** turns all of them on and off. It requires the integration API master switch to be on.
+2. The **Allowed destinations** are the list of places ITS may call. Nothing goes out to anywhere off the list, not even to the internal network.
+3. A **subscription** belongs to an integration and says where to send and which events. <Regra id="RN-118">The integration only receives events from the modules and scope it already has</Regra>.
+
+With the switch off, nothing is sent and no new event is stored. Whatever was waiting is retried when you turn the switch back on; anything older than 48 hours becomes a failure.
+
+## How do I set up webhooks?
+
+### 1. Turn on the switch
+
+In the **Webhooks** tab, click **Turn on webhooks**. If the integration API master switch is off, the screen says so and asks you to turn it on first, in the **Integrations** tab.
+
+### 2. Register the allowed destinations
+
+In **Allowed destinations**, enter one per line, up to 50, and click **Save the list**:
+
+| Type | Example | What it covers |
+|---|---|---|
+| Name | `erp.company.local` | Only that server |
+| Wildcard domain | `*.company.com` | The subdomains (not the bare domain) |
+| IP or range | `10.20.0.0/16` | The addresses in the range |
+
+Some address classes are always blocked, even if listed: the computer itself (`localhost`), link-local addresses (including the cloud metadata one, `169.254.169.254`), `0.0.0.0` and multicast. ITS checks the address at send time, not only when you save, so changing DNS later doesn't divert the notice.
+
+### 3. Create the subscription
+
+In **Subscriptions**, click **New subscription**, choose the **Integration**, give it a **Name**, enter the **Address (URL)** and tick the **Events**:
+
+- Use `https://`. `http://` only works for an internal network destination that's on the list. Don't put a username and password in the URL.
+- Only events from the modules the integration has appear. Each integration can have up to 5 subscriptions.
+- Enter the **Secret validity (days)**, from 1 to 365.
+
+### 4. Keep the secret
+
+When you create the subscription, ITS shows the secret, which starts with `whsec_`, <Regra id="RN-120">only once</Regra>. Copy it and hand it to whoever builds the receiving side through a safe channel. After you close the window, only the start stays visible, and there's no way to recover the value.
+
+<Atencao>
+  The secret works like a password: whoever has it can forge notices that look like they come from ITS. Don't send it by plain email or paste it in a chat.
+</Atencao>
+
+Whoever will receive the notices needs [Webhooks: how to receive](/en/ti/webhooks-receber/).
+
+### 5. Test
+
+Open the subscription and click **Send test**. ITS sends a test notice through the same path as real notices, with the same destination check and the same signature, and shows the result right away: the HTTP code of the response or the reason for the failure. <Regra id="RN-122">The test doesn't depend on any idea or scope</Regra>. What reaches the receiving system is described in [Webhooks: how to receive](/en/ti/webhooks-receber/).
+
+## Which events can I subscribe to?
+
+A subscription can notify when:
+
+- an idea is submitted, changes status, is archived, is permanently deleted or is merged into another;
+- a gain is validated;
+- a highlight enters or leaves the Hall of fame;
+- a campaign changes status;
+- an idea is published on the idea wall or removed from it, <Regra id="RN-157">without the reason for the removal</Regra>;
+- approval from another area is requested or the request ends, <Regra id="RN-191">without names, emails or comments</Regra>;
+- a store order is approved or delivered, or a bonus is paid, <Regra id="RN-172">without the person or the amount</Regra>.
+
+Scope counts at the moment of the event: <Regra id="RN-119">the integration only receives the event of an idea (or campaign) it can see at that moment</Regra>. The technical name of each event and the module it requires are in the full table in [Webhooks: how to receive](/en/ti/webhooks-receber/#which-events-can-i-subscribe-to).
+
+## How do I follow deliveries?
+
+In the subscription, the **Deliveries** table shows each send and its result, with a filter by status. If the destination doesn't answer or answers with a server error, ITS retries at longer and longer intervals; definitive errors aren't retried. The same notice can arrive more than once, and out of order. The retry intervals and which errors count as definitive are in [Webhooks: how to receive](/en/ti/webhooks-receber/).
+
+If 20 sends in a row fail for good, <Regra id="RN-121">ITS suspends the subscription</Regra> and flags it in system health. Fix the destination, use **Send test** and then **Reactivate**.
+
+A failed delivery can go out again with **Resend**: it goes back to pending and is sent unchanged. <Regra id="RN-122">The log never keeps the destination's response</Regra> and follows the same retention as observability.
+
+## How do I replace the secret?
+
+In the subscription, use **Generate new secret**. During the overlap window (default 24 hours, up to 72), each notice carries two signatures, one from the new secret and one from the old, so you can switch on the receiving system without losing anything. Each subscription has at most 2 active secrets. When you're done switching, use **Revoke secret** on the old one.
+
+## How do I suspend or remove a subscription?
+
+**Suspend** pauses the subscription's notices, and **Reactivate** resumes them. **Remove** deletes the subscription and its delivery log. If the integration is suspended or revoked, none of its notices go out.
+
+## How does health report on webhooks?
+
+The secret must have an expiry date, and <Regra id="RN-123">system health gets two items</Regra>:
+
+- **Webhook secret**: attention 30 days before expiry and failure at 7 days (or once expired).
+- **Webhook delivery**: failure if any subscription was suspended for failures; attention if there was a definitive failure in the last 24 hours or a notice has been waiting for delivery for more than 15 minutes.
+
+The failure raises <Regra id="RN-94">the alert for people with the observability permission</Regra>. See [Reading observability](/en/admin/ler-a-observabilidade/).
+
+## What goes into the audit log?
+
+Everything you do goes into [Audit](/en/admin/auditoria-e-privacidade/): turning the switch on or off, changing the destination list, creating, changing, suspending, reactivating and removing subscriptions, creating, rotating and revoking secrets, and asking for a resend or a test. Automatic suspension for failures is recorded too. <Regra id="RN-124">The audit log keeps only the server of the address</Regra>, never the path or the query (which can carry a secret), and never the secret. The sends themselves don't go into the audit log: they stay in the delivery log.
+
+## What does the Documentation tab show?
+
+In **Integrations > Documentation**, at the end of the page, you'll find the list of events, the notice format, the headers and the steps to check the signature, with a code example. <Regra id="RN-125">The example data is made up</Regra>.

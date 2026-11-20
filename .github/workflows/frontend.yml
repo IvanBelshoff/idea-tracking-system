@@ -1,0 +1,56 @@
+# CI do frontend (pasta frontend/). Também roda quando o contrato da API muda no backend.
+name: Frontend
+
+on:
+  # Também chamado pelo fluxo de publicação (release.yml), que roda as mesmas verificações antes de publicar.
+  workflow_call:
+  push:
+    branches: [main]
+    paths: ["frontend/**", "backend/openapi.json", ".github/workflows/frontend.yml"]
+  pull_request:
+    paths: ["frontend/**", "backend/openapi.json", ".github/workflows/frontend.yml"]
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    working-directory: frontend
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4.4.0
+        with:
+          package_json_file: frontend/package.json # versão lida de "packageManager"
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: 24
+          cache: pnpm
+          cache-dependency-path: |
+            frontend/pnpm-lock.yaml
+            frontend/tools/openapi/pnpm-lock.yaml
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --dir tools/openapi install --frozen-lockfile
+      - run: pnpm lint
+      - name: Contraste WCAG dos tokens de design
+        run: pnpm design:contrast
+      - name: Tipos da API gerados a partir do contrato (backend/openapi.json)
+        run: |
+          pnpm api:generate
+          git diff --exit-code src/api/schema.d.ts || (echo "::error::frontend/src/api/schema.d.ts desatualizado: rode 'pnpm api:generate' no frontend." && exit 1)
+      - run: pnpm typecheck
+      - run: pnpm test
+      - run: pnpm build
+      - name: Auditoria de dependências
+        run: pnpm audit --prod --audit-level=high
+
+  image:
+    runs-on: ubuntu-latest
+    needs: verify
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - name: Build da imagem Docker
+        run: docker build -t its-web:ci .

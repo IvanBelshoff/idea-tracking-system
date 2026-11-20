@@ -1,0 +1,37 @@
+export const meta = {
+  title: 'Juntar ideias parecidas',
+  description: 'Como juntar pedidos iguais numa ideia só: qual vira a principal, o que acontece com quem pediu e como desfazer.',
+};
+
+# Juntar ideias parecidas
+
+Quando várias pessoas pedem a mesma melhoria, o ITS junta os pedidos numa ideia só. Quem pediu depois não é descartado, e a fila fica sem repetidas. Isso é a convergência.
+
+## Qual ideia vira a principal?
+
+A <Regra id="RN-84">mais antiga, pela data de envio</Regra>. Ela conduz o fluxo, e as outras ficam **convergidas**: ligadas à principal, sem fluxo próprio. Elas deixam de aparecer separadas na fila e nos indicadores, para nada ser contado duas vezes.
+
+Só dá para convergir ideias ainda sem execução: Enviada ou Em análise. Uma ideia Em andamento já tem etapas, e esse trabalho se perderia.
+
+<Simulador titulo="junte duas ideias que pedem a mesma coisa">
+  <Convergencia />
+</Simulador>
+
+## Como duas ideias viram uma?
+
+- O colaborador apoia uma ideia parecida em vez de enviar outra.
+- Você, na triagem, marca duas ideias como a mesma. Nesse caso, a <Regra id="RN-85">justificativa é obrigatória</Regra> e fica no histórico.
+
+O ITS só sugere ideias parecidas; nunca junta sozinho.
+
+## O que acontece com quem pediu?
+
+Quem teve a ideia convergida <Regra id="RN-86">vira co-autor da principal</Regra>, e o texto original fica guardado para a equipe consultar. O co-autor <Regra id="RN-87">acompanha a principal</Regra> em Minhas ideias e recebe cada aviso. O autor da principal vê quantas pessoas pediram o mesmo, um bom sinal para priorizar.
+
+Nos pontos e no Hall, todos os co-autores contam. Por padrão, <Regra id="RN-89">o autor original fica com metade</Regra>, e o restante é dividido.
+
+As convergidas seguem a principal: se ela for não autorizada ou reaberta, elas acompanham, e cada co-autor é avisado com a mesma justificativa.
+
+## Juntou por engano?
+
+A convergência <Regra id="RN-88">pode ser desfeita</Regra>: a ideia volta a ter fluxo próprio, com a data de envio original.

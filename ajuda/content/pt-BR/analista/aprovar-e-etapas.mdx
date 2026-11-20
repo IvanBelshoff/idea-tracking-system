@@ -1,0 +1,40 @@
+export const meta = {
+  title: 'Aprovar e conduzir etapas',
+  description: 'Como aprovar uma ideia, conduzir as etapas, acompanhar prazo, progresso e atraso, e encerrar como implementada.',
+};
+
+# Aprovar e conduzir etapas
+
+Ao aprovar, a ideia vira trabalho, feito em etapas: uma de cada vez, cada uma com responsável e data.
+
+## O que eu faço ao aprovar?
+
+Você <Regra id="RN-06">monta a primeira etapa e escolhe o responsável por ela</Regra>. As etapas podem ser livres ou seguir o modelo **PDCA** (Planejar, Fazer, Verificar, Agir); a fase é só um rótulo, e <Regra id="RN-60">as regras das etapas são as mesmas</Regra>.
+
+<Dica>
+  Uma ideia ainda Enviada também pode ser aprovada direto. O ITS registra os dois passos na linha do tempo: assumir a análise e aprovar.
+</Dica>
+
+## Como as etapas funcionam?
+
+Cada etapa tem <Regra id="RN-15">nome, descrição, responsável, início, data prevista e anexos</Regra>, e a <Regra id="RN-16">prevista não pode ser antes do início</Regra>. A <Regra id="RN-12">próxima só pode ser criada quando a anterior estiver concluída</Regra>. Etapa concluída <Regra id="RN-13">não se edita nem se exclui</Regra>; só a última, ainda aberta, pode mudar.
+
+O prazo da ideia é a prevista da última etapa: <Regra id="RN-17">uma etapa nova estende o prazo</Regra>, e a mudança fica no histórico. O <Regra id="RN-19">progresso é a parte das etapas concluídas</Regra> ou, se a sua organização preferir, o tempo decorrido.
+
+<Simulador titulo="conduza as etapas de uma ideia">
+  <Etapas />
+</Simulador>
+
+## Quando a ideia fica atrasada?
+
+A ideia fica **Atrasada** quando a etapa aberta passa da data prevista; <Regra id="RN-18">no dia da prevista, ainda está no prazo</Regra>. O responsável e o analista <Regra id="RN-29">são avisados alguns dias antes</Regra> e no dia do vencimento.
+
+## Como eu encerro a ideia?
+
+Ao concluir a última etapa, o ITS pergunta se você quer <Regra id="RN-20">criar outra etapa ou marcar como implementada</Regra>. Para marcar como **Implementada**, <Regra id="RN-07">todas as etapas precisam estar concluídas, e você descreve o resultado obtido</Regra>. Medição, ganho e lição aprendida ficam em [Resultado e padronização](/pt-BR/analista/resultado/).
+
+Se o trabalho precisar parar no meio do caminho, use **Interromper**: a ideia fica Não autorizada, também com justificativa.
+
+<Atencao>
+  Os anexos seguem os tipos e o tamanho máximo definidos pelo administrador e <Regra id="RN-21">só podem ser removidos com a etapa aberta</Regra>. <Regra id="RN-147">Fotos e vídeos anexados abrem na própria página</Regra>; os outros arquivos são baixados.
+</Atencao>

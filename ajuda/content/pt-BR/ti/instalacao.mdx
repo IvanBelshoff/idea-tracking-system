@@ -1,0 +1,77 @@
+export const meta = {
+  title: 'Instalação',
+  description: 'Como instalar o ITS em cerca de 10 minutos com as imagens prontas do Docker, preencher o .env e colocar o sistema na rede com HTTPS.',
+};
+
+# Instalação
+
+O ITS é distribuído em imagens prontas para o Docker, então não é preciso baixar o código nem montar as imagens. Com dois arquivos (o `docker-compose.yml` e o `.env`) e um comando, sobem o banco, a API, o `worker` (processamento em segundo plano), o site e esta Ajuda. O passo a passo completo está no arquivo `docs/INSTALACAO.md` do projeto.
+
+## O que você precisa
+
+- **Docker** com o Compose v2 (`docker compose version` responde).
+- Um terminal e acesso à internet para baixar as imagens.
+- Uns 2 GB de memória livre e 2 GB de disco para começar.
+
+## 1. Baixar e configurar
+
+Crie uma pasta para o ITS e baixe nela os dois arquivos:
+
+```bash
+mkdir its && cd its
+curl -fsSLO https://raw.githubusercontent.com/IvanBelshoff/idea-tracking-system/main/docker-compose.yml
+curl -fsSL https://raw.githubusercontent.com/IvanBelshoff/idea-tracking-system/main/.env.example -o .env
+```
+
+Se preferir, clone o repositório e copie o `.env.example` para `.env` dentro dele.
+
+No `.env`, duas variáveis vêm vazias de propósito e são obrigatórias:
+
+| Variável | O que colocar |
+|---|---|
+| `POSTGRES_PASSWORD` | Uma senha forte para o banco (só o sistema usa), por exemplo gerada com `openssl rand -base64 24`. |
+| `APP_SECRET_KEY` | Uma chave aleatória longa, por exemplo gerada com `openssl rand -base64 32`. |
+
+Se uma delas ficar vazia, o ITS não sobe: o Compose para e diz qual falta. Não existe senha padrão para trocar depois.
+
+Confira também o `TZ`, o fuso horário (por exemplo `America/Sao_Paulo`). As outras variáveis já vêm com um padrão seguro.
+
+<Atencao>
+  Guarde o `.env` junto com o backup. O banco criado na primeira vez só abre com a `POSTGRES_PASSWORD` daquele momento. A `APP_SECRET_KEY` cifra a senha do servidor de e-mail e os segredos do login corporativo, e sem ela esses dados precisam ser cadastrados de novo. Nunca coloque o `.env` no controle de versão.
+</Atencao>
+
+## 2. Subir
+
+```bash
+docker compose up -d
+docker compose ps
+```
+
+Na primeira vez, o download das imagens leva alguns minutos. Quando termina, `db`, `api`, `web` e `docs` aparecem como `healthy`, e o `worker` como `Up` (ele não tem verificação de saúde no Docker).
+
+A variável `ITS_VERSION` define a versão. O padrão, `1`, recebe as correções e melhorias da versão 1 sem mudanças que quebram. Um número completo, como `1.0.0`, fixa a versão.
+
+As imagens vêm do GitHub (`ghcr.io`). Se ele estiver bloqueado na sua rede, use as mesmas imagens no Docker Hub com `ITS_REGISTRY=docker.io/ivanbelshoff` no `.env`.
+
+## 3. Assistente de instalação
+
+Abra **http://127.0.0.1:8080**. O assistente pede o nome da organização, o fuso, o idioma e cria a conta de administrador <Regra id="RN-43" />. Daí em diante, siga [Primeiros passos](/pt-BR/admin/primeiros-passos/).
+
+## Na rede, com HTTPS
+
+Por padrão, só a própria máquina acessa o ITS. Para outras pessoas usarem:
+
+- Coloque o ITS atrás de um **proxy com HTTPS** (Caddy, Traefik ou Nginx) apontando para a porta `8080`.
+- Se for usar a **API de integração** (opcional, desligada de fábrica), o proxy também precisa repassar o caminho `/integration/`; veja [API de integração: como consumir](/pt-BR/ti/api-de-integracao/).
+- O banco de dados nunca fica exposto, e o arquivo `docker-compose.dev.yml` não é para instalações reais.
+- Com HTTPS, o navegador oferece **instalar o app** no celular e no computador <Regra id="RN-83" />.
+
+## Depois de instalar
+
+Para acompanhar o ITS no dia a dia (saúde, worker, espaço e alertas), veja [Operação e alertas](/pt-BR/ti/operacao-e-alertas/).
+
+Para entrar com a conta da Microsoft ou do Google (opcional, desligado de fábrica), veja [Login corporativo](/pt-BR/ti/login-corporativo/). Para enviar e-mail pelo Microsoft 365 em vez de SMTP, veja [Envio de e-mail pela Microsoft](/pt-BR/ti/envio-pela-microsoft/). Para o Google Workspace, veja [Envio de e-mail pelo Google](/pt-BR/ti/envio-pelo-google/).
+
+## A Ajuda
+
+Esta Ajuda sobe junto, no serviço `docs`, e abre em `/ajuda/`, no mesmo endereço do ITS. Não precisa de configuração. Se ela parar, o ITS continua funcionando e mostra um aviso no lugar da Ajuda.

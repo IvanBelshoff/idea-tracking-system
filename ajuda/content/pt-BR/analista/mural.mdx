@@ -1,0 +1,49 @@
+export const meta = {
+  title: 'Publicar e moderar o mural',
+  description: 'Como publicar e retirar ideias do mural, cuidar do sigilo e moderar a conversa e as denúncias.',
+};
+
+# Publicar e moderar o mural
+
+O mural mostra a toda a organização as melhorias que estão acontecendo. Quem decide o que entra é a equipe de melhoria: nenhuma ideia vai para o mural sozinha.
+
+## Como o mural é ligado?
+
+O mural vem **desligado**, e quem administra liga em **Configurações > Mural de ideias**. Ligado, o Início de todos vira o mural. Desligado, tudo some da tela e <Regra id="RN-148">fica guardado para quando religar</Regra>.
+
+## Como eu publico uma ideia?
+
+Você precisa da permissão **Publicar no mural e moderar a conversa**, que vem nos perfis Analista e Administrador e vale nas entidades do seu escopo. Na página da ideia, o bloco **Mural** mostra se ela está no mural. Para publicar, use **Publicar no mural**. Só dá para publicar uma ideia <Regra id="RN-149">Em andamento ou Implementada</Regra>.
+
+## O que aparece no mural?
+
+O cartão leva <Regra id="RN-150">só o título, a situação, a categoria e a entidade</Regra>. Autor e co-autores recebem um aviso e <Regra id="RN-151">ficam anônimos até consentirem</Regra> em mostrar o nome. A equipe sempre vê quem é, com o nome marcado como "visível só para a equipe".
+
+<Dica>
+  Quem publica cuida do sigilo. O ITS não marca categoria nem entidade como sigilosa: se a ideia não deve ser vista pela organização inteira, não publique. A confirmação lembra disso antes de publicar.
+</Dica>
+
+## E para retirar?
+
+**Retirar do mural** pede um motivo. Reações, conversa e consentimentos ficam guardados e voltam se a ideia for publicada de novo. Interromper ou arquivar a ideia a retira sozinha; reabrir não a publica de novo. Publicar e retirar ficam no histórico da ideia e na auditoria.
+
+## Como eu modero a conversa?
+
+Na conversa da ideia no mural, você vê em cada comentário <Regra id="RN-153">**Ocultar** e **Restaurar**</Regra> e, se ele foi editado, **Versões anteriores**. Ocultar pede um motivo: quem escreveu é avisado e vê o motivo, e os outros leem "Comentário oculto pela equipe".
+
+## Onde ficam as denúncias?
+
+No menu **Denúncias do mural**, no grupo da equipe de melhoria. Ele reúne os comentários denunciados das entidades que você modera, com os motivos e os detalhes de cada denúncia, mas <Regra id="RN-154">sem dizer quem denunciou</Regra>. Para cada comentário:
+
+- **Ocultar** esconde o comentário e resolve as denúncias dele.
+- **Dispensar** deixa o comentário visível e tira as denúncias da fila.
+
+Ocultar, restaurar e dispensar ficam na auditoria, sem o texto do comentário. Quando chegam denúncias novas, você recebe <Regra id="RN-156">um aviso agrupado por dia</Regra>.
+
+## E as integrações?
+
+Os sistemas integrados ao ITS podem ser avisados quando uma ideia entra ou sai do mural (veja [Webhooks: configurar](/pt-BR/admin/webhooks/)), e a API de leitura mostra se a ideia está no mural. Reações, comentários e denúncias <Regra id="RN-157">nunca saem pela integração</Regra>.
+
+## E a acessibilidade?
+
+O mural vem em páginas e <Regra id="RN-158">funciona todo pelo teclado</Regra>, nos dois temas. Cada reação é um botão com nome e estado, e o leitor de tela anuncia a contagem.

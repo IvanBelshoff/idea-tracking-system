@@ -1,0 +1,37 @@
+export const meta = {
+  title: 'Merge similar ideas',
+  description: 'How to merge identical requests into a single idea: which one becomes the main idea, what happens to the people who asked and how to undo it.',
+};
+
+# Merge similar ideas
+
+When several people ask for the same improvement, ITS merges the requests into a single idea. Whoever asked later isn't dropped, and the queue has no duplicates. This is called convergence.
+
+## Which idea becomes the main one?
+
+The <Regra id="RN-84">oldest, by submission date</Regra>. It drives the workflow, and the others become **merged**: linked to the main idea, with no workflow of their own. They stop showing up separately in the queue and in the indicators, so nothing is counted twice.
+
+You can only merge ideas with no work underway yet: Submitted or In review. An In progress idea already has steps, and that work would be lost.
+
+<Simulador titulo="merge two ideas that ask for the same thing">
+  <Convergencia />
+</Simulador>
+
+## How do two ideas become one?
+
+- The employee supports a similar idea instead of submitting another one.
+- During triage, you mark two ideas as the same. In that case, a <Regra id="RN-85">justification is required</Regra> and stays in the history.
+
+ITS only suggests similar ideas; it never merges them on its own.
+
+## What happens to the people who asked?
+
+Whoever had their idea merged <Regra id="RN-86">becomes a co-author of the main idea</Regra>, and their original text is kept for the team to read. The co-author <Regra id="RN-87">follows the main idea</Regra> in My ideas and gets every notification. The author of the main idea sees how many people asked for the same thing, which is a good signal for prioritizing.
+
+For points and the Hall of fame, every co-author counts. By default, <Regra id="RN-89">the original author gets half</Regra>, and the rest is shared.
+
+Merged ideas follow the main one: if it ends up not approved or is reopened, they go with it, and each co-author is notified with the same justification.
+
+## Merged by mistake?
+
+A merge <Regra id="RN-88">can be undone</Regra>: the idea gets its own workflow back, with its original submission date.

@@ -1,0 +1,70 @@
+# CI da ajuda (pasta ajuda/): documentação interativa em Next.js, exportação estática.
+# Também roda quando muda o que a ajuda usa do frontend (tokens, tema, componentes, tópicos de ajuda).
+# O regras.json dos simuladores é conferido pelos testes do backend (test/docs).
+name: Ajuda
+
+on:
+  # Também chamado pelo fluxo de publicação (release.yml), que roda as mesmas verificações antes de publicar.
+  workflow_call:
+  push:
+    branches: [main]
+    paths:
+      - "ajuda/**"
+      - "frontend/src/tokens.css"
+      - "frontend/src/theme.css"
+      - "frontend/src/components/**"
+      - "frontend/src/app/help-topics.ts"
+      - ".github/workflows/ajuda.yml"
+  pull_request:
+    paths:
+      - "ajuda/**"
+      - "frontend/src/tokens.css"
+      - "frontend/src/theme.css"
+      - "frontend/src/components/**"
+      - "frontend/src/app/help-topics.ts"
+      - ".github/workflows/ajuda.yml"
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    working-directory: ajuda
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4.4.0
+        with:
+          package_json_file: ajuda/package.json # versão lida de "packageManager"
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: 24
+          cache: pnpm
+          cache-dependency-path: ajuda/pnpm-lock.yaml
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm lint
+      - name: Conteúdo (paridade pt-BR/en, regras citadas, links e tópicos do ITS)
+        run: pnpm check:content
+      - run: pnpm typecheck
+      - run: pnpm test
+      - name: Build estático + índice de busca (Pagefind)
+        run: pnpm build
+      - name: Build da Ajuda pública (GitHub Pages; o release.yml publica este build a cada versão)
+        env:
+          AJUDA_PUBLICA: "1"
+          AJUDA_BASE_PATH: /idea-tracking-system
+        run: pnpm build
+      - name: Auditoria de dependências
+        run: pnpm audit --prod --audit-level=high
+
+  image:
+    runs-on: ubuntu-latest
+    needs: verify
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - name: Build da imagem Docker (contexto na raiz do repositório)
+        working-directory: .
+        run: docker build -f ajuda/Dockerfile -t its-ajuda:ci .

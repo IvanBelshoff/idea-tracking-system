@@ -1,0 +1,122 @@
+export const meta = {
+  title: 'Envio de e-mail pela Microsoft',
+  description: 'Para o TI: como enviar os e-mails do ITS pelo Microsoft 365 (Graph) com um aplicativo próprio, restrito a uma caixa no Exchange, e como acompanhar a validade do segredo.',
+};
+
+# Envio de e-mail pela Microsoft
+
+Esta página é para quem instala o ITS e cuida do Microsoft 365 da sua organização. Quem administra o ITS usa a tela [E-mail](/pt-BR/admin/email/); aqui está o que precisa existir **antes** dela.
+
+<Regra id="RN-99">O ITS envia pelo Microsoft Graph, com um aplicativo registrado na Microsoft</Regra>, sem usuário e senha de pessoa. É o caminho recomendado hoje, porque a Microsoft vem desligando a autenticação básica do SMTP do Exchange Online (confira a data atual no seu tenant). O SMTP continua disponível para quem usa outro servidor, e o Google Workspace tem página própria: [Envio de e-mail pelo Google](/pt-BR/ti/envio-pelo-google/).
+
+<Atencao>
+  Use um aplicativo **só para o e-mail**, diferente do aplicativo do [login corporativo](/pt-BR/ti/login-corporativo/), e **restrinja-o a uma caixa** no Exchange (passo 4). Sem essa restrição, o aplicativo poderia enviar como qualquer pessoa da organização.
+</Atencao>
+
+## O que preciso preparar antes?
+
+| Item | Por quê |
+|---|---|
+| **Uma caixa de e-mail** do Exchange Online | É por ela que o ITS envia. Uma [caixa compartilhada](/pt-BR/referencia/glossario/) (por exemplo `nao-responder@seudominio.com.br`) basta e não consome licença |
+| **SPF, DKIM e DMARC** do domínio da caixa | Para os e-mails não caírem como spam. O ideal é um **subdomínio** só das notificações do ITS |
+| **`APP_SECRET_KEY`** no `.env` | O segredo do cliente fica cifrado com ela. Se a chave mudar, cadastre o segredo de novo |
+| **Saída de rede** do servidor da API e do worker | Para `login.microsoftonline.com` e `graph.microsoft.com`, na porta 443. Atrás de proxy, valem as mesmas variáveis do [login corporativo](/pt-BR/ti/login-corporativo/) |
+
+## 1. Como registro o aplicativo no Entra?
+
+1. No **Centro de administração do Microsoft Entra**, abra **Aplicativos > Registros de aplicativo > Novo registro**.
+2. Nome: `ITS e-mail`. Em **Tipos de conta com suporte**, escolha **Somente contas neste diretório organizacional (locatário único)**.
+3. **Não** informe URI de redirecionamento: o envio não tem login de pessoa.
+4. Em **Visão geral**, copie o **ID do aplicativo (cliente)** e o **ID do diretório (locatário)**.
+5. Em **Permissões de API**, **não adicione nada** (nem `Mail.Send`). Se já houver alguma permissão do Graph concedida, remova-a. Quem libera o envio é o Exchange (passo 4), e só para uma caixa.
+
+## 2. Como crio o segredo?
+
+Em **Certificados e segredos > Novo segredo do cliente**, escolha a validade (a Microsoft permite até 24 meses) e copie o **Valor** na hora, não o ID do segredo. Ele aparece **uma única vez**.
+
+<Dica>
+  **Anote a data de validade.** O Entra não avisa quando o segredo vence. O ITS guarda essa data e avisa **30 dias antes** na saúde, na tela **Observabilidade**. Veja como funciona mais abaixo.
+</Dica>
+
+## 3. Qual caixa envia os e-mails?
+
+Crie a caixa compartilhada no Exchange (por exemplo `nao-responder@seudominio.com.br`) e anote o endereço. Se preferir, o **ID do objeto** da caixa também serve no lugar do endereço (o campo é opcional no ITS).
+
+Os e-mails que o ITS envia pelo Graph não ficam guardados na pasta de itens enviados dessa caixa.
+
+## 4. Como libero o aplicativo só para essa caixa?
+
+Quem faz essa restrição é o [RBAC for Applications](/pt-BR/referencia/glossario/) do Exchange. No **Exchange Online PowerShell**, como administrador:
+
+```powershell
+Connect-ExchangeOnline
+
+# 1. Registra o aplicativo no Exchange (ponteiro para o aplicativo do Entra)
+New-ServicePrincipal -AppId <ID do aplicativo> -ObjectId <ID do objeto do aplicativo empresarial> -DisplayName "ITS e-mail"
+
+# 2. Um escopo com só a caixa do ITS
+New-ManagementScope -Name "ITS-caixa" -RecipientRestrictionFilter "PrimarySmtpAddress -eq 'nao-responder@seudominio.com.br'"
+
+# 3. O papel de envio, restrito a esse escopo
+New-ManagementRoleAssignment -App <ID do objeto do aplicativo empresarial> -Role "Application Mail.Send" -CustomResourceScope "ITS-caixa"
+
+# 4. Conferir: deve dizer que o aplicativo pode enviar por essa caixa (e por nenhuma outra)
+Test-ServicePrincipalAuthorization -Identity <ID do aplicativo> -Resource nao-responder@seudominio.com.br
+```
+
+O **ID do objeto do aplicativo empresarial** fica em **Aplicativos empresariais > ITS e-mail > Visão geral** e não é o mesmo que o ID do aplicativo. Os nomes dos comandos e dos parâmetros podem mudar: confira na documentação atual da Microsoft ("RBAC for Applications in Exchange Online"). A alteração pode levar alguns minutos para valer.
+
+## 5. Como cadastro no ITS?
+
+Em **Administração > E-mail > Envio**, escolha **Microsoft 365 (Graph)** em **Tipo de provedor** e preencha:
+
+| Campo no ITS | De onde vem |
+|---|---|
+| ID do tenant (diretório) | **ID do diretório** (passo 1) |
+| ID do cliente (aplicativo) | **ID do aplicativo** (passo 1) |
+| Segredo do cliente | O **Valor** do segredo (passo 2) |
+| Validade do segredo | A data de validade que você escolheu (passo 2) |
+| Caixa remetente (e-mail) | O endereço da caixa (passo 3) |
+| ID do objeto da caixa | Opcional |
+| Responder para | Opcional: para onde vão as respostas |
+
+<Captura nome="email-microsoft" alt="Tela de e-mail do ITS com o tipo Microsoft 365 escolhido: tenant, ID do cliente, segredo, validade do segredo e caixa remetente." />
+
+Depois, clique em **Enviar teste**, confira a caixa de entrada e clique em **Ligar envio**.
+
+## Como acompanho a validade do segredo?
+
+<Regra id="RN-100">O ITS mostra a validade do segredo do e-mail, e também a do login corporativo, como itens de saúde</Regra>: **Segredo do e-mail** e **Segredo do login corporativo**.
+
+| Situação | Estado na saúde |
+|---|---|
+| Sem data de validade informada | Atenção |
+| Vence em 30 dias ou menos | Atenção |
+| Vence em 7 dias ou menos, ou já venceu | **Falha** (gera alerta no sino e por e-mail, enquanto o envio ainda funciona) |
+
+Para trocar o segredo:
+
+1. Crie um segredo novo no Entra (passo 2).
+2. No ITS, cadastre o **Valor** novo e a nova **Validade do segredo**.
+3. Clique em **Enviar teste** e, com o teste certo, em **Ligar envio**.
+
+Se você trocar o segredo sem informar a nova validade, o ITS apaga a data antiga, e a saúde fica em atenção até você informar a nova.
+
+## O que fazer quando o envio falha?
+
+O motivo aparece no resultado do teste e em **E-mail > Envios**, só com o código do erro.
+
+| Mensagem | O que verificar |
+|---|---|
+| "A Microsoft recusou as credenciais do aplicativo (HTTP 401: invalid_client)" | O segredo cadastrado é o **ID do segredo**, e não o **Valor**, ou o segredo **venceu**. Crie outro e cadastre o Valor |
+| "HTTP 403: ErrorAccessDenied" | O aplicativo não tem o RBAC do Exchange para essa caixa (passo 4), a caixa está fora do escopo ou a alteração ainda não valeu |
+| "HTTP 404" (por exemplo `ErrorInvalidUser`) | A caixa não existe ou não é uma caixa do Exchange Online. Confira o endereço e o ID do objeto |
+| "HTTP 429" ou "HTTP 503" | Limite de uso ou indisponibilidade passageira: o ITS tenta de novo sozinho. Se continuar, espere ou reduza o volume |
+| "Não foi possível falar com a Microsoft" | A saída de rede para `login.microsoftonline.com` e `graph.microsoft.com` (firewall e proxy) |
+| Os e-mails caem no spam | SPF, DKIM e DMARC do domínio da caixa. Prefira um subdomínio só das notificações |
+
+O ITS **não repete** o envio quando a credencial é recusada, quando falta permissão ou quando a caixa não existe: o e-mail fica com falha na hora, com o motivo. No limite de uso e na indisponibilidade, ele tenta de novo, com espera crescente.
+
+<Dica>
+  Em produção, use um aplicativo e uma caixa **próprios do ITS**. Dividir o mesmo segredo entre sistemas diferentes aumenta o estrago de um vazamento e amarra as datas de renovação.
+</Dica>

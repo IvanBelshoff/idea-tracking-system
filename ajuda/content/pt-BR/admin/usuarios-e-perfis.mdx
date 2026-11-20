@@ -1,0 +1,45 @@
+export const meta = {
+  title: 'Usuários, perfis e escopo',
+  description: 'Como criar usuários, dar perfis por entidade, o que são o escopo e as sub-entidades e como desativar e anonimizar contas.',
+};
+
+# Usuários, perfis e escopo
+
+No ITS, ninguém tem acesso a tudo por padrão. Cada pessoa recebe um **perfil** (o que pode fazer) **em** uma ou mais **entidades** (onde pode fazer). Com isso claro, some quase toda dúvida do tipo "por que fulano não vê tal ideia?".
+
+## Como crio um usuário?
+
+Em **Usuários**, clique em **Novo usuário** e informe o nome e o e-mail. O ITS mostra um **Link para definir a senha**: entregue esse link à pessoa. A <Regra id="RN-42">entrada é por e-mail e senha</Regra>, com a política de senha da sua organização e bloqueio temporário depois de tentativas erradas.
+
+Se a sua organização usa o login com Microsoft ou Google, veja [Acesso corporativo](/pt-BR/admin/acesso-corporativo/) e, para a rotina, [Acesso corporativo: no dia a dia](/pt-BR/admin/acesso-corporativo-no-dia-a-dia/). No modo **Só SSO**, o cadastro não gera link de senha, e no detalhe da pessoa você vê as contas vinculadas.
+
+<Captura nome="usuarios" alt="Tela de usuários do ITS, com a lista de pessoas, seus perfis e a situação de cada conta." />
+
+## O que é um perfil?
+
+Um perfil é um conjunto de permissões. Cinco vêm de fábrica: Colaborador, Analista, Gestor, Validador de resultados e Administrador. Em **Perfis**, você edita esses e cria outros. A matriz completa está em [Perfis e permissões](/pt-BR/referencia/perfis-e-permissoes/).
+
+<Captura nome="perfis" alt="Tela de perfis do ITS, com os cinco perfis de fábrica, a descrição de cada um, o número de permissões e de usuários e o botão Novo perfil." />
+
+<Regra id="RN-01">Toda ação é conferida no servidor</Regra>: esconder um botão nunca é a única proteção.
+
+## O que é o escopo?
+
+É onde o perfil vale. Ao dar um perfil, em **Perfis por entidade**, você escolhe a **Entidade** e marca **Incluir sub-entidades** se ele também valer abaixo dela. Uma pessoa pode ter perfis diferentes em lugares diferentes, como colaboradora no setor A e analista na unidade B. E quem envia uma ideia sempre a vê, qualquer que seja o escopo.
+
+<Simulador titulo="descubra quem enxerga uma ideia">
+  <QuemEnxerga />
+</Simulador>
+
+<Dica>
+  No simulador, ligue "incluindo sub-entidades" para o Gil e veja o que muda. É o ajuste mais comum quando um gestor diz que "não vê as ideias da área".
+</Dica>
+
+## Como tiro alguém do ITS?
+
+- **Desativar:** a pessoa sai na hora e não entra mais, mas <Regra id="RN-41">continua ligada às ideias que enviou</Regra>. Dá para reativar depois.
+- **Anonimizar:** só para contas desativadas. Troca nome e e-mail por valores neutros, apaga a foto e não tem volta. O histórico das ideias continua, e a <Regra id="RN-40">pessoa passa a aparecer como "Ex-colaborador"</Regra>.
+
+## E se a pessoa esquecer a senha?
+
+Com o e-mail ligado, ela mesma usa **Esqueci minha senha** na tela de login. Sem e-mail, use **Gerar novo link de senha** no detalhe do usuário.

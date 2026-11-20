@@ -1,0 +1,647 @@
+{
+  "lifecycle": {
+    "statuses": [
+      "submitted",
+      "in_review",
+      "in_progress",
+      "implemented",
+      "rejected"
+    ],
+    "actions": [
+      "start_review",
+      "approve",
+      "reject",
+      "interrupt",
+      "implement",
+      "reopen"
+    ],
+    "transitions": {
+      "start_review": {
+        "submitted": "in_review"
+      },
+      "approve": {
+        "in_review": "in_progress"
+      },
+      "reject": {
+        "submitted": "rejected",
+        "in_review": "rejected"
+      },
+      "interrupt": {
+        "in_progress": "rejected"
+      },
+      "implement": {
+        "in_progress": "implemented"
+      },
+      "reopen": {
+        "implemented": "in_progress",
+        "rejected": "in_review"
+      }
+    },
+    "closed": [
+      "implemented",
+      "rejected"
+    ],
+    "implementBlockers": {
+      "semEtapas": "no_steps",
+      "etapaAberta": "open_steps",
+      "semResultado": "missing_result",
+      "pronto": null
+    }
+  },
+  "triage": {
+    "slaDays": 10,
+    "businessDaysDefault": false,
+    "examples": {
+      "submitted": "2026-11-09",
+      "calendarDue": "2026-11-19",
+      "businessDue": "2026-11-23"
+    },
+    "dueVectors": [
+      {
+        "submitted": "2026-11-09",
+        "days": 1,
+        "business": false,
+        "due": "2026-11-10"
+      },
+      {
+        "submitted": "2026-11-09",
+        "days": 1,
+        "business": true,
+        "due": "2026-11-10"
+      },
+      {
+        "submitted": "2026-11-09",
+        "days": 10,
+        "business": false,
+        "due": "2026-11-19"
+      },
+      {
+        "submitted": "2026-11-09",
+        "days": 10,
+        "business": true,
+        "due": "2026-11-23"
+      },
+      {
+        "submitted": "2026-11-12",
+        "days": 1,
+        "business": false,
+        "due": "2026-11-13"
+      },
+      {
+        "submitted": "2026-11-12",
+        "days": 1,
+        "business": true,
+        "due": "2026-11-13"
+      },
+      {
+        "submitted": "2026-11-12",
+        "days": 10,
+        "business": false,
+        "due": "2026-11-22"
+      },
+      {
+        "submitted": "2026-11-12",
+        "days": 10,
+        "business": true,
+        "due": "2026-11-26"
+      },
+      {
+        "submitted": "2026-11-13",
+        "days": 1,
+        "business": false,
+        "due": "2026-11-14"
+      },
+      {
+        "submitted": "2026-11-13",
+        "days": 1,
+        "business": true,
+        "due": "2026-11-16"
+      },
+      {
+        "submitted": "2026-11-13",
+        "days": 10,
+        "business": false,
+        "due": "2026-11-23"
+      },
+      {
+        "submitted": "2026-11-13",
+        "days": 10,
+        "business": true,
+        "due": "2026-11-27"
+      },
+      {
+        "submitted": "2026-11-14",
+        "days": 1,
+        "business": false,
+        "due": "2026-11-15"
+      },
+      {
+        "submitted": "2026-11-14",
+        "days": 1,
+        "business": true,
+        "due": "2026-11-16"
+      },
+      {
+        "submitted": "2026-11-14",
+        "days": 10,
+        "business": false,
+        "due": "2026-11-24"
+      },
+      {
+        "submitted": "2026-11-14",
+        "days": 10,
+        "business": true,
+        "due": "2026-11-27"
+      },
+      {
+        "submitted": "2026-11-15",
+        "days": 1,
+        "business": false,
+        "due": "2026-11-16"
+      },
+      {
+        "submitted": "2026-11-15",
+        "days": 1,
+        "business": true,
+        "due": "2026-11-16"
+      },
+      {
+        "submitted": "2026-11-15",
+        "days": 10,
+        "business": false,
+        "due": "2026-11-25"
+      },
+      {
+        "submitted": "2026-11-15",
+        "days": 10,
+        "business": true,
+        "due": "2026-11-27"
+      }
+    ],
+    "priority": [
+      {
+        "impact": 1,
+        "effort": 1,
+        "score": 1
+      },
+      {
+        "impact": 1,
+        "effort": 2,
+        "score": 0.5
+      },
+      {
+        "impact": 1,
+        "effort": 3,
+        "score": 0.333
+      },
+      {
+        "impact": 1,
+        "effort": 4,
+        "score": 0.25
+      },
+      {
+        "impact": 1,
+        "effort": 5,
+        "score": 0.2
+      },
+      {
+        "impact": 2,
+        "effort": 1,
+        "score": 2
+      },
+      {
+        "impact": 2,
+        "effort": 2,
+        "score": 1
+      },
+      {
+        "impact": 2,
+        "effort": 3,
+        "score": 0.667
+      },
+      {
+        "impact": 2,
+        "effort": 4,
+        "score": 0.5
+      },
+      {
+        "impact": 2,
+        "effort": 5,
+        "score": 0.4
+      },
+      {
+        "impact": 3,
+        "effort": 1,
+        "score": 3
+      },
+      {
+        "impact": 3,
+        "effort": 2,
+        "score": 1.5
+      },
+      {
+        "impact": 3,
+        "effort": 3,
+        "score": 1
+      },
+      {
+        "impact": 3,
+        "effort": 4,
+        "score": 0.75
+      },
+      {
+        "impact": 3,
+        "effort": 5,
+        "score": 0.6
+      },
+      {
+        "impact": 4,
+        "effort": 1,
+        "score": 4
+      },
+      {
+        "impact": 4,
+        "effort": 2,
+        "score": 2
+      },
+      {
+        "impact": 4,
+        "effort": 3,
+        "score": 1.333
+      },
+      {
+        "impact": 4,
+        "effort": 4,
+        "score": 1
+      },
+      {
+        "impact": 4,
+        "effort": 5,
+        "score": 0.8
+      },
+      {
+        "impact": 5,
+        "effort": 1,
+        "score": 5
+      },
+      {
+        "impact": 5,
+        "effort": 2,
+        "score": 2.5
+      },
+      {
+        "impact": 5,
+        "effort": 3,
+        "score": 1.667
+      },
+      {
+        "impact": 5,
+        "effort": 4,
+        "score": 1.25
+      },
+      {
+        "impact": 5,
+        "effort": 5,
+        "score": 1
+      }
+    ],
+    "overdue": {
+      "noDiaDoPrazo": false,
+      "diaSeguinte": true,
+      "emAnaliseNaoAtrasa": false
+    }
+  },
+  "steps": {
+    "canAddStep": {
+      "semEtapas": true,
+      "comEtapaAberta": false,
+      "todasConcluidas": true
+    },
+    "validDates": {
+      "previstaDepois": true,
+      "mesmoDia": true,
+      "previstaAntes": false
+    },
+    "deadlineIsLastDue": "2026-12-05",
+    "progressSteps": [
+      {
+        "done": 0,
+        "total": 1,
+        "pct": 0
+      },
+      {
+        "done": 1,
+        "total": 2,
+        "pct": 50
+      },
+      {
+        "done": 1,
+        "total": 3,
+        "pct": 33
+      },
+      {
+        "done": 2,
+        "total": 3,
+        "pct": 67
+      },
+      {
+        "done": 3,
+        "total": 3,
+        "pct": 100
+      }
+    ],
+    "lateExamples": {
+      "previsaoHoje": false,
+      "previsaoOntem": true,
+      "concluida": false
+    }
+  },
+  "convergence": {
+    "canBeConverged": {
+      "submitted": true,
+      "in_review": true,
+      "in_progress": false,
+      "implemented": false,
+      "rejected": false
+    },
+    "canSupport": {
+      "submitted": true,
+      "in_review": true,
+      "in_progress": true,
+      "implemented": false,
+      "rejected": false
+    },
+    "principalIsOlder": true,
+    "requesterCountWith2CoAuthors": 3
+  },
+  "access": {
+    "tree": [
+      {
+        "id": "org",
+        "mpath": "org."
+      },
+      {
+        "id": "unidade-a",
+        "mpath": "org.unidade-a."
+      },
+      {
+        "id": "expedicao",
+        "mpath": "org.unidade-a.expedicao."
+      },
+      {
+        "id": "producao",
+        "mpath": "org.unidade-a.producao."
+      },
+      {
+        "id": "unidade-b",
+        "mpath": "org.unidade-b."
+      },
+      {
+        "id": "camaras-frias",
+        "mpath": "org.unidade-b.camaras-frias."
+      }
+    ],
+    "vectors": [
+      {
+        "grant": "org",
+        "includeChildren": false,
+        "sees": [
+          "org"
+        ]
+      },
+      {
+        "grant": "org",
+        "includeChildren": true,
+        "sees": [
+          "org",
+          "unidade-a",
+          "expedicao",
+          "producao",
+          "unidade-b",
+          "camaras-frias"
+        ]
+      },
+      {
+        "grant": "unidade-a",
+        "includeChildren": false,
+        "sees": [
+          "unidade-a"
+        ]
+      },
+      {
+        "grant": "unidade-a",
+        "includeChildren": true,
+        "sees": [
+          "unidade-a",
+          "expedicao",
+          "producao"
+        ]
+      },
+      {
+        "grant": "expedicao",
+        "includeChildren": false,
+        "sees": [
+          "expedicao"
+        ]
+      },
+      {
+        "grant": "expedicao",
+        "includeChildren": true,
+        "sees": [
+          "expedicao"
+        ]
+      },
+      {
+        "grant": "producao",
+        "includeChildren": false,
+        "sees": [
+          "producao"
+        ]
+      },
+      {
+        "grant": "producao",
+        "includeChildren": true,
+        "sees": [
+          "producao"
+        ]
+      },
+      {
+        "grant": "unidade-b",
+        "includeChildren": false,
+        "sees": [
+          "unidade-b"
+        ]
+      },
+      {
+        "grant": "unidade-b",
+        "includeChildren": true,
+        "sees": [
+          "unidade-b",
+          "camaras-frias"
+        ]
+      },
+      {
+        "grant": "camaras-frias",
+        "includeChildren": false,
+        "sees": [
+          "camaras-frias"
+        ]
+      },
+      {
+        "grant": "camaras-frias",
+        "includeChildren": true,
+        "sees": [
+          "camaras-frias"
+        ]
+      }
+    ]
+  },
+  "roles": [
+    {
+      "key": "collaborator",
+      "name": "Colaborador",
+      "permissions": [
+        "idea.submit",
+        "idea.comment"
+      ]
+    },
+    {
+      "key": "analyst",
+      "name": "Analista",
+      "permissions": [
+        "idea.submit",
+        "idea.comment",
+        "idea.view_scope",
+        "idea.comment_internal",
+        "idea.triage",
+        "idea.register_for_other",
+        "idea.archive",
+        "idea.converge",
+        "step.manage",
+        "hall.moderate",
+        "mural.manage"
+      ]
+    },
+    {
+      "key": "manager",
+      "name": "Gestor",
+      "permissions": [
+        "idea.submit",
+        "idea.comment",
+        "idea.view_scope",
+        "idea.comment_internal",
+        "report.view",
+        "campaign.manage",
+        "reward.register",
+        "hall.highlight_entity"
+      ]
+    },
+    {
+      "key": "validator",
+      "name": "Validador de resultados",
+      "permissions": [
+        "gain.validate",
+        "report.view"
+      ]
+    },
+    {
+      "key": "admin",
+      "name": "Administrador",
+      "permissions": [
+        "idea.submit",
+        "idea.view_scope",
+        "idea.comment",
+        "idea.comment_internal",
+        "idea.triage",
+        "idea.register_for_other",
+        "idea.reopen",
+        "idea.archive",
+        "idea.delete",
+        "idea.converge",
+        "step.manage",
+        "report.view",
+        "gain.validate",
+        "campaign.manage",
+        "hall.highlight_entity",
+        "hall.highlight_org",
+        "hall.moderate",
+        "mural.manage",
+        "store.manage",
+        "reward.register",
+        "user.manage",
+        "role.manage",
+        "entity.manage",
+        "category.manage",
+        "setting.manage",
+        "email.manage",
+        "sso.manage",
+        "integration.manage",
+        "audit.view",
+        "ops.view"
+      ]
+    }
+  ],
+  "permissions": {
+    "idea.submit": "Enviar ideias",
+    "idea.view_scope": "Ver todas as ideias das entidades do escopo",
+    "idea.comment": "Comentar ideias visíveis",
+    "idea.comment_internal": "Ver e escrever comentários internos",
+    "idea.triage": "Triar, aprovar e recusar ideias",
+    "idea.register_for_other": "Cadastrar ideia em nome de outra pessoa (RN-04)",
+    "idea.reopen": "Reabrir ideia encerrada (RN-09)",
+    "idea.archive": "Arquivar ideia (RN-11)",
+    "idea.delete": "Excluir ideia definitivamente (RN-11; só o administrador)",
+    "idea.converge": "Convergir ideias semelhantes (RN-85)",
+    "step.manage": "Criar e gerenciar etapas e anexos",
+    "report.view": "Ver indicadores e relatórios do escopo",
+    "gain.validate": "Validar ganho financeiro (RN-63)",
+    "campaign.manage": "Criar e gerenciar campanhas",
+    "hall.highlight_entity": "Destacar ideias no Hall da entidade",
+    "hall.highlight_org": "Destacar ideias no Hall da organização",
+    "hall.moderate": "Moderar elogios do Hall",
+    "mural.manage": "Publicar no mural e moderar a conversa (RN-148)",
+    "store.manage": "Gerenciar a loja: itens, pedidos, bonificações e ajustes de saldo (RN-159)",
+    "reward.register": "Registrar recompensas concedidas (informativo; RN-71)",
+    "user.manage": "Gerenciar usuários e seus perfis",
+    "role.manage": "Gerenciar perfis e permissões",
+    "entity.manage": "Gerenciar entidades",
+    "category.manage": "Gerenciar categorias",
+    "setting.manage": "Alterar configurações da instalação",
+    "email.manage": "Configurar o envio de e-mail, os modelos e ver os envios (RN-90)",
+    "sso.manage": "Configurar o acesso corporativo: domínios e login Microsoft/Google (RN-95 a RN-98)",
+    "integration.manage": "Gerenciar as integrações (API e webhooks): chave geral, módulos, integrações, tokens e webhooks (RN-102, RN-117)",
+    "audit.view": "Ler o log de auditoria",
+    "ops.view": "Ler a saúde e as métricas operacionais (observabilidade, RN-92)"
+  },
+  "hall": {
+    "allowInProgressDefault": false,
+    "eligibility": {
+      "submitted": [
+        "not_ready",
+        "not_ready"
+      ],
+      "in_review": [
+        "not_ready",
+        "not_ready"
+      ],
+      "in_progress": [
+        "not_ready",
+        "ok"
+      ],
+      "implemented": [
+        "ok",
+        "ok"
+      ],
+      "rejected": [
+        "rejected",
+        "rejected"
+      ]
+    },
+    "showsName": {
+      "aceitou": true,
+      "semResposta": false,
+      "recusou": false,
+      "aceitouMasOcultaNome": false
+    }
+  }
+}

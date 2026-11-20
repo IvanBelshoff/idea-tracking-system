@@ -1,0 +1,51 @@
+export const meta = {
+  title: 'Pedir aprovação de outra área',
+  description: 'Como a equipe de melhoria pede o aval de outra área antes de aprovar ou implementar uma ideia, com ou sem usuário no ITS.',
+};
+
+# Pedir aprovação de outra área
+
+Algumas ideias mudam muito ou mexem em outra área: a manutenção, a segurança, o gestor que responde pela mudança. Antes de seguir, você pede o aval dessas pessoas pelo ITS, e a decisão fica registrada na ideia. Quem aprova não precisa ter usuário no ITS.
+
+## Quando dá para pedir?
+
+Quem tria ideias na entidade pede, com a ideia **Em análise** ou **Em andamento**. Na página da ideia, o bloco **Aprovação de outra área** tem o botão **Pedir aprovação**. Cada ideia tem <Regra id="RN-183">um pedido aberto por vez</Regra>; os encerrados ficam no histórico do bloco.
+
+## O que eu preencho?
+
+- **Aprovadores**, de 1 a 10. **Pessoa do ITS** você escolhe na lista. **Pessoa de fora** você informa com nome, e-mail e a área que ela representa. Se o e-mail for de fora dos domínios da empresa, o formulário avisa; a sua organização pode até <Regra id="RN-190">recusar esses e-mails</Regra>.
+- **Resumo para o aprovador:** o que ele precisa saber para decidir. Os textos da ideia não vão junto: o aprovador vê só o que você escrever aqui.
+- **O que a aprovação segura:** a aprovação da ideia (só Em análise) ou a implementação. Enquanto o pedido estiver aberto, essa ação fica bloqueada.
+- **Prazo**, em dias. O padrão vem das configurações.
+- **O que mais mostrar:** o ganho estimado e até 5 anexos da ideia, se quiser.
+
+## Como cada aprovador responde?
+
+- **Quem tem usuário** recebe um aviso no sino e decide em **Aprovações pendentes**.
+- **Quem é de fora** recebe um e-mail com um <Regra id="RN-184">link de uso único</Regra>, que vale até o prazo e morre depois de usado. Se a organização ligou o código de confirmação, a página do link pede um código enviado ao mesmo e-mail.
+
+Todos decidem ao mesmo tempo, e é preciso o "sim" de todos. Faltando 3 dias e no dia do prazo, quem não respondeu <Regra id="RN-189">recebe um lembrete</Regra>. No fim do prazo, o pedido vence, e você é avisado.
+
+<Atencao>
+  Com o envio de e-mail desligado, quem é de fora não recebe nada. Nesse caso, registre a decisão dele à mão, como no item abaixo.
+</Atencao>
+
+## E quem aprovou por e-mail ou em reunião?
+
+Em cada aprovador pendente há o botão **Registrar decisão**. Informe a decisão, o nome de quem decidiu, a data e <Regra id="RN-187">pelo menos um arquivo de evidência</Regra>, como o e-mail salvo ou a ata. O registro fica marcado com o seu nome, para ninguém confundir com uma resposta pelo link.
+
+## O que acontece no fim?
+
+- **Todos aprovaram:** a ação fica liberada. A aprovação <Regra id="RN-188">nunca muda a ideia sozinha</Regra>: quem aprova ou implementa continua sendo você.
+- **Alguém não aprovou:** o pedido fecha como não aprovado, e os links que faltavam deixam de valer. Na configuração de fábrica, você escolhe entre pedir de novo com o resumo ajustado, não autorizar a ideia ou **Seguir sem a aprovação**, com uma justificativa que só a equipe vê. Se a sua organização escolheu bloquear, só um novo pedido aprovado libera a ideia.
+- **O prazo venceu:** vale o mesmo que uma recusa.
+
+Precisa desistir de um pedido aberto? **Cancelar pedido** pede um motivo, e os links morrem na hora.
+
+## Quem vê o quê?
+
+A equipe e os gestores com acesso à ideia veem tudo: aprovadores, decisões, comentários e evidências. O e-mail de quem é de fora abre oculto, até você clicar no olho. O autor vê só <Regra id="RN-190">"Aguardando aprovação de outra área"</Regra> e, no fim, o resultado, sem nomes nem comentários.
+
+<Dica>
+  Quem responde ao pedido também tem uma página na Ajuda: [Aprovar uma ideia](/pt-BR/gestor/aprovar-uma-ideia/). Vale mandar o link junto, se a pessoa nunca usou o ITS.
+</Dica>

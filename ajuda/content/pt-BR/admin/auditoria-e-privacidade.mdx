@@ -1,0 +1,39 @@
+export const meta = {
+  title: 'Auditoria e privacidade',
+  description: 'O que fica no histórico das ideias e no log de auditoria, o que abre oculto e como o ITS cuida dos dados pessoais.',
+};
+
+# Auditoria e privacidade
+
+O ITS guarda o que precisa para ser transparente e protege o que é pessoal.
+
+## O que fica no histórico de uma ideia?
+
+Tudo o que acontece com ela: criação, mudanças de situação, etapas, prazos, atribuições, comentários internos e reaberturas, sempre com quem fez, quando e por quê. <Regra id="RN-38">Esse histórico não se apaga</Regra>.
+
+## O que o log de auditoria registra?
+
+Em **Auditoria**, você consulta <Regra id="RN-39">as entradas no sistema, as tentativas que falharam e as alterações de usuários, perfis e configurações</Regra>. É ali que você responde "quem mudou isso?". Para saber se o sistema está saudável, veja [Ler a observabilidade](/pt-BR/admin/ler-a-observabilidade/).
+
+## E as integrações e os webhooks?
+
+- Das [integrações](/pt-BR/admin/integracoes/), entram as ações de quem administra, como criar, girar token e revogar, sem o valor do token. <Regra id="RN-114">As leituras feitas pela API não entram</Regra>.
+- O que uma integração grava (enviar ideia, comentar, atualizar a referência, declarar ganho) <Regra id="RN-133">entra no log</Regra>, sem autor de pessoa e sem o texto do comentário nem o corpo da chamada.
+- Dos [webhooks](/pt-BR/admin/webhooks/), entram a chave, os destinos, as assinaturas e os segredos (só o servidor do endereço, nunca o segredo). <Regra id="RN-124">Cada envio, em si, fica de fora</Regra>.
+
+## Por que alguns dados aparecem ocultos?
+
+Para proteger contra tela compartilhada e olhar por cima do ombro. O IP de origem e os e-mails nos detalhes de cada registro <Regra id="RN-135">abrem ocultos</Regra>, assim como os campos de configuração que identificam a sua organização: login corporativo, e-mail e endereço do webhook. Clique no **olho** para ver e de novo para ocultar.
+
+Enquanto oculto, o valor nem está na página. Depois de revelado, ele volta a se ocultar sozinho quando você troca de tela, salva ou passa 60 segundos. Não é uma barreira contra o próprio administrador, e revelar não vai para a auditoria.
+
+## Como o ITS cuida dos dados pessoais?
+
+- **Desativar e anonimizar:** a conta desativada mantém o histórico, e a <Regra id="RN-40">anonimização troca nome e e-mail por valores neutros</Regra>, sem volta. Veja [Usuários, perfis e escopo](/pt-BR/admin/usuarios-e-perfis/).
+- **Foto do perfil:** opcional. O ITS reduz a imagem e apaga os metadados, como a localização. A <Regra id="RN-91">foto nunca aparece na consulta pública</Regra>, some do Hall e do ranking para quem oculta o nome e é apagada na anonimização.
+- **Nome no Hall e no ranking:** cada pessoa decide; veja [Hall, pontos e privacidade](/pt-BR/colaborador/hall-e-pontos/).
+- **Consulta pública:** nunca mostra autor, comentários, anexos, ganhos ou dados pessoais; veja [Consulta pública](/pt-BR/colaborador/consulta-publica/).
+
+## Alguém pode ver a senha de outra pessoa?
+
+Ninguém, nem o administrador. A <Regra id="RN-42">recuperação é sempre por um link com prazo</Regra>, nunca por senha enviada por e-mail.

@@ -1,0 +1,39 @@
+export const meta = {
+  title: 'Audit and privacy',
+  description: 'What goes into the idea history and the audit log, what opens hidden and how ITS takes care of personal data.',
+};
+
+# Audit and privacy
+
+ITS keeps what it needs to be transparent and protects what's personal.
+
+## What goes into an idea's history?
+
+Everything that happens to it: creation, status changes, steps, deadlines, assignments, internal comments and reopenings, always with who did it, when and why. <Regra id="RN-38">This history can't be erased</Regra>.
+
+## What does the audit log record?
+
+In **Audit**, you look up <Regra id="RN-39">sign-ins, failed attempts and changes to users, roles and settings</Regra>. That's where you answer "who changed this?". To find out whether the system is healthy, see [Reading observability](/en/admin/ler-a-observabilidade/).
+
+## What about integrations and webhooks?
+
+- From [integrations](/en/admin/integracoes/), the log gets the administrators' actions, such as creating, rotating a token and revoking, without the token value. <Regra id="RN-114">Reads made through the API aren't logged</Regra>.
+- What an integration writes (submitting an idea, commenting, updating the reference, declaring a gain) <Regra id="RN-133">goes into the log</Regra>, with no person as author and without the comment text or the call body.
+- From [webhooks](/en/admin/webhooks/), the log gets the switch, the destinations, the subscriptions and the secrets (only the server of the address, never the secret). <Regra id="RN-124">Each send itself is left out</Regra>.
+
+## Why do some details show up hidden?
+
+To protect against shared screens and people looking over your shoulder. The origin IP and the emails in each entry's details <Regra id="RN-135">open hidden</Regra>, and so do the settings fields that identify your organization: corporate sign-in, email and the webhook address. Click the **eye** to see them, and again to hide them.
+
+While hidden, the value isn't even on the page. Once revealed, it hides again on its own when you change screens, when you save or after 60 seconds. It isn't a barrier against the administrator, and revealing isn't recorded in the audit log.
+
+## How does ITS take care of personal data?
+
+- **Disable and anonymize:** a disabled account keeps its history, and <Regra id="RN-40">anonymizing replaces the name and email with neutral values</Regra>, with no way back. See [Users, roles and scope](/en/admin/usuarios-e-perfis/).
+- **Profile photo:** optional. ITS shrinks the image and deletes the metadata, such as the location. The <Regra id="RN-91">photo never shows in public lookup</Regra>, disappears from the Hall of fame and the ranking for people who hide their name, and is deleted on anonymization.
+- **Name in the Hall and the ranking:** each person decides; see [Hall, points and privacy](/en/colaborador/hall-e-pontos/).
+- **Public lookup:** never shows the author, comments, attachments, gains or personal data; see [Public lookup](/en/colaborador/consulta-publica/).
+
+## Can anyone see another person's password?
+
+Nobody can, not even the administrator. <Regra id="RN-42">Recovery always goes through a link that expires</Regra>, never through a password sent by email.

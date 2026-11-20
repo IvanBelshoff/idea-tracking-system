@@ -1,0 +1,36 @@
+export const meta = {
+  title: 'Entities and categories',
+  description: 'How to build the entity tree, set up and order the categories, and what happens when you deactivate one of them.',
+};
+
+# Entities and categories
+
+Entities say **where** an idea happens, and categories say **what kind** of improvement it is. Both show up when submitting, in filters and in the indicators.
+
+## How do I build the entities?
+
+<Regra id="RN-25">Entities form a tree</Regra>: the organization, its sites and its departments. Every idea belongs to an entity, and roles apply per entity (with or without the sub-entities). So build the tree the way your organization really works, following who answers to whom.
+
+<Captura nome="entidades" alt="ITS entities screen, with the organization tree split into sites and departments." />
+
+## How do I move an entity?
+
+Drag the entity by its handle, at the left of the row, and drop it on the new parent entity. With the keyboard, Space picks it up, the arrow keys choose the destination and Space drops it. If you'd rather not drag, use **Move** in the row's menu.
+
+Since moving changes who sees what, ITS <Regra id="RN-141">asks for confirmation before saving</Regra>, and the sub-entities move along. The root doesn't move, and an entity can't go inside itself or one of its descendants: those destinations are disabled while you drag.
+
+## How do I set up the categories?
+
+For each category, you set <Regra id="RN-24">the name, the color and whether it's active</Regra>. To start quickly, import a ready-made set: **Safety + [QDCEP](/en/referencia/glossario/#qdcep)** (Quality, Delivery, Cost, Environment and People) or **Generic**. An idea has one main category and can have others.
+
+## How do I change the order of the categories?
+
+The order is the same one used in lists and forms. Drag the row by its handle, use the **Move up** and **Move down** buttons or move it with the keyboard. <Regra id="RN-137">The new order applies to the whole list at once</Regra> and is recorded in the audit log.
+
+## Why deactivate instead of delete?
+
+Use **Deactivate**: <Regra id="RN-26">an inactive entity or category takes no new ideas</Regra>, but the old ones stay visible and filterable. It's the right way to retire a department that closed without losing its history.
+
+## How do idea codes work?
+
+Each idea gets a <Regra id="RN-22">sequential code per year</Regra>, like `ITS-2026-0042`, which ITS generates and which never changes. You can change the prefix ("ITS") in **Settings**. If your organization has its own tracking, use the optional <Regra id="RN-23">external reference</Regra> field to link the two.

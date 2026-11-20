@@ -1,0 +1,47 @@
+export const meta = {
+  title: 'Fila e triagem',
+  description: 'Como dar conta da fila: prazo para o primeiro retorno, atraso, quem analisa cada ideia, prioridade por impacto e esforço e ações em lote.',
+};
+
+# Fila e triagem
+
+A triagem é o primeiro retorno para quem enviou a ideia. O ITS ajuda você a não deixar ninguém sem resposta, mesmo com a fila cheia.
+
+## Onde ficam as ideias que chegaram?
+
+Na **Fila de ideias** estão as ideias das entidades que você acompanha, cada uma com a situação, o tempo de espera e a **previsão de retorno**.
+
+<Captura nome="fila" alt="Fila de ideias do ITS, com filtros de situação, entidade e categoria e a lista de ideias com a previsão de retorno." />
+
+## Qual é o prazo para responder?
+
+A sua organização define o <Regra id="RN-54">prazo para o primeiro retorno</Regra>, como 10 dias, corridos ou só úteis. Quem enviou vê a previsão desde o envio.
+
+Se a ideia ainda está **Enviada** depois da previsão, ela ganha o sinal de **retorno atrasado**, e o analista e o gestor são avisados. O atraso começa no dia seguinte ao da previsão e some quando alguém assume a análise.
+
+<Simulador titulo="faça a triagem de uma fila de cinco ideias">
+  <Triagem />
+</Simulador>
+
+<Dica>
+  No simulador, ligue "dias úteis" e veja as previsões mudarem: sábado e domingo deixam de contar.
+</Dica>
+
+## Quem analisa cada ideia?
+
+A análise pode ir para alguém <Regra id="RN-55">automaticamente ou à mão</Regra>. O jeito automático segue regras de entidade e categoria, como "categoria Segurança na Unidade A vai para a Ana", que ficam em **Administração > Atribuição**.
+
+## O que vem primeiro?
+
+Na triagem, dê notas de 1 a 5 para o **impacto** e para o **esforço**. A <Regra id="RN-56">prioridade é o impacto dividido pelo esforço</Regra>, e a fila pode ser ordenada por ela. É só um apoio: quem decide é você.
+
+## O que eu decido na triagem?
+
+- **Assumir a análise:** a ideia passa para Em análise, e quem enviou é avisado.
+- **Não autorizar:** <Regra id="RN-05">sempre com justificativa</Regra>, que vai para quem enviou. Escreva como você gostaria de ler: o motivo e, se houver, o que poderia mudar.
+
+Para aprovar, veja [Aprovar e conduzir etapas](/pt-BR/analista/aprovar-e-etapas/).
+
+## Dá para cuidar de várias ideias de uma vez?
+
+Dá. <Regra id="RN-59">Selecione várias na fila</Regra> para atribuir, mudar a categoria ou não autorizar com a mesma justificativa. Você também pode salvar os filtros que usa sempre.

@@ -1,0 +1,223 @@
+export const meta = {
+  title: 'API de integração: como consumir',
+  description: 'Para que serve a leitura de dados do ITS por outros sistemas, com exemplos de uso, os conceitos de integração, token, módulo, escopo e lista, a primeira chamada passo a passo, um fluxo completo e os detalhes de rotas, limites, erros e rede.',
+};
+
+# API de integração: como consumir
+
+A API de integração deixa outro sistema da empresa buscar dados no ITS sem que ninguém precise abrir a tela. O sistema faz uma chamada a um endereço do ITS e recebe a resposta em JSON, um formato de texto organizado em campos e valores, que planilhas, painéis de BI e ferramentas como o Power Automate e o n8n sabem ler.
+
+Esta página é para quem monta esse lado: o TI, um desenvolvedor ou quem cria fluxos no Power Automate ou no n8n. Quem libera o acesso no ITS é o administrador, em [Integrações: configurar](/pt-BR/admin/integracoes/).
+
+## Ler, gravar ou ser avisado: qual usar?
+
+O ITS conversa com outros sistemas de três formas, cada uma com a sua página:
+
+| Forma | Como funciona | Serve para | Onde está |
+|---|---|---|---|
+| Leitura | O seu sistema pergunta ao ITS, quando quiser | Painéis, planilhas, relatórios e a consulta ao detalhe de uma ideia | Nesta página |
+| Escrita | O seu sistema grava no ITS | Transformar um chamado em ideia, comentar numa ideia, declarar um ganho | [Escrita pela API](/pt-BR/ti/escrita-pela-api/) |
+| Webhook | O ITS avisa o seu sistema quando algo acontece | Reagir na hora, como postar no Teams quando uma ideia é aprovada | [Webhooks: como receber](/pt-BR/ti/webhooks-receber/) |
+
+As três se combinam. O aviso do webhook diz só o que mudou, como o código da ideia e a situação nova, e o seu sistema usa a leitura para buscar o título e o resto. Do mesmo jeito, um service desk pode criar uma ideia pela escrita e, dias depois, receber pelo webhook o aviso de que ela foi aprovada.
+
+## Para que serve?
+
+A leitura leva os dados do ITS para onde as pessoas já trabalham. Alguns usos comuns, cada um com o módulo de que precisa (os módulos são explicados logo abaixo):
+
+- O time de melhoria quer um painel de BI com os números do programa por área: quantas ideias cada uma enviou, em que situação elas estão e quanto ganho já foi validado. Toda noite, o painel chama o ITS e recebe os indicadores prontos, com a mesma conta dos relatórios da tela. Usa o módulo **Indicadores e ganhos**, que também atende o controle financeiro quando ele precisa conferir, ideia por ideia, os ganhos validados.
+- Uma fábrica acompanha as próprias ideias numa lista do SharePoint, com o título e a situação de cada uma. Toda manhã, um fluxo do Power Automate pede ao ITS só o que mudou desde a véspera e atualiza as linhas. Usa o módulo **Ideias**, com o escopo limitado à fábrica, para a integração não enxergar as ideias das outras unidades.
+- O RH entrega os prêmios que as pessoas trocam na loja do ITS. O sistema do RH lê os pedidos, vê quais foram aprovados e organiza a entrega. Usa o módulo **Loja (pedidos)**, que traz os pedidos da loja inteira. <Regra id="RN-172">O saldo e o extrato das pessoas nunca saem</Regra>.
+- A intranet mostra na página inicial as ideias em destaque no Hall e os elogios que elas receberam. Uma rotina lê os destaques uma vez por dia e monta o quadro. Usa o módulo **Hall e reconhecimento**, em que os elogios saem sem o nome de quem os escreveu.
+
+## Como funciona a leitura?
+
+### O que é uma integração?
+
+Para o ITS, cada sistema conectado é uma integração: o painel de BI é uma, o fluxo da fábrica é outra. O administrador cria cada integração na tela **Integrações** e decide o que ela pode ver. Uma integração não é um usuário: não tem login nem perfil e nunca entra na tela do ITS. Ela se identifica pelo token.
+
+### O que é o token?
+
+O [token](/pt-BR/referencia/glossario/#token-de-integracao) é a chave secreta da integração, um texto longo que começa com `its_`. O ITS o mostra uma única vez ao administrador, que o entrega a você. Ele vai em toda chamada, num cabeçalho, que é uma linha de informação enviada junto com a chamada, separada do endereço:
+
+```
+Authorization: Bearer SEU_TOKEN
+```
+
+<Regra id="RN-104">O token vai só no cabeçalho</Regra>. Se ele for no endereço ou no corpo, o ITS trata a chamada como se não tivesse token. Guarde-o como uma senha: no cofre do Power Automate, numa credencial do n8n ou num gerenciador de segredos. O token também tem validade. Antes de vencer, o administrador gera um novo, e o antigo continua valendo por 24 horas (até 72, se ele quiser), para dar tempo de trocar.
+
+### O que são os módulos?
+
+A API é dividida em módulos, um por assunto: **Ideias**, **Indicadores e ganhos**, **Campanhas**, **Hall e reconhecimento**, **Entidades e categorias**, **Usuários** e **Loja (pedidos)**. Cada módulo tem as suas rotas, que são os endereços que você chama (a das ideias é `/integration/v1/ideas`). O administrador escolhe quais módulos cada integração recebe, e ela só consegue usar esses. O painel de BI, por exemplo, só precisa de Indicadores e ganhos e não tem por que ler a lista de pessoas.
+
+### O que é o escopo de entidades?
+
+No ITS, a estrutura da organização é uma árvore de entidades (empresa, unidades, setores), e toda ideia pertence a uma delas. O escopo é o conjunto de entidades que a integração enxerga, escolhido pelo administrador, com ou sem as sub-entidades. Uma integração com o escopo de uma fábrica só recebe as ideias dessa fábrica, e os indicadores que ela lê são calculados só sobre essas ideias. Sem nenhuma entidade no escopo, a integração não vê nada.
+
+Para a integração, o que está fora do escopo não existe: pedir uma ideia de outra unidade dá o mesmo erro de uma ideia inexistente (`404`). A exceção é o módulo Loja (pedidos), que não tem escopo de entidade, porque a loja não pertence a uma entidade.
+
+### Como vem a situação da ideia?
+
+Toda ideia está numa de cinco situações, e a API mostra cada uma por um código em inglês, no campo `status`:
+
+| Na tela | Na API | O que quer dizer |
+|---|---|---|
+| Enviada | `submitted` | Recebida, esperando alguém da equipe analisar |
+| Em análise | `in_review` | Um analista assumiu e está avaliando |
+| Em andamento | `in_progress` | Aprovada e em execução, em etapas |
+| Implementada | `implemented` | Executada e encerrada |
+| Não autorizada | `rejected` | Não autorizada ou interrompida |
+
+Aprovar uma ideia é passá-la de Em análise para Em andamento, e por isso a API não tem uma situação "aprovada". Separado da situação, o campo `pending_approval` diz se a ideia <Regra id="RN-191">aguarda a aprovação de outra área</Regra>. O caminho completo está em [Situações da ideia](/pt-BR/referencia/situacoes/).
+
+### Como chegam as listas longas?
+
+Uma lista pode ter milhares de itens, então ela chega em páginas, de até 200 itens cada (50, se você não disser quantos). Além dos itens, cada página traz um marcador chamado cursor, no campo `next_cursor`. Para pegar a página seguinte, você repete a chamada mandando esse marcador; na última página, ele vem vazio (`null`). Toda lista tem este formato:
+
+```json
+{ "data": [ ... ], "next_cursor": "abc..." }
+```
+
+A ordem é estável, da alteração mais antiga para a mais nova. Percorrendo a lista até o fim, você recebe cada item uma vez, sem pular nem repetir, mesmo que ideias novas cheguem no meio do caminho. As datas vêm no formato ISO 8601, sempre em UTC, como `2026-11-05T09:30:00.000000Z`.
+
+### Como sincronizo só o que mudou?
+
+Para não baixar tudo a cada rodada, use o parâmetro `updated_since`, que faz a lista trazer só o que mudou a partir de uma data:
+
+1. Na primeira rodada, leia a lista inteira, seguindo o `next_cursor` até ele vir nulo.
+2. Guarde a data da última leitura. A escolha mais segura é o maior `updated_at` entre os itens recebidos, porque ele vem do relógio do ITS e é o valor que o filtro compara.
+3. Na rodada seguinte, chame a lista com essa data em `updated_since` e siga o `next_cursor` até ele vir nulo.
+
+O filtro inclui o que mudou exatamente na data informada, então um item pode voltar de uma rodada para a outra. Grave cada ideia pelo código e atualize o registro se ele já existir.
+
+Três casos pedem atenção:
+
+- A ideia arquivada continua na lista, marcada com `archived: true`, para você saber que ela saiu das listas do ITS.
+- A ideia convergida, que foi juntada a outra (a principal), vem com o código da principal em `converged_into` e sem o texto de quem a enviou.
+- A ideia excluída de vez não aparece mais, e a leitura não avisa a exclusão. Para saber na hora, assine o evento `idea.deleted` (veja [Webhooks: como receber](/pt-BR/ti/webhooks-receber/#que-eventos-posso-assinar)).
+
+## Como faço a primeira chamada?
+
+Peça ao administrador:
+
+1. O endereço do ITS, por exemplo `https://its.empresa.com.br`. A API fica em `/integration/v1`, depois dele.
+2. O token da integração, entregue por um caminho seguro.
+3. Os módulos e o escopo da integração. Para um primeiro teste, basta o módulo Ideias e uma entidade com poucas ideias.
+
+Com isso, faça a chamada. No terminal, com o curl:
+
+```
+curl -H "Authorization: Bearer SEU_TOKEN" "https://its.empresa.com.br/integration/v1/ideas?limit=50"
+```
+
+Troque `SEU_TOKEN` pelo token e o endereço pelo do seu ITS. A chamada pede a primeira página da lista de ideias, com até 50 itens. Se der certo, a resposta vem com o código `200` e um corpo como este (os dados são inventados, e cada ideia tem mais campos do que os mostrados aqui):
+
+```json
+{
+  "data": [
+    {
+      "code": "ITS-2026-0042",
+      "title": "Trocar o rolo da esteira",
+      "status": "in_progress",
+      "entity": { "id": "7d9e6a0e-3a11-4f55-8f4a-2a0c4c7b9a10", "name": "Expedição" },
+      "category": { "id": "2c1f0f6e-8a9b-4a3e-9f10-7c5d3e2a1b00", "name": "Segurança" },
+      "external_ref": "CHAMADO-4711",
+      "author": "Maria Souza",
+      "updated_at": "2026-11-05T09:30:00.000000Z"
+    }
+  ],
+  "next_cursor": "abc..."
+}
+```
+
+Cada item é uma ideia, com o código, o título, a situação, a entidade, a categoria, a referência externa (o número do item ligado à ideia em outro sistema, como um chamado, quando houver), o nome de quem enviou e a data da última alteração. O nome vem vazio quando a pessoa pediu para não aparecer. A lista completa de campos, com a descrição de cada um, está na aba **Documentação** da tela **Integrações**. A própria integração também pode baixá-la no formato OpenAPI, chamando `/integration/v1/openapi.json` com o token.
+
+Do lado do ITS, nada muda: a leitura não altera dados e não vai para a auditoria. O administrador vê a chamada contada na tabela **Consumo (últimos 7 dias)** da integração.
+
+<Atencao>
+  Se a resposta for `401`, a autenticação falhou. O ITS responde sempre o mesmo `401`, sem dizer o motivo, e de fora não dá para distinguir token errado, vencido ou revogado, integração suspensa e IP fora da lista. Para descobrir qual foi, peça ao administrador para olhar a integração: o estado, a validade do token e a lista de IPs.
+</Atencao>
+
+## Exemplo: como manter a lista da fábrica atualizada?
+
+O fluxo da fábrica que atualiza a lista do SharePoint toda manhã fica assim, de ponta a ponta:
+
+1. O administrador cria a integração "Lista da fábrica", com o módulo Ideias e o escopo na entidade da fábrica, incluindo as sub-entidades, e entrega o token.
+2. O fluxo roda num horário fixo, toda manhã, e lê a data que guardou na rodada anterior (num arquivo ou num item da própria lista, por exemplo).
+3. Ele chama a lista de ideias com essa data em `updated_since`. Na primeira rodada, sem data guardada, a lista vem inteira.
+4. Enquanto a resposta trouxer um `next_cursor`, o fluxo repete a chamada, passando esse valor no parâmetro `cursor`.
+5. Para cada ideia, o fluxo procura na lista a linha com o mesmo código. Se achar, atualiza o título e a situação; se não achar, cria a linha. A situação vai com o nome em português, conforme a [tabela de situações](#como-vem-a-situacao-da-ideia).
+6. A ideia com `archived: true` é marcada como arquivada. A que tem `converged_into` preenchido ganha uma nota de que foi juntada a outra; como ela chega sem título, o fluxo mantém o título que já estava na linha.
+7. No fim, o fluxo guarda o maior `updated_at` recebido, para a manhã seguinte.
+
+No Power Automate, cada chamada das etapas 3 e 4 é a ação **HTTP**:
+
+- **Método**: `GET`.
+- **URI**: `https://its.empresa.com.br/integration/v1/ideas`, com `updated_since` e, a partir da segunda página, `cursor` como parâmetros do endereço.
+- **Cabeçalhos**: nome `Authorization` e valor `Bearer ` seguido do token. Guarde o token numa variável segura ou no cofre, não escrito no fluxo.
+
+No n8n, o mesmo trabalho cabe num nó **HTTP Request**:
+
+- **Method**: `GET`, **URL**: `https://its.empresa.com.br/integration/v1/ideas`.
+- **Authentication**: *Generic Credential Type* > *Header Auth*, com nome `Authorization` e valor `Bearer ` seguido do token.
+- Em **Pagination**, escolha atualizar um parâmetro a cada requisição: o parâmetro `cursor` recebe o `next_cursor` da resposta anterior, e a paginação termina quando ele vier vazio.
+
+## Detalhes para consulta
+
+### Quais rotas existem?
+
+As rotas da tabela respondem só a `GET`, e qualquer outro método recebe `405`. As únicas rotas que gravam estão em [Escrita pela API](/pt-BR/ti/escrita-pela-api/). Onde aparece `<identificador>`, vai o código da ideia, como `ITS-2026-0042`.
+
+| Módulo | Rota | O que devolve |
+|---|---|---|
+| Ideias | `/integration/v1/ideas`, `/integration/v1/ideas/<identificador>` | Ideias do escopo, com etapas; `pending_approval` diz se a ideia aguarda a aprovação de outra área |
+| Indicadores e ganhos | `/integration/v1/indicators/summary`, `/engagement`, `/results`, `/integration/v1/gains` | Indicadores agregados e ganhos validados |
+| Campanhas | `/integration/v1/campaigns` | Campanhas ativas e encerradas |
+| Hall e reconhecimento | `/integration/v1/hall` | Destaques e elogios |
+| Entidades e categorias | `/integration/v1/entities`, `/integration/v1/categories` | A árvore do escopo e as categorias |
+| Usuários | `/integration/v1/users` | Pessoas do escopo (e-mail só se liberado); `custom_fields` traz os campos personalizados marcados com **Sai na integração**, <Regra id="RN-202">nunca os sensíveis</Regra> |
+| Loja (pedidos) | `/integration/v1/store/orders` | Pedidos da loja inteira (sem escopo de entidade; e-mail só se liberado). Saldo e extrato nunca saem |
+| (o contrato) | `/integration/v1/openapi.json` | O OpenAPI, só dos módulos da integração |
+
+<Regra id="RN-106">O contrato é estável</Regra>: tudo que existe em `/integration/v1` continua funcionando como está, e as mudanças futuras só acrescentam (campo novo, rota nova). Mudar o que já existe vira uma `v2`, com aviso antes.
+
+Os parâmetros, os campos e um exemplo de cada rota estão no próprio ITS, na aba **Documentação** da tela **Integrações**.
+
+### Que parâmetros as listas aceitam?
+
+| Parâmetro | Para quê |
+|---|---|
+| `limit` | Itens por página: de 1 a 200 (padrão 50) |
+| `cursor` | O `next_cursor` da página anterior. Na última página ele vem `null` |
+| `updated_since` | Só o que mudou a partir desta data (ISO 8601). Serve para sincronizar só o novo |
+
+A lista de ideias também filtra por situação, entidade, categoria e campanha, e os indicadores filtram por período, entidade e categoria. Os nomes desses filtros estão na aba **Documentação**.
+
+### Quantas chamadas posso fazer?
+
+Cada integração tem <Regra id="RN-105">um limite de chamadas por minuto</Regra>, 60 por padrão (o administrador pode subir até 600). Toda resposta traz os cabeçalhos `X-RateLimit-Limit`, com o limite, e `X-RateLimit-Remaining`, com o que ainda resta. Se passar do limite, a resposta é `429`, com o cabeçalho `Retry-After` dizendo quantos segundos esperar.
+
+Tentativas com token inválido também têm limite, contado por IP: 20 por minuto.
+
+### Quais erros a API devolve?
+
+Os erros vêm no formato `{ "code": "...", "message": "..." }`.
+
+| Status | Quando |
+|---|---|
+| `401` | Autenticação falhou (sempre igual, sem dizer o motivo) |
+| `403` | O módulo está ligado, mas esta integração não tem acesso a ele (`module_not_allowed`) |
+| `404` | Módulo desligado, item que não existe ou item fora do escopo (não se revela qual) |
+| `405` | Método diferente de `GET` |
+| `422` | Parâmetro inválido (`limit` fora de 1 a 200, `cursor` ou `updated_since` inválidos) |
+| `429` | Limite de chamadas por minuto |
+
+### O que o TI precisa liberar na rede?
+
+- Esta API só recebe chamadas; ela não chama ninguém. A única saída de rede nova do ITS são os webhooks, desligados de fábrica e só para destinos que o administrador permitiu (veja [Webhooks: como receber](/pt-BR/ti/webhooks-receber/)).
+- O container `web` do ITS já repassa `/integration/` para a API, junto de `/api/`. Se houver outro proxy na frente (Caddy, Traefik, balanceador), repasse também `/integration/`, mantendo os cabeçalhos `Authorization`, `Host` e `X-Forwarded-For`.
+- O ITS só liga a API com o endereço do sistema em `https://` (ou `localhost`), para o token não trafegar aberto.
+- A lista de IPs da integração vale para o IP de origem real, que vem do `X-Forwarded-For` do proxy de confiança.
+- Não há CORS. Chame a API de um servidor (fluxo, script, BI), nunca direto do navegador de alguém: um navegador nunca deveria guardar o token.
+
+Para bloquear a API inteira na rede, por exemplo enquanto você não a usa, não libere o caminho `/integration/`. De fábrica, o ITS também a mantém desligada.

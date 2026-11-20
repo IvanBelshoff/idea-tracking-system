@@ -1,0 +1,51 @@
+export const meta = {
+  title: 'Request approval from another area',
+  description: 'How the improvement team asks another area to approve before approving or implementing an idea, whether or not the approvers have an ITS account.',
+};
+
+# Request approval from another area
+
+Some ideas change a lot or affect another area: maintenance, safety, the manager who answers for the change. Before moving on, you ask these people to approve through ITS, and the decision is recorded on the idea. Approvers don't need an ITS account.
+
+## When can I ask?
+
+Anyone who triages ideas in the entity can ask while the idea is **In review** or **In progress**. On the idea page, the **Approval from another area** block has the **Request approval** button. Each idea has <Regra id="RN-183">one open request at a time</Regra>; closed ones stay in the block's history.
+
+## What do I fill in?
+
+- **Approvers**, from 1 to 10. Pick an **ITS user** from the list. For a **Person from outside**, enter the name, email and the area they represent. If the email is outside the company domains, the form warns you, and your organization may even <Regra id="RN-190">refuse those emails</Regra>.
+- **Summary for the approver:** what they need to know to decide. The idea's texts aren't sent: the approver sees only what you write here.
+- **What the approval holds:** the approval of the idea (In review only) or the implementation. While the request is open, that action is blocked.
+- **Deadline to answer**, in days. The default comes from the settings.
+- **What else to show:** the estimated gain and up to 5 of the idea's attachments, if you want.
+
+## How does each approver answer?
+
+- **People with an ITS account** get a notification in the bell and decide in **Pending approvals**.
+- **People from outside** get an email with a <Regra id="RN-184">single-use link</Regra>, which works until the deadline and stops working once used. If your organization turned on the confirmation code, the link page asks for a code sent to the same email.
+
+Everyone decides at the same time, and everyone has to say yes. Three days before the deadline and on the day itself, anyone who hasn't answered <Regra id="RN-189">gets a reminder</Regra>. When the deadline passes, the request expires, and you're notified.
+
+<Atencao>
+  With email sending turned off, people from outside get nothing. In that case, record their decision by hand, as described below.
+</Atencao>
+
+## What about someone who approved by email or in a meeting?
+
+Each pending approver has the **Record decision** button. Enter the decision, the name of who decided, the date and <Regra id="RN-187">at least one evidence file</Regra>, such as the saved email or the minutes. The record is marked with your name, so nobody mistakes it for an answer given through the link.
+
+## What happens at the end?
+
+- **Everyone approved:** the action is released. The approval <Regra id="RN-188">never changes the idea on its own</Regra>: you're still the one who approves or implements it.
+- **Someone didn't approve:** the request closes as not approved, and the remaining links stop working. With the factory setting, you choose between requesting again with an adjusted summary, not approving the idea, or **Proceed without approval**, with a justification only the team sees. If your organization chose to block, only a new approved request releases the idea.
+- **The deadline passed:** it counts the same as a rejection.
+
+Need to drop an open request? **Cancel request** asks for a reason, and the links stop working right away.
+
+## Who sees what?
+
+The team and the managers with access to the idea see everything: approvers, decisions, comments and evidence. The email of people from outside starts hidden until you click the eye icon. The author sees only <Regra id="RN-190">"Waiting for approval from another area"</Regra> and, at the end, the result, without names or comments.
+
+<Dica>
+  The people who answer the request also have a page in the Help: [Approve an idea](/en/gestor/aprovar-uma-ideia/). If someone has never used ITS, send them the link along with the request.
+</Dica>

@@ -1,0 +1,40 @@
+export const meta = {
+  title: 'Approve and run steps',
+  description: 'How to approve an idea, run its steps, follow deadline, progress and lateness, and close it as implemented.',
+};
+
+# Approve and run steps
+
+Once approved, the idea becomes work, done in steps: one at a time, each with an owner and a date.
+
+## What do I do when I approve?
+
+You <Regra id="RN-06">set up the first step and choose its owner</Regra>. Steps can be free or follow the **PDCA** model (Plan, Do, Check, Act). The phase is only a label, and <Regra id="RN-60">the step rules are the same</Regra>.
+
+<Dica>
+  An idea that is still Submitted can also be approved directly. ITS records both moves in the timeline: taking the review and approving.
+</Dica>
+
+## How do steps work?
+
+Each step has a <Regra id="RN-15">name, description, owner, start, due date and attachments</Regra>, and the <Regra id="RN-16">due date can't be before the start</Regra>. The <Regra id="RN-12">next step can only be created once the previous one is completed</Regra>. A completed step <Regra id="RN-13">can't be edited or deleted</Regra>; only the last one, while still open, can change.
+
+The idea's deadline is the due date of its last step: <Regra id="RN-17">a new step extends the deadline</Regra>, and the change stays in the history. <Regra id="RN-19">Progress is the share of completed steps</Regra> or, if your organization prefers, the elapsed time.
+
+<Simulador titulo="run the steps of an idea">
+  <Etapas />
+</Simulador>
+
+## When is an idea late?
+
+The idea becomes **Late** when its open step passes the due date; <Regra id="RN-18">on the due date itself, it's still on time</Regra>. The owner and the analyst <Regra id="RN-29">are notified a few days before</Regra> and on the due date.
+
+## How do I close the idea?
+
+When you complete the last step, ITS asks whether you want to <Regra id="RN-20">create another step or mark the idea as implemented</Regra>. To mark it **Implemented**, <Regra id="RN-07">every step must be completed, and you describe the result achieved</Regra>. Measurement, gains and lessons learned are in [Results and standardization](/en/analista/resultado/).
+
+If the work has to stop halfway, use **Interrupt**: the idea becomes Not approved, also with a justification.
+
+<Atencao>
+  Attachments follow the types and maximum size set by the administrator, and <Regra id="RN-21">can only be removed while the step is open</Regra>. <Regra id="RN-147">Attached photos and videos open right on the page</Regra>; other files are downloaded.
+</Atencao>

@@ -1,0 +1,75 @@
+export const meta = {
+  title: 'Acesso corporativo: configurar',
+  description: 'Como ligar o login com a conta da Microsoft ou do Google: domínios, provedores, teste, modo de login e contas novas.',
+};
+
+# Acesso corporativo: configurar
+
+Por padrão, as pessoas entram no ITS com e-mail e senha. Com o **acesso corporativo** (o SSO, ou "entrada única"), elas também podem entrar com a conta da empresa na Microsoft ou no Google, sem criar outra senha. O [provedor](/pt-BR/referencia/glossario/#provedor) confirma quem a pessoa é, e o ITS só recebe a confirmação.
+
+A tela fica em **Administração > Acesso corporativo** e só aparece para quem tem a permissão **Configurar o acesso corporativo** (de fábrica, o Administrador). Aqui você liga o recurso; [o dia a dia](/pt-BR/admin/acesso-corporativo-no-dia-a-dia/) tem página própria.
+
+<Atencao>
+  Tudo vem desligado. Ligar um provedor não muda nada para ninguém <Regra id="RN-97">até você escolher um modo de login com SSO</Regra>.
+</Atencao>
+
+## O que preciso antes de começar?
+
+O TI da organização registra o aplicativo na Microsoft (Entra), no Google ou nos dois e passa a você o **ID do cliente**, o **segredo** e, na Microsoft, o ID do [tenant](/pt-BR/referencia/glossario/#tenant). O passo a passo do TI está em [Login corporativo](/pt-BR/ti/login-corporativo/).
+
+Confira também o **Endereço do sistema**, em **Configurações > Notificações e e-mail**: ele precisa estar preenchido, com `https://`.
+
+<Captura nome="acesso" alt="Tela de acesso corporativo, com os domínios, os provedores Microsoft e Google, o modo de login e as contas novas." />
+
+## Quais e-mails o ITS aceita?
+
+Em **Domínios e e-mail de fora**, cadastre os domínios da organização, um por linha (por exemplo `empresa.com.br`). Com a lista preenchida, <Regra id="RN-95">só se cadastra, e só se troca para, e-mail desses domínios</Regra>. Com a lista vazia não há restrição, e nada muda para quem já usa o ITS. O login corporativo exige ao menos um domínio.
+
+- **Aceitar e-mail de fora dos domínios** serve para consultores e terceiros. Quem tem e-mail de fora entra só com senha, mesmo com o login corporativo ligado.
+- Quem já tinha e-mail de fora continua entrando, e a tela lista essas pessoas.
+
+## Como cadastro um provedor?
+
+Em cada provedor, preencha o cliente, o segredo e, na Microsoft, o tenant, e clique em **Salvar provedor**. O segredo <Regra id="RN-97">fica cifrado no servidor e nunca é mostrado de volta</Regra>. A tela também mostra o [endereço de retorno](/pt-BR/referencia/glossario/#endereco-de-retorno), que o TI registra no provedor.
+
+Depois:
+
+1. **Testar endereço** confere só a rede e o endereço do provedor.
+2. **Testar entrando** abre o login do provedor com a sua conta. Se o e-mail dela for o seu, ela fica vinculada ao seu usuário. O teste não troca a sua sessão.
+3. Com o teste certo, clique em **Ligar**.
+
+Mudar o cliente, o segredo ou o tenant desliga o provedor e pede um novo teste. O **ID do cliente** e o **ID do tenant** <Regra id="RN-135">abrem ocultos</Regra>: clique no olho para ver.
+
+## O ITS pode usar a foto da conta corporativa?
+
+Pode, se você ligar **Oferecer a foto do perfil** no provedor (vem desligada). <Regra id="RN-144">O ITS busca a foto no login e a guarda à parte</Regra>, e ela só aparece se a pessoa escolher em **Minha conta**. Desligar apaga as fotos guardadas daquele provedor. Na Microsoft, o aplicativo precisa de uma permissão a mais, que o TI inclui: veja [Login corporativo](/pt-BR/ti/login-corporativo/).
+
+## Que modo de login escolher?
+
+| Modo | O que muda |
+|---|---|
+| **Só senha** (padrão) | Todos entram com e-mail e senha |
+| **Senha e SSO** | Quem preferir entra com a conta corporativa; a senha continua valendo |
+| **Só SSO** | Quem tem e-mail da organização entra só pela conta corporativa |
+
+No **Só SSO**, os administradores mantêm a senha como acesso de emergência, para o caso de o provedor sair do ar ou ser mal configurado. Quem tem e-mail de fora dos domínios também continua com senha. Para escolher o Só SSO, a sua conta precisa estar vinculada: faça o teste com o seu e-mail.
+
+<Dica>
+  Uma boa ordem: comece pelo **Senha e SSO**, peça para algumas pessoas entrarem pelo botão e só depois passe para o **Só SSO**.
+</Dica>
+
+## Quem ganha conta no primeiro login?
+
+Com a criação automática desligada (o padrão), só entra quem você cadastrou em **Usuários**. Quem não está cadastrado vê uma mensagem pedindo para procurar o administrador.
+
+Em organizações grandes, você pode ligar **Criar a conta no primeiro login**. Aí quem passa em todas as regras do login corporativo <Regra id="RN-98">ganha uma conta no primeiro login</Regra>, sem senha, com o **Perfil inicial** e a **Entidade inicial** que você escolher.
+
+<Atencao>
+  O perfil inicial nunca pode ser administrativo: a tela só mostra perfis sem permissões de gestão, e o servidor confere de novo na hora de criar a conta.
+</Atencao>
+
+Quem limita quem chega ao ITS é o provedor: o TI restringe o aplicativo a um grupo, na Microsoft, ou a uma unidade organizacional, no Google (veja [Login corporativo](/pt-BR/ti/login-corporativo/)). Sem isso, qualquer pessoa do domínio ganha conta.
+
+## E depois de ligar?
+
+Leia [Acesso corporativo: no dia a dia](/pt-BR/admin/acesso-corporativo-no-dia-a-dia/): como a pessoa é reconhecida, o que fazer quando alguém não consegue entrar e como encerrar o acesso de quem sai da empresa.

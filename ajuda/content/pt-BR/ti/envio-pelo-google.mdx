@@ -1,0 +1,118 @@
+export const meta = {
+  title: 'Envio de e-mail pelo Google',
+  description: 'Para o TI: como enviar os e-mails do ITS pelo Google Workspace (Gmail API) com uma conta de serviço, e a alternativa por SMTP com senha de app.',
+};
+
+# Envio de e-mail pelo Google
+
+Esta página é para quem instala o ITS e cuida do Google Workspace da sua organização. Quem administra o ITS usa a tela [E-mail](/pt-BR/admin/email/); aqui está o que precisa existir **antes** dela.
+
+O ITS envia pela **Gmail API**, com uma [conta de serviço](/pt-BR/referencia/glossario/) e [delegação em todo o domínio](/pt-BR/referencia/glossario/), sem usuário e senha de pessoa. <Regra id="RN-101">Só funciona com o Google Workspace</Regra> (o domínio da sua organização), não com contas pessoais @gmail.com.
+
+<Atencao>
+  A delegação do Google **não se limita a uma caixa**, ao contrário do Exchange da Microsoft: quem tem a chave da conta de serviço e o escopo `gmail.send` autorizado pode enviar como **qualquer usuário do domínio**. Por isso, use um **projeto e uma conta de serviço só para o ITS**, autorize **apenas** o escopo `gmail.send` (nunca a leitura de e-mail), guarde a chave só no ITS (apague o arquivo baixado depois de cadastrar) e troque a chave de tempos em tempos. O ITS só envia pela caixa que você cadastrar.
+</Atencao>
+
+## O que preciso preparar antes?
+
+| Item | Por quê |
+|---|---|
+| **Um usuário do Workspace** para enviar | É em nome dele que o ITS envia, por exemplo `nao-responder@seudominio.com.br`. Precisa ser um usuário com Gmail ativo (grupos não servem) |
+| **SPF, DKIM e DMARC** do domínio | Para os e-mails não caírem como spam. O Google cuida do DKIM do domínio pelo Admin Console |
+| **`APP_SECRET_KEY`** no `.env` | A chave da conta de serviço fica cifrada com ela. Se a chave mudar, cadastre o arquivo de novo |
+| **Saída de rede** do servidor da API e do worker | Para `oauth2.googleapis.com` e `gmail.googleapis.com`, na porta 443. Atrás de proxy, valem as mesmas variáveis do [login corporativo](/pt-BR/ti/login-corporativo/) |
+
+## 1. Como crio o projeto e ligo a Gmail API?
+
+1. No **Google Cloud Console**, crie um projeto só para o ITS (por exemplo `its-email`).
+2. Em **APIs e serviços > Biblioteca**, procure **Gmail API** e clique em **Ativar**.
+
+## 2. Como crio a conta de serviço e a chave?
+
+1. Abra **IAM e administrador > Contas de serviço > Criar conta de serviço**. Nome: `its-email`. **Não** conceda nenhum papel do projeto.
+2. Abra a conta criada. Em **Chaves > Adicionar chave > Criar nova chave**, escolha **JSON**. O arquivo é baixado **uma única vez**.
+3. Em **Detalhes**, copie o **ID exclusivo** (um número longo). Ele é o **ID do cliente** do passo seguinte.
+
+<Atencao>
+  Se a criação da chave for bloqueada, a sua organização no Google Cloud usa a política `iam.disableServiceAccountKeyCreation`, que vem ligada por padrão em organizações novas. Um administrador da organização precisa abrir uma exceção para este projeto.
+</Atencao>
+
+<Dica>
+  Chaves de conta de serviço **não vencem por padrão**. Se a sua política define uma validade (`iam.serviceAccountKeyExpiryHours`) ou você quer um lembrete de troca, **anote a data**: o ITS a guarda e avisa **30 dias antes** na saúde, na tela **Observabilidade**. Sem data, nenhum aviso aparece.
+</Dica>
+
+## 3. Como autorizo o envio no Workspace?
+
+No **Admin Console** (`admin.google.com`), como superadministrador, autorize a delegação em todo o domínio:
+
+1. Abra **Segurança > Controle de acesso e dados > Controles da API > Gerenciar delegação em todo o domínio**.
+2. Clique em **Adicionar novo** e informe o **ID do cliente** (o ID exclusivo, passo 2) e **um único escopo**:
+
+```text
+https://www.googleapis.com/auth/gmail.send
+```
+
+3. Salve. A mudança pode levar alguns minutos (às vezes até algumas horas) para valer.
+
+Os nomes dos menus e das políticas podem mudar: confira a documentação atual do Google ("Delegação em todo o domínio" e "Gmail API").
+
+## 4. Como cadastro no ITS?
+
+Em **Administração > E-mail > Envio**, escolha **Google Workspace (Gmail)** em **Tipo de provedor** e preencha:
+
+| Campo no ITS | De onde vem |
+|---|---|
+| Chave JSON da conta de serviço | O conteúdo do arquivo baixado (cole, ou use **Escolher o arquivo .json**) |
+| Caixa remetente (e-mail) | O usuário do Workspace que você separou antes |
+| Remetente (nome) | Opcional: o nome que aparece nos e-mails |
+| Responder para | Opcional: para onde vão as respostas |
+| Validade da chave | Opcional (veja o passo 2) |
+
+<Captura nome="email-google" alt="Tela de e-mail do ITS com o tipo Google Workspace escolhido: chave JSON da conta de serviço, caixa remetente, nome do remetente, responder para e validade da chave." />
+
+Depois, clique em **Enviar teste**, confira a caixa de entrada e clique em **Ligar envio**. Com o provedor salvo, o ITS mostra só o **e-mail da conta de serviço**; a chave nunca volta para a tela.
+
+<Dica>
+  O Gmail guarda uma cópia de cada e-mail enviado na pasta **Enviados** da caixa remetente, e a API não tem como evitar isso. Como os e-mails de recuperação de senha levam um link, use uma caixa só do ITS e limite quem a abre.
+</Dica>
+
+## Como troco a chave?
+
+1. Crie uma chave nova na conta de serviço (passo 2).
+2. Cole o arquivo novo no ITS e informe a nova **Validade da chave**, se usar uma.
+3. Clique em **Enviar teste** e, de novo, em **Ligar envio**.
+4. **Apague a chave antiga** no Google Cloud.
+
+Se você trocar a chave sem informar a validade, o ITS apaga a data antiga.
+
+## O que fazer quando o envio falha?
+
+O motivo aparece no resultado do teste e em **E-mail > Envios**, só com o código do erro.
+
+| Mensagem | O que verificar |
+|---|---|
+| "O Google recusou as credenciais da conta de serviço (HTTP 400: `unauthorized_client`)" | A delegação não foi autorizada no Admin Console, o **ID do cliente** está errado ou o escopo não é exatamente `gmail.send` (passo 3). Aguarde alguns minutos depois de salvar |
+| "HTTP 400: `invalid_grant`" | A caixa remetente não existe no domínio, não tem Gmail ativo ou o relógio do servidor do ITS está desajustado (a assinatura vale por poucos minutos) |
+| "HTTP 403: `PERMISSION_DENIED`" | A Gmail API não está ativada no projeto (passo 1) ou a conta de serviço não é a do projeto |
+| "HTTP 404" | Caixa ou serviço não encontrado. Confira o endereço |
+| "HTTP 429" ou "HTTP 503" | Limite de uso ou indisponibilidade passageira: o ITS tenta de novo sozinho. O Workspace limita o envio por usuário por dia (da ordem de 2.000 mensagens: confira o limite do seu plano) |
+| "Não foi possível falar com o Google" | A saída de rede para `oauth2.googleapis.com` e `gmail.googleapis.com` (firewall e proxy) |
+| Os e-mails caem no spam | SPF, DKIM e DMARC do domínio. Prefira um subdomínio só das notificações |
+
+O ITS **não repete** o envio quando a delegação não foi autorizada, quando falta permissão ou quando a caixa não existe: o e-mail fica com falha na hora, com o motivo. No limite de uso e na indisponibilidade, ele tenta de novo, com espera crescente.
+
+## Dá para usar SMTP com senha de app?
+
+Dá. Se a sua organização não quer uma conta de serviço, o tipo **SMTP** também funciona com o Gmail. Você precisa de um usuário do Workspace com **verificação em duas etapas** e uma **senha de app**. Na tela, preencha:
+
+- **Servidor**: `smtp.gmail.com`
+- **Porta**: `587`
+- **Segurança**: **STARTTLS (porta 587)**
+- **Usuário**: o endereço completo
+- **Senha**: a senha de app
+
+A conta de serviço continua sendo o caminho recomendado, porque a senha de app é de uma pessoa: ela some se a pessoa sair ou trocar a senha da conta, e o administrador pode desligar esse recurso no Admin Console. Veja a tela [E-mail](/pt-BR/admin/email/).
+
+<Dica>
+  Em produção, use um projeto, uma conta de serviço e uma caixa **próprios do ITS**. Dividir a mesma chave entre sistemas diferentes aumenta o estrago de um vazamento e amarra as datas de renovação.
+</Dica>

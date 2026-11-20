@@ -1,0 +1,47 @@
+export const meta = {
+  title: 'Queue and triage',
+  description: 'How to keep up with the queue: deadline for the first reply, lateness, who reviews each idea, priority by impact and effort, and bulk actions.',
+};
+
+# Queue and triage
+
+Triage is the first reply the author gets. ITS helps you make sure nobody goes without an answer, even when the queue is full.
+
+## Where are the ideas that came in?
+
+The **Idea queue** has the ideas from the entities you follow, each with its status, how long it has been waiting and its **Expected reply** date.
+
+<Captura nome="fila" alt="ITS idea queue, with status, entity and category filters and the list of ideas with their expected reply dates." />
+
+## How long do I have to reply?
+
+Your organization sets the <Regra id="RN-54">deadline for the first reply</Regra>, for example 10 days, counted as calendar days or business days only. The author sees the expected date from the moment they submit.
+
+If the idea is still **Submitted** after the expected date, it gets the **Reply overdue** flag, and the analyst and the manager are notified. Lateness starts the day after the expected date and goes away when someone takes the review.
+
+<Simulador titulo="triage a queue of five ideas">
+  <Triagem />
+</Simulador>
+
+<Dica>
+  In the simulator, turn on "business days" and watch the expected dates change: Saturdays and Sundays stop counting.
+</Dica>
+
+## Who reviews each idea?
+
+The review can go to someone <Regra id="RN-55">automatically or by hand</Regra>. Automatic assignment follows entity and category rules, such as "Safety at Site A goes to Ana", which are set in **Administration > Assignment**.
+
+## What comes first?
+
+During triage, rate **Impact** and **Effort** from 1 to 5. <Regra id="RN-56">Priority is impact divided by effort</Regra>, and the queue can be sorted by it. It's only there to help: you make the decision.
+
+## What do I decide in triage?
+
+- **Take the review:** the idea moves to In review, and the author is notified.
+- **Do not approve:** <Regra id="RN-05">always with a justification</Regra>, which goes to the author. Write it the way you'd like to read it: the reason and, if there is one, what could change.
+
+To approve, see [Approve and run steps](/en/analista/aprovar-e-etapas/).
+
+## Can I handle several ideas at once?
+
+Yes. <Regra id="RN-59">Select several in the queue</Regra> to assign them, change their category or reject them all with the same justification. You can also save the filters you use often.

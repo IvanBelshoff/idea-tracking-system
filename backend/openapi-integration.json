@@ -1,0 +1,3683 @@
+{
+  "openapi": "3.0.0",
+  "paths": {
+    "/integration/v1/openapi.json": {
+      "get": {
+        "description": "The OpenAPI document of this API, only with the modules of the calling integration.",
+        "operationId": "ContractApiController_contract",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OpenAPI 3 document."
+          },
+          "401": {
+            "description": "Token ausente, inválido, vencido ou revogado.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorBody"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Limite de chamadas por minuto (Retry-After).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorBody"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "OpenAPI contract",
+        "tags": [
+          "contract"
+        ],
+        "x-description-pt-BR": "O documento OpenAPI desta API, só com os módulos da integração que chama."
+      }
+    },
+    "/integration/v1/ideas": {
+      "get": {
+        "description": "Ideas of the entities in the integration scope, oldest change first. Never returns comments, history, attachments, step owners, gains or e-mails.",
+        "operationId": "IdeasApiController_list",
+        "parameters": [
+          {
+            "name": "campaign_id",
+            "required": false,
+            "in": "query",
+            "description": "Filter by campaign.",
+            "x-description-pt-BR": "Filtra por campanha.",
+            "schema": {}
+          },
+          {
+            "name": "category_id",
+            "required": false,
+            "in": "query",
+            "description": "Filter by main or other category.",
+            "x-description-pt-BR": "Filtra por categoria principal ou demais.",
+            "schema": {}
+          },
+          {
+            "name": "entity_id",
+            "required": false,
+            "in": "query",
+            "description": "Filter by entity (includes sub-entities within the scope).",
+            "x-description-pt-BR": "Filtra por entidade (inclui as subentidades dentro do escopo).",
+            "schema": {}
+          },
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "description": "Filter by situation.",
+            "x-description-pt-BR": "Filtra pela situação.",
+            "schema": {
+              "enum": [
+                "submitted",
+                "in_review",
+                "in_progress",
+                "implemented",
+                "rejected"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 200,
+              "default": 50
+            },
+            "description": "Items per page (1 to 200, default 50).",
+            "x-description-pt-BR": "Itens por página (de 1 a 200, padrão 50)."
+          },
+          {
+            "name": "cursor",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Opaque cursor: use the `next_cursor` of the previous page.",
+            "x-description-pt-BR": "Cursor opaco: use o `next_cursor` da página anterior."
+          },
+          {
+            "name": "updated_since",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "description": "Only items changed at or after this date (ISO 8601). Use it to sync only what is new.",
+            "x-description-pt-BR": "Só os itens alterados a partir desta data (ISO 8601). Serve para sincronizar só o que mudou."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IdeaPage"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Token ausente, inválido, vencido ou revogado.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorBody"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "A integração não tem este módulo.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorBody"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Módulo desligado ou item fora do escopo.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorBody"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Limite de chamadas por minuto (Retry-After).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorBody"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List ideas",
+        "tags": [
+          "ideas"
+        ],
+        "x-description-pt-BR": "Ideias das entidades do escopo da integração, da alteração mais antiga para a mais nova. Nunca devolve comentários, histórico, anexos, responsável da etapa, ganho nem e-mail."
+      },
+      "post": {
+        "description": "Submits an idea in the name of the person identified by `author_email`, with the same rules and notices as the screen. The idea is born `submitted`; the integration never triages, approves or decides.",
+        "operationId": "IdeasWriteApiController_submit",
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "description": "Unique key of this call (1 to 64 characters: letters, digits, - and _). Repeating the call with the same key and body returns the same response without recording again; valid for 24 hours.",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64,
+              "pattern": "^[A-Za-z0-9_-]+$"
+            },
+            "x-description-pt-BR": "Chave única desta chamada (1 a 64 caracteres: letras, números, - e _). Repetir a chamada com a mesma chave e o mesmo corpo devolve a mesma resposta sem gravar de novo; vale por 24 horas."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/IdeaSubmitRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IdeaSubmitResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Token ausente, inválido, vencido ou revogado.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorBody"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "A integração não tem este módulo.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorBody"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Módulo desligado ou item fora do escopo.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorBody"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Invalid data, entity outside the scope, unknown author or author not allowed to submit, or a missing Idempotency-Key.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorBody"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Limite de chamadas por minuto (Retry-After).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorBody"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Submit an idea",
+        "tags": [
+          "ideas_write"
+        ],
+        "x-description-pt-BR": "Envia uma ideia em nome da pessoa indicada em `author_email`, com as mesmas regras e avisos da tela. A ideia nasce `submitted`; a integração nunca tria, aprova nem decide."
+      }
+    },
+    "/integration/v1/ideas/{code}": {
+      "get": {
+        "description": "One idea by its identifier; 404 if it is outside the scope.",
+        "operationId": "IdeasApiController_get",
+        "parameters": [
+          {
+            "name": "code",
+            "required": true,
+            "in": "path",
+            "description": "Identifier of the idea.",
+            "x-description-pt-BR": "Identificador da ideia.",
+            "schema": {
+              "example": "ITS-2026-0042",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IdeaItem"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Token ausente, inválido, vencido ou revogado.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorBody"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "A integração não tem este módulo.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorBody"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Módulo desligado ou item fora do escopo.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorBody"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Limite de chamadas por minuto (Retry-After).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorBody"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get an idea",
+        "tags": [
+          "ideas"
+        ],
+        "x-description-pt-BR": "Uma ideia pelo identificador; 404 se estiver fora do escopo."
+      }
+    },
+    "/integration/v1/indicators/summary": {
+      "get": {
+        "description": "Ideas by situation, category and entity, plus process times and rates; the same numbers as the internal report.",
+        "operationId": "IndicatorsApiController_summary",
+        "parameters": [
+          {
+            "name": "from",
+            "required": false,
+            "in": "query",
+            "description": "Start of the period (YYYY-MM-DD, installation time zone).",
+            "x-description-pt-BR": "Início do período (AAAA-MM-DD, fuso da instalação).",
+            "schema": {}
+          },
+          {
+            "name": "to",
+            "required": false,
+            "in": "query",
+            "description": "End of the period, inclusive (YYYY-MM-DD).",
+            "x-description-pt-BR": "Fim do período, inclusive (AAAA-MM-DD).",
+            "schema": {}
+          },
+          {
+            "name": "entity_id",
+            "required": false,
+            "in": "query",
+            "description": "Entity (includes sub-entities); must be in the scope.",
+            "x-description-pt-BR": "Entidade (inclui as subentidades); precisa estar no escopo.",
+            "schema": {}
+          },
+          {
+            "name": "category_id",
+            "required": false,
+            "in": "query",
+            "description": "Category.",
+            "x-description-pt-BR": "Categoria.",
+            "schema": {}
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IndicatorsSummary"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Token ausente, inválido, vencido ou revogado.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorBody"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "A integração não tem este módulo.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorBody"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Módulo desligado ou item fora do escopo.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorBody"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Limite de chamadas por minuto (Retry-After).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorBody"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Process indicators",
+        "tags": [
+          "indicators"
+        ],
+        "x-description-pt-BR": "Ideias por situação, categoria e entidade, mais tempos e taxas do processo; os mesmos números do relatório interno."
+      }
+    },
+    "/integration/v1/indicators/engagement": {
+      "get": {
+        "description": "Participation, ideas per person, implementation rate and monthly evolution.",
+        "operationId": "IndicatorsApiController_engagement",
+        "parameters": [
+          {
+            "name": "from",
+            "required": false,
+            "in": "query",
+            "description": "Start of the period (YYYY-MM-DD, installation time zone).",
+            "x-description-pt-BR": "Início do período (AAAA-MM-DD, fuso da instalação).",
+            "schema": {}
+          },
+          {
+            "name": "to",
+            "required": false,
+            "in": "query",
+            "description": "End of the period, inclusive (YYYY-MM-DD).",
+            "x-description-pt-BR": "Fim do período, inclusive (AAAA-MM-DD).",
+            "schema": {}
+          },
+          {
+            "name": "entity_id",
+            "required": false,
+            "in": "query",
+            "description": "Entity (includes sub-entities); must be in the scope.",
+            "x-description-pt-BR": "Entidade (inclui as subentidades); precisa estar no escopo.",
+            "schema": {}
+          },
+          {
+            "name": "category_id",
+            "required": false,
+            "in": "query",
+            "description": "Category.",
+            "x-description-pt-BR": "Categoria.",
+            "schema": {}
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IndicatorsEngagement"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Token ausente, inválido, vencido ou revogado.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorBody"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "A integração não tem este módulo.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorBody"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Módulo desligado ou item fora do escopo.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorBody"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Limite de chamadas por minuto (Retry-After).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorBody"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Engagement indicators",
+        "tags": [
+          "indicators"
+        ],
+        "x-description-pt-BR": "Participação, ideias por pessoa, taxa de implementação e evolução mensal."
+      }
+    },
+    "/integration/v1/indicators/results": {
+      "get": {
+        "description": "Validated gain and ROI by currency, category and entity. Declared gains never appear.",
+        "operationId": "IndicatorsApiController_results",
+        "parameters": [
+          {
+            "name": "from",
+            "required": false,
+            "in": "query",
+            "description": "Start of the period (YYYY-MM-DD, installation time zone).",
+            "x-description-pt-BR": "Início do período (AAAA-MM-DD, fuso da instalação).",
+            "schema": {}
+          },
+          {
+            "name": "to",
+            "required": false,
+            "in": "query",
+            "description": "End of the period, inclusive (YYYY-MM-DD).",
+            "x-description-pt-BR": "Fim do período, inclusive (AAAA-MM-DD).",
+            "schema": {}
+          },
+          {
+            "name": "entity_id",
+            "required": false,
+            "in": "query",
+            "description": "Entity (includes sub-entities); must be in the scope.",
+            "x-description-pt-BR": "Entidade (inclui as subentidades); precisa estar no escopo.",
+            "schema": {}
+          },
+          {
+            "name": "category_id",
+            "required": false,
+            "in": "query",
+            "description": "Category.",
+            "x-description-pt-BR": "Categoria.",
+            "schema": {}
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IndicatorsResults"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Token ausente, inválido, vencido ou revogado.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorBody"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "A integração não tem este módulo.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorBody"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Módulo desligado ou item fora do escopo.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorBody"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Limite de chamadas por minuto (Retry-After).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorBody"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Financial results",
+        "tags": [
+          "indicators"
+        ],
+        "x-description-pt-BR": "Ganho validado e ROI por moeda, categoria e entidade. Ganho declarado nunca aparece."
+      }
+    },
+    "/integration/v1/gains": {
+      "get": {
+        "description": "Validated gains of the ideas in the scope. Declared or estimated gains never appear; there is no author or validator.",
+        "operationId": "IndicatorsApiController_gains",
+        "parameters": [
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 200,
+              "default": 50
+            },
+            "description": "Items per page (1 to 200, default 50).",
+            "x-description-pt-BR": "Itens por página (de 1 a 200, padrão 50)."
+          },
+          {
+            "name": "cursor",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Opaque cursor: use the `next_cursor` of the previous page.",
+            "x-description-pt-BR": "Cursor opaco: use o `next_cursor` da página anterior."
+          },
+          {
+            "name": "updated_since",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "description": "Only items changed at or after this date (ISO 8601). Use it to sync only what is new.",
+            "x-description-pt-BR": "Só os itens alterados a partir desta data (ISO 8601). Serve para sincronizar só o que mudou."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GainPage"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Token ausente, inválido, vencido ou revogado.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorBody"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "A integração não tem este módulo.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorBody"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Módulo desligado ou item fora do escopo.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorBody"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Limite de chamadas por minuto (Retry-After).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorBody"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List validated gains",
+        "tags": [
+          "indicators"
+        ],
+        "x-description-pt-BR": "Ganhos validados das ideias do escopo. Ganho declarado ou estimado nunca aparece; não há autor nem validador."
+      }
+    },
+    "/integration/v1/campaigns": {
+      "get": {
+        "description": "Active and closed campaigns whose target entities touch the integration scope (drafts never appear). The reward note is never shared.",
+        "operationId": "CampaignsApiController_list",
+        "parameters": [
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 200,
+              "default": 50
+            },
+            "description": "Items per page (1 to 200, default 50).",
+            "x-description-pt-BR": "Itens por página (de 1 a 200, padrão 50)."
+          },
+          {
+            "name": "cursor",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Opaque cursor: use the `next_cursor` of the previous page.",
+            "x-description-pt-BR": "Cursor opaco: use o `next_cursor` da página anterior."
+          },
+          {
+            "name": "updated_since",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "description": "Only items changed at or after this date (ISO 8601). Use it to sync only what is new.",
+            "x-description-pt-BR": "Só os itens alterados a partir desta data (ISO 8601). Serve para sincronizar só o que mudou."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CampaignPage"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Token ausente, inválido, vencido ou revogado.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorBody"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "A integração não tem este módulo.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorBody"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Módulo desligado ou item fora do escopo.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorBody"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Limite de chamadas por minuto (Retry-After).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorBody"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List campaigns",
+        "tags": [
+          "campaigns"
+        ],
+        "x-description-pt-BR": "Campanhas ativas e encerradas cujas entidades-alvo tocam o escopo da integração (rascunho nunca aparece). A recompensa informativa não sai."
+      }
+    },
+    "/integration/v1/hall": {
+      "get": {
+        "description": "Current highlights and the Hall of Fame (revoked ones never appear) for ideas in the scope. Points, levels, achievements, rankings of people and rewards are never shared.",
+        "operationId": "HallApiController_list",
+        "parameters": [
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 200,
+              "default": 50
+            },
+            "description": "Items per page (1 to 200, default 50).",
+            "x-description-pt-BR": "Itens por página (de 1 a 200, padrão 50)."
+          },
+          {
+            "name": "cursor",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Opaque cursor: use the `next_cursor` of the previous page.",
+            "x-description-pt-BR": "Cursor opaco: use o `next_cursor` da página anterior."
+          },
+          {
+            "name": "updated_since",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "description": "Only items changed at or after this date (ISO 8601). Use it to sync only what is new.",
+            "x-description-pt-BR": "Só os itens alterados a partir desta data (ISO 8601). Serve para sincronizar só o que mudou."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HallPage"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Token ausente, inválido, vencido ou revogado.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorBody"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "A integração não tem este módulo.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorBody"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Módulo desligado ou item fora do escopo.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorBody"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Limite de chamadas por minuto (Retry-After).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorBody"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List Hall highlights",
+        "tags": [
+          "hall"
+        ],
+        "x-description-pt-BR": "Destaques vigentes e do Hall da fama (os revogados nunca aparecem) das ideias do escopo. Pontos, níveis, conquistas, rankings de pessoas e recompensas nunca saem."
+      }
+    },
+    "/integration/v1/entities": {
+      "get": {
+        "description": "The entity tree of the integration scope (a parent outside the scope shows as null).",
+        "operationId": "EntitiesApiController_entities",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntityList"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Token ausente, inválido, vencido ou revogado.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorBody"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "A integração não tem este módulo.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorBody"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Módulo desligado ou item fora do escopo.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorBody"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Limite de chamadas por minuto (Retry-After).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorBody"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List entities",
+        "tags": [
+          "entities"
+        ],
+        "x-description-pt-BR": "A árvore de entidades do escopo da integração (o pai fora do escopo vem nulo)."
+      }
+    },
+    "/integration/v1/categories": {
+      "get": {
+        "description": "All categories, including inactive ones. They carry no personal data.",
+        "operationId": "EntitiesApiController_categories",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CategoryList"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Token ausente, inválido, vencido ou revogado.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorBody"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "A integração não tem este módulo.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorBody"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Módulo desligado ou item fora do escopo.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorBody"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Limite de chamadas por minuto (Retry-After).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorBody"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List categories",
+        "tags": [
+          "entities"
+        ],
+        "x-description-pt-BR": "Todas as categorias, inclusive as inativas. Não levam dado pessoal."
+      }
+    },
+    "/integration/v1/users": {
+      "get": {
+        "description": "People with a role in an entity of the scope, with the roles cut to the scope. The e-mail only comes if the integration has \"include e-mail\". Never returns passwords, sessions, single sign-on identifiers, photo or last access.",
+        "operationId": "UsersApiController_list",
+        "parameters": [
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 200,
+              "default": 50
+            },
+            "description": "Items per page (1 to 200, default 50).",
+            "x-description-pt-BR": "Itens por página (de 1 a 200, padrão 50)."
+          },
+          {
+            "name": "cursor",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Opaque cursor: use the `next_cursor` of the previous page.",
+            "x-description-pt-BR": "Cursor opaco: use o `next_cursor` da página anterior."
+          },
+          {
+            "name": "updated_since",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "description": "Only items changed at or after this date (ISO 8601). Use it to sync only what is new.",
+            "x-description-pt-BR": "Só os itens alterados a partir desta data (ISO 8601). Serve para sincronizar só o que mudou."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserPage"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Token ausente, inválido, vencido ou revogado.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorBody"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "A integração não tem este módulo.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorBody"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Módulo desligado ou item fora do escopo.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorBody"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Limite de chamadas por minuto (Retry-After).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorBody"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List users (sensitive)",
+        "tags": [
+          "users"
+        ],
+        "x-description-pt-BR": "Pessoas com perfil em entidade do escopo, com os perfis cortados ao escopo. O e-mail só vem se a integração tiver \"incluir e-mail\". Nunca devolve senha, sessão, identificador de login corporativo, foto nem último acesso."
+      }
+    },
+    "/integration/v1/store/orders": {
+      "get": {
+        "description": "Store orders of the whole organization (the store is not tied to an entity), for HR to follow without spreadsheets. The e-mail only comes with \"include e-mail\". Balance and statement never leave ITS.",
+        "operationId": "StoreApiController_list",
+        "parameters": [
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 200,
+              "default": 50
+            },
+            "description": "Items per page (1 to 200, default 50).",
+            "x-description-pt-BR": "Itens por página (de 1 a 200, padrão 50)."
+          },
+          {
+            "name": "cursor",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Opaque cursor: use the `next_cursor` of the previous page.",
+            "x-description-pt-BR": "Cursor opaco: use o `next_cursor` da página anterior."
+          },
+          {
+            "name": "updated_since",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "description": "Only items changed at or after this date (ISO 8601). Use it to sync only what is new.",
+            "x-description-pt-BR": "Só os itens alterados a partir desta data (ISO 8601). Serve para sincronizar só o que mudou."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StoreOrderPage"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Token ausente, inválido, vencido ou revogado.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorBody"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "A integração não tem este módulo.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorBody"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Módulo desligado ou item fora do escopo.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorBody"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Limite de chamadas por minuto (Retry-After).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorBody"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List store orders (sensitive)",
+        "tags": [
+          "store"
+        ],
+        "x-description-pt-BR": "Pedidos da loja da organização inteira (a loja não é de uma entidade), para o RH acompanhar sem planilha. O e-mail só vem com \"incluir e-mail\". Saldo e extrato nunca saem do ITS."
+      }
+    },
+    "/integration/v1/ideas/{code}/comments": {
+      "post": {
+        "description": "Adds a public comment in the name of the integration (\"via Integration X\"). Allowed on closed ideas, as on the screen. Never internal.",
+        "operationId": "IdeasWriteApiController_comment",
+        "parameters": [
+          {
+            "name": "code",
+            "required": true,
+            "in": "path",
+            "description": "Identifier of the idea.",
+            "x-description-pt-BR": "Identificador da ideia.",
+            "schema": {
+              "example": "ITS-2026-0042",
+              "type": "string"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "description": "Unique key of this call (1 to 64 characters: letters, digits, - and _). Repeating the call with the same key and body returns the same response without recording again; valid for 24 hours.",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64,
+              "pattern": "^[A-Za-z0-9_-]+$"
+            },
+            "x-description-pt-BR": "Chave única desta chamada (1 a 64 caracteres: letras, números, - e _). Repetir a chamada com a mesma chave e o mesmo corpo devolve a mesma resposta sem gravar de novo; vale por 24 horas."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CommentWriteRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommentWriteResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Token ausente, inválido, vencido ou revogado.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorBody"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "A integração não tem este módulo.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorBody"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Módulo desligado ou item fora do escopo.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorBody"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Empty or too long text, unknown field, or a missing Idempotency-Key.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorBody"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Limite de chamadas por minuto (Retry-After).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorBody"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Comment on an idea",
+        "tags": [
+          "ideas_write"
+        ],
+        "x-description-pt-BR": "Acrescenta um comentário público em nome da integração (\"via Integração X\"). Permitido em ideia encerrada, como na tela. Nunca interno."
+      }
+    },
+    "/integration/v1/ideas/{code}/external-ref": {
+      "put": {
+        "description": "Sets (or clears, with null) the reference to your own system. Not allowed on closed ideas (409).",
+        "operationId": "IdeasWriteApiController_externalRef",
+        "parameters": [
+          {
+            "name": "code",
+            "required": true,
+            "in": "path",
+            "description": "Identifier of the idea.",
+            "x-description-pt-BR": "Identificador da ideia.",
+            "schema": {
+              "example": "ITS-2026-0042",
+              "type": "string"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "description": "Unique key of this call (1 to 64 characters: letters, digits, - and _). Repeating the call with the same key and body returns the same response without recording again; valid for 24 hours.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64,
+              "pattern": "^[A-Za-z0-9_-]+$"
+            },
+            "x-description-pt-BR": "Chave única desta chamada (1 a 64 caracteres: letras, números, - e _). Repetir a chamada com a mesma chave e o mesmo corpo devolve a mesma resposta sem gravar de novo; vale por 24 horas."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ExternalRefRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExternalRefResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Token ausente, inválido, vencido ou revogado.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorBody"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "A integração não tem este módulo.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorBody"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Módulo desligado ou item fora do escopo.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorBody"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Closed idea (idea_closed).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorBody"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Reference with more than 100 characters or unknown field.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorBody"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Limite de chamadas por minuto (Retry-After).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorBody"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Update the external reference",
+        "tags": [
+          "ideas_write"
+        ],
+        "x-description-pt-BR": "Define (ou limpa, com nulo) a referência ao seu sistema. Não vale em ideia encerrada (409)."
+      }
+    },
+    "/integration/v1/ideas/{code}/gain": {
+      "put": {
+        "description": "Records the declared gain of an idea, with the same rules as the screen. It stays declared: only a person validates it, and a gain already validated is never overwritten (409).",
+        "operationId": "GainsWriteApiController_declare",
+        "parameters": [
+          {
+            "name": "code",
+            "required": true,
+            "in": "path",
+            "description": "Identifier of the idea.",
+            "x-description-pt-BR": "Identificador da ideia.",
+            "schema": {
+              "example": "ITS-2026-0042",
+              "type": "string"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "description": "Unique key of this call (1 to 64 characters: letters, digits, - and _). Repeating the call with the same key and body returns the same response without recording again; valid for 24 hours.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64,
+              "pattern": "^[A-Za-z0-9_-]+$"
+            },
+            "x-description-pt-BR": "Chave única desta chamada (1 a 64 caracteres: letras, números, - e _). Repetir a chamada com a mesma chave e o mesmo corpo devolve a mesma resposta sem gravar de novo; vale por 24 horas."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GainWriteRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GainWriteResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Token ausente, inválido, vencido ou revogado.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorBody"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "A integração não tem este módulo.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorBody"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Módulo desligado ou item fora do escopo.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorBody"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Gain already validated, estimate or realized value not allowed in this situation, or closed idea.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorBody"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Invalid periodicity, negative value or unknown field.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorBody"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Limite de chamadas por minuto (Retry-After).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorBody"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Declare a gain",
+        "tags": [
+          "gains_write"
+        ],
+        "x-description-pt-BR": "Registra o ganho declarado de uma ideia, com as mesmas regras da tela. Ele fica declarado: só uma pessoa o valida, e um ganho já validado nunca é sobrescrito (409)."
+      }
+    }
+  },
+  "info": {
+    "title": "ITS Integration API",
+    "description": "Read-only API for other systems (Power Automate, n8n, BI, ERP). Send the token in the Authorization: Bearer header. API de leitura para outros sistemas; envie o token no cabeçalho Authorization: Bearer.",
+    "version": "v1",
+    "contact": {}
+  },
+  "tags": [],
+  "servers": [],
+  "components": {
+    "securitySchemes": {
+      "bearer": {
+        "scheme": "bearer",
+        "bearerFormat": "its_… (token de integração)",
+        "type": "http"
+      }
+    },
+    "schemas": {
+      "ApiErrorBody": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "example": "validation_failed"
+          },
+          "message": {
+            "type": "string",
+            "example": "Dados inválidos."
+          },
+          "details": {
+            "type": "object",
+            "description": "Detalhes por campo (validação) ou regras não atendidas."
+          }
+        },
+        "required": [
+          "code",
+          "message"
+        ]
+      },
+      "RefItem": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "example": "019a2c10-0000-7000-8000-000000000001",
+            "description": "Identifier.",
+            "x-description-pt-BR": "Identificador."
+          },
+          "name": {
+            "type": "string",
+            "example": "Expedição",
+            "description": "Name.",
+            "x-description-pt-BR": "Nome."
+          }
+        },
+        "required": [
+          "id",
+          "name"
+        ]
+      },
+      "IdeaStepItem": {
+        "type": "object",
+        "properties": {
+          "position": {
+            "type": "number",
+            "example": 1,
+            "description": "Position of the step (1, 2, 3...).",
+            "x-description-pt-BR": "Posição da etapa (1, 2, 3...)."
+          },
+          "name": {
+            "type": "string",
+            "example": "Planejar a mudança",
+            "description": "Step name.",
+            "x-description-pt-BR": "Nome da etapa."
+          },
+          "start_date": {
+            "type": "string",
+            "format": "date",
+            "example": "2026-11-02",
+            "description": "Start date (no time).",
+            "x-description-pt-BR": "Data de início (sem hora)."
+          },
+          "due_date": {
+            "type": "string",
+            "format": "date",
+            "example": "2026-11-20",
+            "description": "Planned date (no time).",
+            "x-description-pt-BR": "Data prevista (sem hora)."
+          },
+          "completed_at": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "example": null,
+            "description": "When it was completed; null while open.",
+            "x-description-pt-BR": "Quando foi concluída; nulo enquanto aberta."
+          },
+          "pdca_phase": {
+            "type": "string",
+            "nullable": true,
+            "enum": [
+              "plan",
+              "do",
+              "check",
+              "act"
+            ],
+            "example": "plan",
+            "description": "PDCA phase, when the idea uses that model.",
+            "x-description-pt-BR": "Fase do PDCA, quando a ideia usa esse modelo."
+          }
+        },
+        "required": [
+          "position",
+          "name",
+          "start_date",
+          "due_date",
+          "completed_at",
+          "pdca_phase"
+        ]
+      },
+      "IdeaItem": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "example": "ITS-2026-0042",
+            "description": "Human-readable identifier of the idea.",
+            "x-description-pt-BR": "Identificador legível da ideia."
+          },
+          "title": {
+            "type": "string",
+            "nullable": true,
+            "example": "Trocar o rolo da esteira por um modelo selado",
+            "description": "Title. Null on a converged idea (the text of who sent it is not shared).",
+            "x-description-pt-BR": "Título. Nulo na ideia convergida (o texto de quem a enviou não sai)."
+          },
+          "description": {
+            "type": "string",
+            "nullable": true,
+            "example": "O rolo atual trava a cada duas semanas por acúmulo de poeira.",
+            "description": "Problem or current situation. Null on a converged idea.",
+            "x-description-pt-BR": "Problema ou situação atual. Nulo na ideia convergida."
+          },
+          "proposed_solution": {
+            "type": "string",
+            "nullable": true,
+            "example": "Rolo selado com vedação dupla.",
+            "description": "Proposed solution.",
+            "x-description-pt-BR": "Solução proposta."
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "submitted",
+              "in_review",
+              "in_progress",
+              "implemented",
+              "rejected"
+            ],
+            "example": "in_progress",
+            "description": "Situation in the lifecycle.",
+            "x-description-pt-BR": "Situação no ciclo de vida."
+          },
+          "entity": {
+            "description": "Entity the idea belongs to.",
+            "x-description-pt-BR": "Entidade a que a ideia pertence.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/RefItem"
+              }
+            ]
+          },
+          "category": {
+            "nullable": true,
+            "description": "Main category.",
+            "x-description-pt-BR": "Categoria principal.",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/RefItem"
+              }
+            ]
+          },
+          "other_categories": {
+            "description": "Other categories (tags).",
+            "x-description-pt-BR": "Demais categorias (tags).",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RefItem"
+            }
+          },
+          "external_ref": {
+            "type": "string",
+            "nullable": true,
+            "example": "OS-8841",
+            "description": "Free external reference.",
+            "x-description-pt-BR": "Referência externa livre."
+          },
+          "submitted_at": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2026-11-02T13:00:00.000000Z",
+            "description": "When it was sent.",
+            "x-description-pt-BR": "Quando foi enviada."
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2026-11-05T09:30:00.000000Z",
+            "description": "Last change of the idea or of any of its steps.",
+            "x-description-pt-BR": "Última alteração da ideia ou de alguma etapa."
+          },
+          "deadline": {
+            "type": "string",
+            "format": "date",
+            "nullable": true,
+            "example": "2026-11-20",
+            "description": "Deadline: planned date of the last step.",
+            "x-description-pt-BR": "Prazo: data prevista da última etapa."
+          },
+          "progress": {
+            "type": "number",
+            "example": 40,
+            "description": "Progress, from 0 to 100.",
+            "x-description-pt-BR": "Progresso, de 0 a 100."
+          },
+          "campaign_id": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true,
+            "description": "Campaign the idea was linked to.",
+            "x-description-pt-BR": "Campanha a que a ideia foi vinculada."
+          },
+          "author": {
+            "type": "string",
+            "nullable": true,
+            "example": "Maria Souza",
+            "description": "Display name of the author. Null when the person opted out of showing the name; \"Ex-colaborador\" when anonymized. Never an e-mail.",
+            "x-description-pt-BR": "Nome de exibição do autor. Nulo quando a pessoa optou por ocultar o nome; \"Ex-colaborador\" quando anonimizada. Nunca o e-mail."
+          },
+          "archived": {
+            "type": "boolean",
+            "example": false,
+            "description": "Archived ideas stay in the list, marked, so you know they left the lists.",
+            "x-description-pt-BR": "Ideia arquivada segue na lista, marcada, para você saber que saiu das listas."
+          },
+          "converged_into": {
+            "type": "string",
+            "nullable": true,
+            "example": null,
+            "description": "Code of the main idea when this one was converged into it.",
+            "x-description-pt-BR": "Identificador da ideia principal quando esta foi convergida nela."
+          },
+          "on_mural": {
+            "type": "boolean",
+            "example": false,
+            "description": "The idea is on the idea wall now (M21). Reactions and comments of the wall never leave the installation.",
+            "x-description-pt-BR": "A ideia está no mural agora (M21). Reações e comentários do mural nunca saem da instalação."
+          },
+          "mural_published_at": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "example": null,
+            "description": "When it was (last) published on the idea wall; null when it is not on the wall.",
+            "x-description-pt-BR": "Quando foi publicada (pela última vez) no mural; nulo quando não está no mural."
+          },
+          "pending_approval": {
+            "type": "boolean",
+            "example": false,
+            "description": "The idea is waiting for the approval of another area (M24). Approvers, emails and comments never leave the installation.",
+            "x-description-pt-BR": "A ideia aguarda a aprovação de outra área (M24). Aprovadores, e-mails e comentários nunca saem da instalação."
+          },
+          "steps": {
+            "description": "Steps, in order. Empty on a converged idea.",
+            "x-description-pt-BR": "Etapas, em ordem. Vazio na ideia convergida.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/IdeaStepItem"
+            }
+          }
+        },
+        "required": [
+          "code",
+          "title",
+          "description",
+          "proposed_solution",
+          "status",
+          "entity",
+          "category",
+          "other_categories",
+          "external_ref",
+          "submitted_at",
+          "updated_at",
+          "deadline",
+          "progress",
+          "campaign_id",
+          "author",
+          "archived",
+          "converged_into",
+          "on_mural",
+          "mural_published_at",
+          "pending_approval",
+          "steps"
+        ]
+      },
+      "IdeaPage": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "description": "The items of this page.",
+            "x-description-pt-BR": "Os itens desta página.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/IdeaItem"
+            }
+          },
+          "next_cursor": {
+            "type": "string",
+            "nullable": true,
+            "description": "Cursor of the next page; null on the last page.",
+            "x-description-pt-BR": "Cursor da próxima página; nulo na última."
+          }
+        },
+        "required": [
+          "data",
+          "next_cursor"
+        ]
+      },
+      "IndicatorStatusCount": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "submitted",
+              "in_review",
+              "in_progress",
+              "implemented",
+              "rejected"
+            ],
+            "description": "Situation.",
+            "x-description-pt-BR": "Situação."
+          },
+          "count": {
+            "type": "number",
+            "nullable": false,
+            "description": "Ideas in this situation.",
+            "x-description-pt-BR": "Ideias nesta situação."
+          }
+        },
+        "required": [
+          "status",
+          "count"
+        ]
+      },
+      "IndicatorProcess": {
+        "type": "object",
+        "properties": {
+          "avg_triage_seconds": {
+            "type": "number",
+            "nullable": true,
+            "description": "Average seconds from sending to decision.",
+            "x-description-pt-BR": "Média, em segundos, do envio até a decisão."
+          },
+          "avg_execution_seconds": {
+            "type": "number",
+            "nullable": true,
+            "description": "Average seconds from decision to implementation.",
+            "x-description-pt-BR": "Média, em segundos, da decisão até a implementação."
+          },
+          "approval_rate": {
+            "type": "number",
+            "nullable": true,
+            "description": "Approved ÷ decided, from 0 to 1.",
+            "x-description-pt-BR": "Aprovadas ÷ decididas, de 0 a 1."
+          },
+          "decided": {
+            "type": "number",
+            "nullable": false,
+            "description": "Decided ideas.",
+            "x-description-pt-BR": "Ideias decididas."
+          },
+          "late_rate": {
+            "type": "number",
+            "nullable": true,
+            "description": "Late ÷ in progress, from 0 to 1.",
+            "x-description-pt-BR": "Atrasadas ÷ em andamento, de 0 a 1."
+          },
+          "in_progress": {
+            "type": "number",
+            "nullable": false,
+            "description": "Ideas in progress.",
+            "x-description-pt-BR": "Ideias em andamento."
+          },
+          "late": {
+            "type": "number",
+            "nullable": false,
+            "description": "Late ideas.",
+            "x-description-pt-BR": "Ideias atrasadas."
+          },
+          "authors": {
+            "type": "number",
+            "nullable": false,
+            "description": "Distinct authors (a count, never who).",
+            "x-description-pt-BR": "Autores distintos (só a contagem, nunca quem)."
+          },
+          "ideas_per_author": {
+            "type": "number",
+            "nullable": true,
+            "description": "Ideas ÷ distinct authors.",
+            "x-description-pt-BR": "Ideias ÷ autores distintos."
+          }
+        },
+        "required": [
+          "avg_triage_seconds",
+          "avg_execution_seconds",
+          "approval_rate",
+          "decided",
+          "late_rate",
+          "in_progress",
+          "late",
+          "authors",
+          "ideas_per_author"
+        ]
+      },
+      "IndicatorGroupCount": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "nullable": true,
+            "description": "Identifier.",
+            "x-description-pt-BR": "Identificador."
+          },
+          "name": {
+            "type": "string",
+            "description": "Name.",
+            "x-description-pt-BR": "Nome."
+          },
+          "count": {
+            "type": "number",
+            "nullable": false,
+            "description": "Ideas.",
+            "x-description-pt-BR": "Ideias."
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "count"
+        ]
+      },
+      "IndicatorsSummary": {
+        "type": "object",
+        "properties": {
+          "total": {
+            "type": "number",
+            "nullable": false,
+            "description": "Ideas in the cut (no archived or converged).",
+            "x-description-pt-BR": "Ideias no recorte (sem arquivadas e convergidas)."
+          },
+          "by_status": {
+            "description": "Always the 5 situations, even with zero.",
+            "x-description-pt-BR": "Sempre as 5 situações, mesmo com zero.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/IndicatorStatusCount"
+            }
+          },
+          "process": {
+            "description": "Process indicators.",
+            "x-description-pt-BR": "Indicadores de processo.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/IndicatorProcess"
+              }
+            ]
+          },
+          "by_category": {
+            "description": "Ideas by category.",
+            "x-description-pt-BR": "Ideias por categoria.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/IndicatorGroupCount"
+            }
+          },
+          "by_entity": {
+            "description": "Ideas by entity.",
+            "x-description-pt-BR": "Ideias por entidade.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/IndicatorGroupCount"
+            }
+          }
+        },
+        "required": [
+          "total",
+          "by_status",
+          "process",
+          "by_category",
+          "by_entity"
+        ]
+      },
+      "IndicatorEngagementMonth": {
+        "type": "object",
+        "properties": {
+          "month": {
+            "type": "string",
+            "example": "2026-11",
+            "description": "Month (YYYY-MM) in the installation time zone.",
+            "x-description-pt-BR": "Mês (AAAA-MM) no fuso da instalação."
+          },
+          "submitted": {
+            "type": "number",
+            "nullable": false,
+            "description": "Ideas sent in the month.",
+            "x-description-pt-BR": "Ideias enviadas no mês."
+          },
+          "implemented": {
+            "type": "number",
+            "nullable": false,
+            "description": "Of those, how many are implemented.",
+            "x-description-pt-BR": "Das enviadas, quantas já foram implementadas."
+          },
+          "participants": {
+            "type": "number",
+            "nullable": false,
+            "description": "People who sent at least one idea (a count).",
+            "x-description-pt-BR": "Pessoas que enviaram ao menos uma ideia (só a contagem)."
+          }
+        },
+        "required": [
+          "month",
+          "submitted",
+          "implemented",
+          "participants"
+        ]
+      },
+      "IndicatorsEngagement": {
+        "type": "object",
+        "properties": {
+          "active_collaborators": {
+            "type": "number",
+            "nullable": false,
+            "description": "Active people who can send ideas.",
+            "x-description-pt-BR": "Pessoas ativas que podem enviar ideias."
+          },
+          "participants": {
+            "type": "number",
+            "nullable": false,
+            "description": "Of those, who sent at least one idea.",
+            "x-description-pt-BR": "Dessas, quantas enviaram ao menos uma ideia."
+          },
+          "participation_rate": {
+            "type": "number",
+            "nullable": true,
+            "description": "Participants ÷ active people, from 0 to 1.",
+            "x-description-pt-BR": "Participantes ÷ pessoas ativas, de 0 a 1."
+          },
+          "ideas": {
+            "type": "number",
+            "nullable": false,
+            "description": "Ideas sent in the period.",
+            "x-description-pt-BR": "Ideias enviadas no período."
+          },
+          "ideas_per_collaborator": {
+            "type": "number",
+            "nullable": true,
+            "description": "Ideas ÷ active people.",
+            "x-description-pt-BR": "Ideias ÷ pessoas ativas."
+          },
+          "implemented": {
+            "type": "number",
+            "nullable": false,
+            "description": "Implemented ideas.",
+            "x-description-pt-BR": "Ideias implementadas."
+          },
+          "implementation_rate": {
+            "type": "number",
+            "nullable": true,
+            "description": "Implemented ÷ sent, from 0 to 1.",
+            "x-description-pt-BR": "Implementadas ÷ enviadas, de 0 a 1."
+          },
+          "monthly": {
+            "description": "Monthly evolution (up to 36 months).",
+            "x-description-pt-BR": "Evolução mensal (até 36 meses).",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/IndicatorEngagementMonth"
+            }
+          }
+        },
+        "required": [
+          "active_collaborators",
+          "participants",
+          "participation_rate",
+          "ideas",
+          "ideas_per_collaborator",
+          "implemented",
+          "implementation_rate",
+          "monthly"
+        ]
+      },
+      "IndicatorCurrency": {
+        "type": "object",
+        "properties": {
+          "currency": {
+            "type": "string",
+            "example": "BRL",
+            "description": "Currency (ISO 4217).",
+            "x-description-pt-BR": "Moeda (ISO 4217)."
+          },
+          "validated_annual": {
+            "type": "number",
+            "nullable": false,
+            "description": "Validated realized gain, annualized.",
+            "x-description-pt-BR": "Ganho realizado validado, anualizado."
+          },
+          "validated_ideas": {
+            "type": "number",
+            "nullable": false,
+            "description": "Ideas with a validated gain.",
+            "x-description-pt-BR": "Ideias com ganho validado."
+          },
+          "avg_per_idea": {
+            "type": "number",
+            "nullable": true,
+            "description": "Average per idea with a validated gain.",
+            "x-description-pt-BR": "Média por ideia com ganho validado."
+          },
+          "roi": {
+            "type": "number",
+            "nullable": true,
+            "description": "Annualized validated gain ÷ implementation cost.",
+            "x-description-pt-BR": "Ganho validado anualizado ÷ custo de implementação."
+          }
+        },
+        "required": [
+          "currency",
+          "validated_annual",
+          "validated_ideas",
+          "avg_per_idea",
+          "roi"
+        ]
+      },
+      "IndicatorGainGroup": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "nullable": true,
+            "description": "Identifier.",
+            "x-description-pt-BR": "Identificador."
+          },
+          "name": {
+            "type": "string",
+            "description": "Name.",
+            "x-description-pt-BR": "Nome."
+          },
+          "currency": {
+            "type": "string",
+            "description": "Currency.",
+            "x-description-pt-BR": "Moeda."
+          },
+          "validated_annual": {
+            "type": "number",
+            "nullable": false,
+            "description": "Validated gain, annualized.",
+            "x-description-pt-BR": "Ganho validado, anualizado."
+          },
+          "ideas": {
+            "type": "number",
+            "nullable": false,
+            "description": "Ideas.",
+            "x-description-pt-BR": "Ideias."
+          },
+          "roi": {
+            "type": "number",
+            "nullable": true,
+            "description": "Return on investment.",
+            "x-description-pt-BR": "Retorno sobre o investimento."
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "currency",
+          "validated_annual",
+          "ideas",
+          "roi"
+        ]
+      },
+      "IndicatorsResults": {
+        "type": "object",
+        "properties": {
+          "currencies": {
+            "description": "One row per currency. Declared gains never appear.",
+            "x-description-pt-BR": "Uma linha por moeda. Ganho declarado nunca aparece.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/IndicatorCurrency"
+            }
+          },
+          "by_category": {
+            "description": "Validated gain by category.",
+            "x-description-pt-BR": "Ganho validado por categoria.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/IndicatorGainGroup"
+            }
+          },
+          "by_entity": {
+            "description": "Validated gain by entity.",
+            "x-description-pt-BR": "Ganho validado por entidade.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/IndicatorGainGroup"
+            }
+          }
+        },
+        "required": [
+          "currencies",
+          "by_category",
+          "by_entity"
+        ]
+      },
+      "GainItem": {
+        "type": "object",
+        "properties": {
+          "idea_code": {
+            "type": "string",
+            "example": "ITS-2026-0042",
+            "description": "Identifier of the idea.",
+            "x-description-pt-BR": "Identificador da ideia."
+          },
+          "realized": {
+            "type": "number",
+            "nullable": false,
+            "description": "Realized gain (validated).",
+            "x-description-pt-BR": "Ganho realizado (validado)."
+          },
+          "currency": {
+            "type": "string",
+            "example": "BRL",
+            "description": "Currency (ISO 4217).",
+            "x-description-pt-BR": "Moeda (ISO 4217)."
+          },
+          "periodicity": {
+            "type": "string",
+            "enum": [
+              "once",
+              "monthly",
+              "yearly"
+            ],
+            "description": "Periodicity of the gain.",
+            "x-description-pt-BR": "Periodicidade do ganho."
+          },
+          "implementation_cost": {
+            "type": "number",
+            "nullable": true,
+            "description": "Implementation cost.",
+            "x-description-pt-BR": "Custo de implementação."
+          },
+          "validated_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "When the gain was validated.",
+            "x-description-pt-BR": "Quando o ganho foi validado."
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Last change of the gain.",
+            "x-description-pt-BR": "Última alteração do ganho."
+          }
+        },
+        "required": [
+          "idea_code",
+          "realized",
+          "currency",
+          "periodicity",
+          "implementation_cost",
+          "validated_at",
+          "updated_at"
+        ]
+      },
+      "GainPage": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "description": "The items of this page.",
+            "x-description-pt-BR": "Os itens desta página.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/GainItem"
+            }
+          },
+          "next_cursor": {
+            "type": "string",
+            "nullable": true,
+            "description": "Cursor of the next page; null on the last page.",
+            "x-description-pt-BR": "Cursor da próxima página; nulo na última."
+          }
+        },
+        "required": [
+          "data",
+          "next_cursor"
+        ]
+      },
+      "CampaignGain": {
+        "type": "object",
+        "properties": {
+          "currency": {
+            "type": "string",
+            "example": "BRL",
+            "description": "Currency (ISO 4217).",
+            "x-description-pt-BR": "Moeda (ISO 4217)."
+          },
+          "validated_annual": {
+            "type": "number",
+            "example": 120000,
+            "description": "Validated gain, annualized.",
+            "x-description-pt-BR": "Ganho validado, anualizado."
+          }
+        },
+        "required": [
+          "currency",
+          "validated_annual"
+        ]
+      },
+      "CampaignTotals": {
+        "type": "object",
+        "properties": {
+          "received": {
+            "type": "number",
+            "example": 12,
+            "description": "Linked ideas in the scope (no archived or converged).",
+            "x-description-pt-BR": "Ideias vinculadas no escopo (sem arquivadas e convergidas)."
+          },
+          "approved": {
+            "type": "number",
+            "example": 8,
+            "description": "Approved ideas.",
+            "x-description-pt-BR": "Ideias aprovadas."
+          },
+          "implemented": {
+            "type": "number",
+            "example": 5,
+            "description": "Implemented ideas.",
+            "x-description-pt-BR": "Ideias implementadas."
+          },
+          "participants": {
+            "type": "number",
+            "example": 9,
+            "description": "People who sent ideas (a count, never who).",
+            "x-description-pt-BR": "Pessoas que enviaram ideias (só a contagem, nunca quem)."
+          },
+          "gains": {
+            "description": "Validated gain per year, by currency.",
+            "x-description-pt-BR": "Ganho validado por ano, por moeda.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CampaignGain"
+            }
+          }
+        },
+        "required": [
+          "received",
+          "approved",
+          "implemented",
+          "participants",
+          "gains"
+        ]
+      },
+      "CampaignItem": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Identifier.",
+            "x-description-pt-BR": "Identificador."
+          },
+          "name": {
+            "type": "string",
+            "example": "Menos paradas na expedição",
+            "description": "Name.",
+            "x-description-pt-BR": "Nome."
+          },
+          "objective": {
+            "type": "string",
+            "example": "Reduzir as paradas não planejadas.",
+            "description": "Objective.",
+            "x-description-pt-BR": "Objetivo."
+          },
+          "starts_on": {
+            "type": "string",
+            "format": "date",
+            "example": "2026-10-01",
+            "description": "First day.",
+            "x-description-pt-BR": "Primeiro dia."
+          },
+          "ends_on": {
+            "type": "string",
+            "format": "date",
+            "example": "2026-12-31",
+            "description": "Last day.",
+            "x-description-pt-BR": "Último dia."
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "active",
+              "closed"
+            ],
+            "description": "Situation. Drafts never appear.",
+            "x-description-pt-BR": "Situação. Rascunho nunca aparece."
+          },
+          "goal_type": {
+            "type": "string",
+            "enum": [
+              "ideas",
+              "gain",
+              "qualitative"
+            ],
+            "description": "Type of goal.",
+            "x-description-pt-BR": "Tipo da meta."
+          },
+          "goal_value": {
+            "type": "number",
+            "nullable": true,
+            "example": 30,
+            "description": "Goal value (ideas or gain).",
+            "x-description-pt-BR": "Valor da meta (ideias ou ganho)."
+          },
+          "goal_text": {
+            "type": "string",
+            "nullable": true,
+            "example": "Reduzir 15% do tempo de entrega",
+            "description": "Goal description.",
+            "x-description-pt-BR": "Descrição da meta."
+          },
+          "target_entities": {
+            "description": "Target entities; empty means the whole organization.",
+            "x-description-pt-BR": "Entidades-alvo; vazio vale para a organização toda.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RefItem"
+            }
+          },
+          "target_categories": {
+            "description": "Target categories; empty means all.",
+            "x-description-pt-BR": "Categorias-alvo; vazio vale para todas.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RefItem"
+            }
+          },
+          "idea_codes": {
+            "example": [
+              "ITS-2026-0042"
+            ],
+            "description": "Codes of the linked ideas within the scope.",
+            "x-description-pt-BR": "Identificadores das ideias vinculadas dentro do escopo.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "totals": {
+            "description": "Dashboard totals within the scope.",
+            "x-description-pt-BR": "Totais do painel dentro do escopo.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CampaignTotals"
+              }
+            ]
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Last change.",
+            "x-description-pt-BR": "Última alteração."
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "objective",
+          "starts_on",
+          "ends_on",
+          "status",
+          "goal_type",
+          "goal_value",
+          "goal_text",
+          "target_entities",
+          "target_categories",
+          "idea_codes",
+          "totals",
+          "updated_at"
+        ]
+      },
+      "CampaignPage": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "description": "The items of this page.",
+            "x-description-pt-BR": "Os itens desta página.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CampaignItem"
+            }
+          },
+          "next_cursor": {
+            "type": "string",
+            "nullable": true,
+            "description": "Cursor of the next page; null on the last page.",
+            "x-description-pt-BR": "Cursor da próxima página; nulo na última."
+          }
+        },
+        "required": [
+          "data",
+          "next_cursor"
+        ]
+      },
+      "HallPerson": {
+        "type": "object",
+        "properties": {
+          "role": {
+            "type": "string",
+            "enum": [
+              "author",
+              "co_author"
+            ],
+            "description": "Role in the idea.",
+            "x-description-pt-BR": "Papel na ideia."
+          },
+          "name": {
+            "type": "string",
+            "example": "Maria Souza",
+            "description": "Display name. Only people who accepted to appear with the name (and did not opt out) are listed.",
+            "x-description-pt-BR": "Nome de exibição. Só entra quem aceitou aparecer com o nome (e não ocultou)."
+          }
+        },
+        "required": [
+          "role",
+          "name"
+        ]
+      },
+      "HallGain": {
+        "type": "object",
+        "properties": {
+          "validated_annual": {
+            "type": "number",
+            "example": 120000,
+            "description": "Validated gain, annualized.",
+            "x-description-pt-BR": "Ganho validado, anualizado."
+          },
+          "currency": {
+            "type": "string",
+            "example": "BRL",
+            "description": "Currency (ISO 4217).",
+            "x-description-pt-BR": "Moeda (ISO 4217)."
+          }
+        },
+        "required": [
+          "validated_annual",
+          "currency"
+        ]
+      },
+      "HallPraise": {
+        "type": "object",
+        "properties": {
+          "body": {
+            "type": "string",
+            "example": "Parabéns pela ideia!",
+            "description": "Text of the praise (never the author).",
+            "x-description-pt-BR": "Texto do elogio (nunca o autor)."
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "When it was written.",
+            "x-description-pt-BR": "Quando foi escrito."
+          }
+        },
+        "required": [
+          "body",
+          "created_at"
+        ]
+      },
+      "HallItem": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Identifier of the highlight.",
+            "x-description-pt-BR": "Identificador do destaque."
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "active",
+              "hall_of_fame"
+            ],
+            "description": "Current highlight or Hall of Fame (expired). Revoked ones never appear.",
+            "x-description-pt-BR": "Destaque vigente ou Hall da fama (vencido). Os revogados nunca aparecem."
+          },
+          "scope": {
+            "type": "string",
+            "enum": [
+              "entity",
+              "organization"
+            ],
+            "description": "Scope of the highlight.",
+            "x-description-pt-BR": "Escopo do destaque."
+          },
+          "justification": {
+            "type": "string",
+            "example": "Economia comprovada e ideia replicável.",
+            "description": "Why it was highlighted.",
+            "x-description-pt-BR": "Por que foi destacada."
+          },
+          "starts_on": {
+            "type": "string",
+            "format": "date",
+            "description": "First day of the highlight.",
+            "x-description-pt-BR": "Primeiro dia do destaque."
+          },
+          "ends_on": {
+            "type": "string",
+            "format": "date",
+            "description": "Last day of the highlight.",
+            "x-description-pt-BR": "Último dia do destaque."
+          },
+          "idea_code": {
+            "type": "string",
+            "example": "ITS-2026-0042",
+            "description": "Identifier of the idea.",
+            "x-description-pt-BR": "Identificador da ideia."
+          },
+          "title": {
+            "type": "string",
+            "example": "Trocar o rolo da esteira",
+            "description": "Title of the idea.",
+            "x-description-pt-BR": "Título da ideia."
+          },
+          "category": {
+            "nullable": true,
+            "description": "Category.",
+            "x-description-pt-BR": "Categoria.",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/RefItem"
+              }
+            ]
+          },
+          "entity": {
+            "description": "Entity.",
+            "x-description-pt-BR": "Entidade.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/RefItem"
+              }
+            ]
+          },
+          "before": {
+            "type": "string",
+            "example": "O rolo travava a cada duas semanas.",
+            "description": "Before: the problem or situation.",
+            "x-description-pt-BR": "Antes: o problema ou a situação."
+          },
+          "after": {
+            "type": "string",
+            "nullable": true,
+            "example": "Zero paradas em 60 dias.",
+            "description": "After: the result obtained.",
+            "x-description-pt-BR": "Depois: o resultado obtido."
+          },
+          "implemented_at": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "description": "When the idea was implemented.",
+            "x-description-pt-BR": "Quando a ideia foi implementada."
+          },
+          "people": {
+            "description": "Authors and co-authors allowed to appear with the name.",
+            "x-description-pt-BR": "Autores e co-autores que podem aparecer com o nome.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/HallPerson"
+            }
+          },
+          "gain": {
+            "nullable": true,
+            "description": "Validated gain. Only present when the organization enabled \"show gain in the Hall\".",
+            "x-description-pt-BR": "Ganho validado. Só vem quando a organização habilitou \"mostrar ganho no Hall\".",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/HallGain"
+              }
+            ]
+          },
+          "likes": {
+            "type": "number",
+            "nullable": true,
+            "example": 7,
+            "description": "Number of likes (never who). Null when likes are turned off.",
+            "x-description-pt-BR": "Número de curtidas (nunca quem). Nulo quando as curtidas estão desligadas."
+          },
+          "praises": {
+            "description": "Praises not hidden by moderation, without author.",
+            "x-description-pt-BR": "Elogios não ocultados pela moderação, sem autor.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/HallPraise"
+            }
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Last change.",
+            "x-description-pt-BR": "Última alteração."
+          }
+        },
+        "required": [
+          "id",
+          "state",
+          "scope",
+          "justification",
+          "starts_on",
+          "ends_on",
+          "idea_code",
+          "title",
+          "category",
+          "entity",
+          "before",
+          "after",
+          "implemented_at",
+          "people",
+          "gain",
+          "likes",
+          "praises",
+          "updated_at"
+        ]
+      },
+      "HallPage": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "description": "The items of this page.",
+            "x-description-pt-BR": "Os itens desta página.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/HallItem"
+            }
+          },
+          "next_cursor": {
+            "type": "string",
+            "nullable": true,
+            "description": "Cursor of the next page; null on the last page.",
+            "x-description-pt-BR": "Cursor da próxima página; nulo na última."
+          }
+        },
+        "required": [
+          "data",
+          "next_cursor"
+        ]
+      },
+      "EntityNode": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Identifier.",
+            "x-description-pt-BR": "Identificador."
+          },
+          "name": {
+            "type": "string",
+            "example": "Expedição",
+            "description": "Name.",
+            "x-description-pt-BR": "Nome."
+          },
+          "parent_id": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true,
+            "description": "Parent entity; null at the top of the scope.",
+            "x-description-pt-BR": "Entidade pai; nulo no topo do escopo."
+          },
+          "active": {
+            "type": "boolean",
+            "example": true,
+            "description": "Inactive entities do not accept new ideas but stay visible.",
+            "x-description-pt-BR": "Entidade inativa não aceita novas ideias, mas segue visível."
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "parent_id",
+          "active"
+        ]
+      },
+      "EntityList": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "description": "The entities of the scope.",
+            "x-description-pt-BR": "As entidades do escopo.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/EntityNode"
+            }
+          },
+          "next_cursor": {
+            "type": "string",
+            "nullable": true,
+            "example": null,
+            "description": "Always null: this list is not paginated.",
+            "x-description-pt-BR": "Sempre nulo: esta lista não é paginada."
+          }
+        },
+        "required": [
+          "data",
+          "next_cursor"
+        ]
+      },
+      "CategoryNode": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Identifier.",
+            "x-description-pt-BR": "Identificador."
+          },
+          "name": {
+            "type": "string",
+            "example": "Segurança",
+            "description": "Name.",
+            "x-description-pt-BR": "Nome."
+          },
+          "color": {
+            "type": "string",
+            "example": "#2563eb",
+            "description": "Color (#rrggbb).",
+            "x-description-pt-BR": "Cor (#rrggbb)."
+          },
+          "active": {
+            "type": "boolean",
+            "example": true,
+            "description": "Inactive categories do not accept new ideas but stay visible.",
+            "x-description-pt-BR": "Categoria inativa não aceita novas ideias, mas segue visível."
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "color",
+          "active"
+        ]
+      },
+      "CategoryList": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "description": "All categories.",
+            "x-description-pt-BR": "Todas as categorias.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CategoryNode"
+            }
+          },
+          "next_cursor": {
+            "type": "string",
+            "nullable": true,
+            "example": null,
+            "description": "Always null: this list is not paginated.",
+            "x-description-pt-BR": "Sempre nulo: esta lista não é paginada."
+          }
+        },
+        "required": [
+          "data",
+          "next_cursor"
+        ]
+      },
+      "UserLink": {
+        "type": "object",
+        "properties": {
+          "role": {
+            "type": "string",
+            "example": "Analista",
+            "description": "Name of the role (profile).",
+            "x-description-pt-BR": "Nome do perfil."
+          },
+          "entity": {
+            "description": "Entity where the role applies (always inside the scope).",
+            "x-description-pt-BR": "Entidade em que o perfil vale (sempre dentro do escopo).",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/RefItem"
+              }
+            ]
+          },
+          "include_children": {
+            "type": "boolean",
+            "example": true,
+            "description": "The role also covers the sub-entities.",
+            "x-description-pt-BR": "O perfil vale também para as subentidades."
+          }
+        },
+        "required": [
+          "role",
+          "entity",
+          "include_children"
+        ]
+      },
+      "UserCustomField": {
+        "type": "object",
+        "properties": {
+          "field_id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Field identifier.",
+            "x-description-pt-BR": "Identificador do campo."
+          },
+          "label": {
+            "type": "string",
+            "example": "Matrícula",
+            "description": "Field name (Portuguese).",
+            "x-description-pt-BR": "Nome do campo (português)."
+          },
+          "label_en": {
+            "type": "string",
+            "nullable": true,
+            "example": "Employee ID",
+            "description": "Field name in English, when set.",
+            "x-description-pt-BR": "Nome do campo em inglês, quando existe."
+          },
+          "value": {
+            "type": "string",
+            "example": "4521",
+            "description": "The value, or the chosen option.",
+            "x-description-pt-BR": "O valor, ou a opção escolhida."
+          }
+        },
+        "required": [
+          "field_id",
+          "label",
+          "label_en",
+          "value"
+        ]
+      },
+      "UserItem": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Identifier.",
+            "x-description-pt-BR": "Identificador."
+          },
+          "name": {
+            "type": "string",
+            "example": "Maria Souza",
+            "description": "Display name.",
+            "x-description-pt-BR": "Nome de exibição."
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "active",
+              "disabled"
+            ],
+            "description": "Situation. Anonymized people never appear.",
+            "x-description-pt-BR": "Situação. Quem foi anonimizado nunca aparece."
+          },
+          "email": {
+            "type": "string",
+            "example": "maria.souza@empresa.com.br",
+            "description": "E-mail. Present ONLY when the integration has \"include e-mail\" turned on; otherwise the field does not exist.",
+            "x-description-pt-BR": "E-mail. Só existe quando a integração tem \"incluir e-mail\" ligado; sem isso o campo nem aparece."
+          },
+          "links": {
+            "description": "Roles, cut to the integration scope.",
+            "x-description-pt-BR": "Perfis, cortados ao escopo da integração.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UserLink"
+            }
+          },
+          "custom_fields": {
+            "description": "Custom fields marked \"goes to integrations\" (sensitive ones never). Empty when there are none.",
+            "x-description-pt-BR": "Campos personalizados marcados \"sai na integração\" (os sensíveis nunca). Vazio quando não há.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UserCustomField"
+            }
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Last change.",
+            "x-description-pt-BR": "Última alteração."
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "status",
+          "links",
+          "custom_fields",
+          "updated_at"
+        ]
+      },
+      "UserPage": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "description": "The items of this page.",
+            "x-description-pt-BR": "Os itens desta página.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UserItem"
+            }
+          },
+          "next_cursor": {
+            "type": "string",
+            "nullable": true,
+            "description": "Cursor of the next page; null on the last page.",
+            "x-description-pt-BR": "Cursor da próxima página; nulo na última."
+          }
+        },
+        "required": [
+          "data",
+          "next_cursor"
+        ]
+      },
+      "StoreOrderItemRef": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Identifier.",
+            "x-description-pt-BR": "Identificador."
+          },
+          "name": {
+            "type": "string",
+            "example": "Vale-cultura",
+            "description": "Item name.",
+            "x-description-pt-BR": "Nome do item."
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "product",
+              "bonus"
+            ],
+            "description": "Product or service, or bonus (informative value).",
+            "x-description-pt-BR": "Produto ou serviço, ou bonificação (valor informativo)."
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "kind"
+        ]
+      },
+      "StoreOrderPerson": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Identifier.",
+            "x-description-pt-BR": "Identificador."
+          },
+          "name": {
+            "type": "string",
+            "example": "Maria Souza",
+            "description": "Display name; \"Ex-colaborador\" when anonymized.",
+            "x-description-pt-BR": "Nome de exibição; \"Ex-colaborador\" quando anonimizada."
+          },
+          "email": {
+            "type": "string",
+            "example": "maria.souza@empresa.com.br",
+            "description": "E-mail. Present ONLY when the integration has \"include e-mail\" turned on.",
+            "x-description-pt-BR": "E-mail. Só existe quando a integração tem \"incluir e-mail\" ligado."
+          }
+        },
+        "required": [
+          "id",
+          "name"
+        ]
+      },
+      "StoreOrderItem": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Order identifier.",
+            "x-description-pt-BR": "Identificador do pedido."
+          },
+          "item": {
+            "description": "The item ordered.",
+            "x-description-pt-BR": "O item pedido.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/StoreOrderItemRef"
+              }
+            ]
+          },
+          "person": {
+            "description": "Who ordered.",
+            "x-description-pt-BR": "Quem pediu.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/StoreOrderPerson"
+              }
+            ]
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "approved",
+              "delivered",
+              "paid",
+              "rejected",
+              "cancelled"
+            ],
+            "description": "Order status.",
+            "x-description-pt-BR": "Situação do pedido."
+          },
+          "cost": {
+            "type": "number",
+            "example": 120,
+            "description": "Cost in points, frozen at order time.",
+            "x-description-pt-BR": "Custo em pontos, congelado no pedido."
+          },
+          "bonus_value": {
+            "type": "number",
+            "nullable": true,
+            "example": 150,
+            "description": "Bonus only: informative value in the installation currency. ITS never pays it.",
+            "x-description-pt-BR": "Só na bonificação: valor informativo na moeda da instalação. O ITS nunca paga."
+          },
+          "currency": {
+            "type": "string",
+            "example": "BRL",
+            "description": "Installation currency.",
+            "x-description-pt-BR": "Moeda da instalação."
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "When it was ordered.",
+            "x-description-pt-BR": "Quando foi pedido."
+          },
+          "approved_at": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "description": "When it was approved.",
+            "x-description-pt-BR": "Quando foi aprovado."
+          },
+          "closed_at": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "description": "When it reached a final status.",
+            "x-description-pt-BR": "Quando chegou a uma situação final."
+          },
+          "paid_on": {
+            "type": "string",
+            "format": "date",
+            "nullable": true,
+            "description": "Bonus paid on (informed by HR).",
+            "x-description-pt-BR": "Bonificação paga em (informado pelo RH)."
+          },
+          "paid_reference": {
+            "type": "string",
+            "nullable": true,
+            "description": "Payment reference.",
+            "x-description-pt-BR": "Referência do pagamento."
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Last change.",
+            "x-description-pt-BR": "Última alteração."
+          }
+        },
+        "required": [
+          "id",
+          "item",
+          "person",
+          "status",
+          "cost",
+          "bonus_value",
+          "currency",
+          "created_at",
+          "approved_at",
+          "closed_at",
+          "paid_on",
+          "paid_reference",
+          "updated_at"
+        ]
+      },
+      "StoreOrderPage": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "description": "The items of this page.",
+            "x-description-pt-BR": "Os itens desta página.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StoreOrderItem"
+            }
+          },
+          "next_cursor": {
+            "type": "string",
+            "nullable": true,
+            "description": "Cursor of the next page; null on the last page.",
+            "x-description-pt-BR": "Cursor da próxima página; nulo na última."
+          }
+        },
+        "required": [
+          "data",
+          "next_cursor"
+        ]
+      },
+      "IdeaSubmitRequest": {
+        "type": "object",
+        "properties": {
+          "author_email": {
+            "type": "string",
+            "example": "maria.souza@empresa.com.br",
+            "description": "E-mail of the active person who authors the idea. She must be allowed to submit ideas to the entity; otherwise the call is refused.",
+            "x-description-pt-BR": "E-mail da pessoa ativa que é a autora da ideia. Ela precisa poder enviar ideias para a entidade; senão a chamada é recusada."
+          },
+          "title": {
+            "type": "string",
+            "maxLength": 200,
+            "example": "Trocar o rolo da esteira",
+            "description": "Title of the idea.",
+            "x-description-pt-BR": "Título da ideia."
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 10000,
+            "example": "O rolo atual trava a cada semana.",
+            "description": "Description of the current situation.",
+            "x-description-pt-BR": "Descrição da situação atual."
+          },
+          "entity_id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Entity that receives the idea. It must be inside the integration scope and active.",
+            "x-description-pt-BR": "Entidade que recebe a ideia. Precisa estar no escopo da integração e ativa."
+          },
+          "category_id": {
+            "type": "object",
+            "format": "uuid",
+            "nullable": true,
+            "description": "Main category. Required when the installation requires a category.",
+            "x-description-pt-BR": "Categoria principal. Obrigatória quando a instalação exige categoria."
+          },
+          "campaign_id": {
+            "type": "object",
+            "format": "uuid",
+            "nullable": true,
+            "description": "Campaign to link the idea to, if it is eligible.",
+            "x-description-pt-BR": "Campanha à qual ligar a ideia, se for elegível."
+          },
+          "proposed_solution": {
+            "type": "object",
+            "maxLength": 10000,
+            "nullable": true,
+            "description": "Proposed solution.",
+            "x-description-pt-BR": "Solução proposta."
+          },
+          "external_ref": {
+            "type": "object",
+            "maxLength": 100,
+            "nullable": true,
+            "example": "CHAMADO-4711",
+            "description": "Reference in your own system (ticket number, etc.).",
+            "x-description-pt-BR": "Referência no seu sistema (número do chamado etc.)."
+          }
+        },
+        "required": [
+          "author_email",
+          "title",
+          "description",
+          "entity_id"
+        ]
+      },
+      "IdeaSubmitResponse": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "example": "ITS-2026-0042",
+            "description": "Identifier of the new idea.",
+            "x-description-pt-BR": "Identificador da ideia nova."
+          },
+          "status": {
+            "type": "string",
+            "example": "submitted",
+            "description": "Situation of the idea: always `submitted`.",
+            "x-description-pt-BR": "Situação da ideia: sempre `submitted`."
+          },
+          "entity_id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Entity that received the idea.",
+            "x-description-pt-BR": "Entidade que recebeu a ideia."
+          }
+        },
+        "required": [
+          "code",
+          "status",
+          "entity_id"
+        ]
+      },
+      "CommentWriteRequest": {
+        "type": "object",
+        "properties": {
+          "body": {
+            "type": "string",
+            "maxLength": 5000,
+            "example": "Chamado atendido pela equipe de manutenção.",
+            "description": "Text of the comment (up to 5000 characters). It is always public.",
+            "x-description-pt-BR": "Texto do comentário (até 5000 caracteres). É sempre público."
+          }
+        },
+        "required": [
+          "body"
+        ]
+      },
+      "CommentWriteResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Identifier of the comment.",
+            "x-description-pt-BR": "Identificador do comentário."
+          },
+          "idea_code": {
+            "type": "string",
+            "example": "ITS-2026-0042",
+            "description": "Identifier of the idea.",
+            "x-description-pt-BR": "Identificador da ideia."
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "When the comment was recorded.",
+            "x-description-pt-BR": "Quando o comentário foi gravado."
+          }
+        },
+        "required": [
+          "id",
+          "idea_code",
+          "created_at"
+        ]
+      },
+      "ExternalRefRequest": {
+        "type": "object",
+        "properties": {
+          "external_ref": {
+            "type": "string",
+            "nullable": true,
+            "maxLength": 100,
+            "example": "CHAMADO-4711",
+            "description": "New reference (up to 100 characters), or null to clear it.",
+            "x-description-pt-BR": "Referência nova (até 100 caracteres), ou nulo para limpar."
+          }
+        },
+        "required": [
+          "external_ref"
+        ]
+      },
+      "ExternalRefResponse": {
+        "type": "object",
+        "properties": {
+          "idea_code": {
+            "type": "string",
+            "example": "ITS-2026-0042",
+            "description": "Identifier of the idea.",
+            "x-description-pt-BR": "Identificador da ideia."
+          },
+          "external_ref": {
+            "type": "string",
+            "nullable": true,
+            "description": "Reference now stored.",
+            "x-description-pt-BR": "Referência agora gravada."
+          }
+        },
+        "required": [
+          "idea_code",
+          "external_ref"
+        ]
+      },
+      "GainWriteRequest": {
+        "type": "object",
+        "properties": {
+          "periodicity": {
+            "type": "string",
+            "enum": [
+              "once",
+              "monthly",
+              "yearly"
+            ],
+            "description": "How often the gain happens.",
+            "x-description-pt-BR": "Com que frequência o ganho acontece."
+          },
+          "currency": {
+            "type": "string",
+            "example": "BRL",
+            "description": "Currency (ISO 4217). Default: the installation currency.",
+            "x-description-pt-BR": "Moeda (ISO 4217). Padrão: a moeda da instalação."
+          },
+          "estimated": {
+            "type": "number",
+            "nullable": true,
+            "example": 12000,
+            "description": "Estimated gain. Only while the idea is submitted or in review.",
+            "x-description-pt-BR": "Ganho estimado. Só enquanto a ideia está enviada ou em análise."
+          },
+          "realized": {
+            "type": "number",
+            "nullable": true,
+            "example": 9000,
+            "description": "Realized gain. Only after the idea is implemented.",
+            "x-description-pt-BR": "Ganho realizado. Só depois de a ideia ser implementada."
+          },
+          "implementation_cost": {
+            "type": "number",
+            "nullable": true,
+            "example": 3000,
+            "description": "Implementation cost.",
+            "x-description-pt-BR": "Custo de implementação."
+          }
+        },
+        "required": [
+          "periodicity"
+        ]
+      },
+      "GainWriteResponse": {
+        "type": "object",
+        "properties": {
+          "idea_code": {
+            "type": "string",
+            "example": "ITS-2026-0042",
+            "description": "Identifier of the idea.",
+            "x-description-pt-BR": "Identificador da ideia."
+          },
+          "status": {
+            "type": "string",
+            "example": "declared",
+            "description": "Always `declared`: only a person validates a gain.",
+            "x-description-pt-BR": "Sempre `declared`: só uma pessoa valida um ganho."
+          }
+        },
+        "required": [
+          "idea_code",
+          "status"
+        ]
+      }
+    }
+  }
+}
