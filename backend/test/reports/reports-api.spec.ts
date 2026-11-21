@@ -1,6 +1,7 @@
 import 'reflect-metadata';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { csvCell, neutralize } from '../../src/common/csv.js';
+import { todayInZone } from '../../src/common/dates.js';
 import { Role } from '../../src/identity-access/entities/role.entity.js';
 import { User } from '../../src/identity-access/entities/user.entity.js';
 import { UserRoleScope } from '../../src/identity-access/entities/user-role-scope.entity.js';
@@ -190,8 +191,8 @@ describe('Indicadores, exportação e PDF (M5, RN-44 a RN-49)', () => {
     const cat = await summary(admin, `?categoryId=${otherCategoryId}`);
     expect(cat.body.total).toBe(1);
     expect(cat.body.byCategory).toMatchObject([{ id: otherCategoryId, name: 'Qualidade', count: 1 }]);
-    // Período: as ideias de teste foram enviadas hoje; um dia depois ou antes não há nada.
-    const today = new Date().toISOString().slice(0, 10);
+    // Período: as ideias de teste foram enviadas hoje (no fuso da instalação, o mesmo do filtro).
+    const today = todayInZone(new Date(), INSTALL_INPUT.timezone);
     // (3 ideias da fixture tiveram a data de envio ajustada para janeiro de 2026)
     expect((await summary(admin, `?from=${today}&to=${today}`)).body.total).toBe(4);
     expect((await summary(admin, '?from=2099-01-01')).body.total).toBe(0);

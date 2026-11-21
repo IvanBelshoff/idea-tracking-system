@@ -1,5 +1,6 @@
 import 'reflect-metadata';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { addDaysToDay, todayInZone } from '../../src/common/dates.js';
 import { Step } from '../../src/ideas/entities/idea-related.entity.js';
 import { Role } from '../../src/identity-access/entities/role.entity.js';
 import { User, UserStatus } from '../../src/identity-access/entities/user.entity.js';
@@ -34,7 +35,8 @@ interface Event {
   data: Record<string, unknown>;
 }
 
-const day = (n: number) => new Date(Date.now() + n * 86_400_000).toISOString().slice(0, 10);
+/** Data AAAA-MM-DD daqui a `n` dias, no fuso da instalação (o mesmo que o atraso usa). */
+const day = (n: number) => addDaysToDay(todayInZone(new Date(), INSTALL_INPUT.timezone), n);
 
 describe('Etapas, prazos e implementação (M3, fatia 1)', () => {
   let t: TestApp;
