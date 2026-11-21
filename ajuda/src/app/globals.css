@@ -175,3 +175,64 @@
 .rail-scroll:focus-within::-webkit-scrollbar-thumb {
   background: color-mix(in oklch, var(--brand) 60%, transparent);
 }
+
+/*
+ * Página inicial do site público (components/home). Os dois idiomas vão no HTML; o script inline marca
+ * html[data-lang] antes da primeira pintura, e só o escolhido aparece (sem marca, vale o português).
+ */
+html:not([data-lang="en"]) [data-l="en"],
+html[data-lang="en"] [data-l="pt-BR"] {
+  display: none;
+}
+
+/*
+ * O histórico da ideia de exemplo se escreve evento a evento ao abrir a página. Cada evento parte de um
+ * estado já legível (uma opacidade só, sem somar com a do texto); o cartão "sua vez", que traz a ação
+ * principal, entra sempre visível, só deslizando, e em no máximo 0,3 s.
+ */
+@media (prefers-reduced-motion: no-preference) {
+  .home-entry {
+    animation: home-entrar 0.45s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+    animation-delay: calc(var(--i, 0) * 0.1s + 0.05s);
+  }
+  /* O texto do evento se revela depois do horário, da esquerda para a direita (recorte, sem opacidade). */
+  .home-entry > div {
+    animation: home-revelar 0.35s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+    animation-delay: calc(var(--i, 0) * 0.1s + 0.15s);
+  }
+  .home-acao {
+    animation: home-deslizar 0.45s cubic-bezier(0.2, 0.7, 0.2, 1) 0.3s both;
+  }
+  /* O evento de hoje continua vivo: o marcador pulsa devagar na cor da situação. */
+  .home-live {
+    animation: home-vivo 2.4s ease-in-out infinite;
+  }
+}
+@keyframes home-entrar {
+  from {
+    opacity: 0.4;
+    transform: translateY(6px);
+  }
+}
+@keyframes home-revelar {
+  from {
+    clip-path: inset(0 100% 0 0);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+@keyframes home-deslizar {
+  from {
+    transform: translateY(6px);
+  }
+}
+@keyframes home-vivo {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 color-mix(in oklch, var(--ink) 45%, transparent);
+  }
+  50% {
+    box-shadow: 0 0 0 7px color-mix(in oklch, var(--ink) 0%, transparent);
+  }
+}

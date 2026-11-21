@@ -19,6 +19,7 @@ const TYPES = {
   '.svg': 'image/svg+xml',
   '.png': 'image/png',
   '.webp': 'image/webp',
+  '.webm': 'video/webm',
   '.woff2': 'font/woff2',
   '.wasm': 'application/wasm',
   '.pf_meta': 'application/octet-stream',

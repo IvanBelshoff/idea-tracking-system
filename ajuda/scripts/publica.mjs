@@ -3,8 +3,8 @@
 //
 //   AJUDA_PUBLICA=1 AJUDA_BASE_PATH=/idea-tracking-system pnpm build
 //
-// - As páginas estáticas de public/ (escolha do idioma e "não encontrada") trazem /ajuda/ escrito: aqui
-//   passam para o caminho base público.
+// - A página estática "não encontrada" (public/nao-encontrada.html) traz /ajuda/ escrito: aqui passa para
+//   o caminho base público. A raiz (index.html) é a página inicial, gerada pelo Next com o caminho certo.
 // - 404.html: a página que o GitHub Pages mostra quando o endereço não existe.
 // - favicon.svg: na instalação, o ícone vem do ITS (mesmo endereço); no Pages, vai uma cópia do símbolo.
 // - .nojekyll: se o Pages for publicado a partir de um branch (com Jekyll), sem ele as pastas que começam
@@ -23,7 +23,7 @@ if (!/^\/[a-z0-9-]+$/.test(base) || base === '/ajuda') {
 }
 const out = (file) => fileURLToPath(new URL(`../out/${file}`, import.meta.url));
 
-for (const file of ['index.html', 'nao-encontrada.html']) {
+for (const file of ['nao-encontrada.html']) {
   const html = readFileSync(out(file), 'utf8')
     .replaceAll('/ajuda/', `${base}/`)
     .replaceAll('href="/favicon.svg"', `href="${base}/favicon.svg"`);

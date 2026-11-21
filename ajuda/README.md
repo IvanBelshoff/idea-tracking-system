@@ -67,7 +67,7 @@ docker compose -p its-capturas -f ../docker-compose.yml -f ../docker-compose.bui
 
 ## Ajuda pública (GitHub Pages)
 
-O mesmo app sai num segundo build, publicado no GitHub Pages a cada versão pelo `.github/workflows/release.yml`, em https://ivanbelshoff.github.io/idea-tracking-system/. Ele muda o caminho base (`AJUDA_BASE_PATH`, padrão `/ajuda`) e, com `AJUDA_PUBLICA=1`, troca o "Voltar ao ITS" pelo link do código no GitHub (`src/site.ts`). O `scripts/publica.mjs` acerta as páginas estáticas de `public/`, cria o `404.html` e copia o ícone.
+O mesmo app sai num segundo build, publicado no GitHub Pages pelo `.github/workflows/pages.yml` (a cada versão, chamado pelo `release.yml`, ou à mão, pelo "Run workflow" na `main`), em https://ivanbelshoff.github.io/idea-tracking-system/. Ele muda o caminho base (`AJUDA_BASE_PATH`, padrão `/ajuda`) e, com `AJUDA_PUBLICA=1`, troca o "Voltar ao ITS" pelo link do código no GitHub (`src/site.ts`). O `scripts/publica.mjs` acerta as páginas estáticas de `public/`, cria o `404.html` e copia o ícone.
 
 ```bash
 AJUDA_PUBLICA=1 AJUDA_BASE_PATH=/idea-tracking-system pnpm build
@@ -76,6 +76,18 @@ AJUDA_BASE_PATH=/idea-tracking-system A11Y_BASE=http://127.0.0.1:3201 pnpm a11y
 ```
 
 Use sempre `asset()` de `src/site.ts` para arquivos de `public/` e `<Link>` para páginas: nada de `/ajuda/` escrito no código.
+
+### Página inicial
+
+Na ajuda pública, a raiz (`src/app/(site)/page.tsx`) é a página inicial do ITS; na instalação, a mesma rota só redireciona para o idioma, e a documentação fica em `src/app/(docs)/[lang]/`, com os mesmos endereços. As seções ficam em `src/components/home/` e os textos, nos dois idiomas, em `src/components/home/texto.ts` (os dois idiomas vão no HTML; um script antes da primeira pintura escolhe e o CSS mostra só o escolhido, `data-l`). A página não entra na busca, porque não usa `data-pagefind-body`.
+
+O vídeo (`public/video/ciclo-<idioma>.webm` e o pôster `.webp`) é gravado pelo `scripts/video.mjs` numa instalação de **demonstração** nova, uma por idioma, para o código da ideia sair igual: ele dirige as telas reais (enviar, fila, triagem, etapas, implementada, avisos), monta o WebM com o `ffmpeg` e o pôster com o `cwebp`.
+
+```bash
+DEMO_PASSWORD='...' node ../scripts/seed-demo.mjs http://127.0.0.1:8090
+ITS_BASE=http://127.0.0.1:8090 VIDEO_PASSWORD='...' VIDEO_LANG=pt-BR pnpm video
+# recrie a demonstração e repita com VIDEO_LANG=en
+```
 
 ## Docker
 

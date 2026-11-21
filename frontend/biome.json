@@ -14,8 +14,7 @@
       "!.github/skills",
       "!.github/agents",
       "!.claude",
-      "!.impeccable",
-      "!PRODUCT.md"
+      "!.impeccable"
     ]
   },
   "formatter": {

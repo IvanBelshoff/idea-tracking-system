@@ -2,6 +2,13 @@
 
 O ITS segue o [versionamento semântico](https://semver.org/lang/pt-BR/), com uma só versão para o backend, o frontend e a Ajuda. O formato é o do [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/).
 
+## [1.0.1] - 2026-11-20
+
+### Adicionado
+
+- **Página inicial do site público** (<https://ivanbelshoff.github.io/idea-tracking-system/>): apresenta o ITS, mostra como ele funciona, os recursos e um vídeo curto do caminho de uma ideia, e leva à instalação e à documentação, em português e em inglês. A documentação continua nos mesmos endereços, e dentro de uma instalação a Ajuda abre direto nela, como antes.
+- O site público também pode ser publicado à mão, sem versão nova (fluxo `pages.yml`).
+
 ## [1.0.0] - 2026-11-20
 
 Primeira versão pública do ITS – Idea Tracking System (Sistema de Acompanhamento de Ideias).

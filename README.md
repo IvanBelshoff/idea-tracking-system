@@ -40,7 +40,8 @@ Abra <http://127.0.0.1:8080> e siga o assistente de instalação, que cria a con
 
 | Documento | Conteúdo |
 |---|---|
-| [Ajuda](https://ivanbelshoff.github.io/idea-tracking-system/) | Para quem usa e administra o ITS, em português e em inglês (também em `/ajuda/` em toda instalação) |
+| [Site do ITS](https://ivanbelshoff.github.io/idea-tracking-system/) | Apresentação, vídeo do caminho de uma ideia e instalação |
+| [Ajuda](https://ivanbelshoff.github.io/idea-tracking-system/pt-BR/) | Para quem usa e administra o ITS, em português e em inglês (também em `/ajuda/` em toda instalação) |
 | [docs/INSTALACAO.md](docs/INSTALACAO.md) | Instalação, backup, restauração, atualização e problemas comuns |
 | [docs/REGRAS-DE-NEGOCIO.md](docs/REGRAS-DE-NEGOCIO.md) | As regras de negócio (RN-01 a RN-202) e as decisões |
 | [docs/CRITERIOS-DE-ACEITE.md](docs/CRITERIOS-DE-ACEITE.md) | Os critérios testáveis de cada regra, que viram a suíte de testes |

@@ -115,6 +115,7 @@ const SHOTS = [
   ['observabilidade', '/admin/observabilidade', { altura: 1500 }],
   ['acesso', '/admin/acesso', { altura: 2600 }],
   ['integracoes', '/admin/integracoes', { altura: 1100 }],
+  ['hall', '/hall'],
 ];
 // CAPTURA_SO=a,b grava só essas telas (as outras ficam como estão); CAPTURA_ALTURA força a altura da janela.
 const only = process.env.CAPTURA_SO?.split(',').map((name) => name.trim());
@@ -131,6 +132,23 @@ function expectOk(label, res) {
  * Estado comum das telas de administração, idempotente: endereço do sistema, domínios e login com a
  * Microsoft (sem teste de entrada, que exige uma conta real), API de integração ligada com uma integração.
  */
+/** Sessão de outra conta de demonstração (todas com a mesma senha), pelo Node, sem trocar a do navegador. */
+async function demoSession(emailAddress) {
+  const login = await fetch(`${base}/api/auth/login`, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ email: emailAddress, password }),
+  });
+  if (!login.ok) return null;
+  const cookie = login.headers.get('set-cookie')?.split(';')[0] ?? '';
+  return (method, path, body) =>
+    fetch(`${base}/api${path}`, {
+      method,
+      headers: { cookie, ...(body ? { 'content-type': 'application/json' } : {}) },
+      body: body ? JSON.stringify(body) : undefined,
+    });
+}
+
 async function prepareDemo(api) {
   expectOk('endereço do sistema', await api('PATCH', '/settings', { values: { 'email.app_url': DEMO.appUrl } }));
   expectOk('domínios', await api('PUT', '/admin/access/policy', { domains: ['example.test'], allowExternal: false }));
@@ -143,6 +161,28 @@ async function prepareDemo(api) {
       secretExpiresOn: inDays(540),
     }),
   );
+  // Hall: as ideias implementadas da demonstração em destaque, com o consentimento de cada autor (a
+  // conta de demonstração dele, nome@example.test), para o nome aparecer.
+  const hall = expectOk('hall', await api('GET', '/hall'));
+  if ((hall.current ?? []).length === 0) {
+    const done = expectOk('implementadas', await api('GET', '/ideas?status=implemented&pageSize=10'));
+    for (const idea of done.items ?? []) {
+      const created = await api('POST', '/hall/highlights', {
+        ideaRef: idea.code,
+        scope: 'organization',
+        justification: 'Resolveu um risco real com uma mudança simples, e o resultado foi conferido.',
+        // Ontem: em UTC já pode ser amanhã no fuso da organização, e o destaque ficaria para depois.
+        startsOn: inDays(-1),
+        endsOn: inDays(30),
+      });
+      // Já em destaque (outra execução das capturas): nada a fazer.
+      if (created.status === 409) continue;
+      const highlight = expectOk('destaque', created);
+      const first = idea.author?.name?.split(' ')[0]?.toLowerCase();
+      const author = first ? await demoSession(`${first}@example.test`) : null;
+      if (author) await author('POST', `/hall/highlights/${highlight.id}/consent`, { accept: true });
+    }
+  }
   expectOk(
     'módulos',
     await api('PUT', '/admin/integrations/modules', { modules: ['ideas', 'indicators', 'campaigns'] }),

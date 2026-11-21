@@ -3,7 +3,7 @@ import Link from 'next/link';
 import type { ComponentType } from 'react';
 import { Toc } from '~/components/toc';
 import { isLang, LANGS, type Lang, MESSAGES } from '~/i18n';
-import { ALL_PAGES, pageHref } from '../../../../content/nav';
+import { ALL_PAGES, pageHref } from '../../../../../content/nav';
 
 export const dynamicParams = false;
 
@@ -19,7 +19,7 @@ interface DocModule {
 }
 
 async function load(lang: Lang, slug: string): Promise<DocModule> {
-  return (await import(`../../../../content/${lang}/${slug || 'index'}.mdx`)) as DocModule;
+  return (await import(`../../../../../content/${lang}/${slug || 'index'}.mdx`)) as DocModule;
 }
 
 async function resolve(params: Params) {

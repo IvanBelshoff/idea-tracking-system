@@ -1,6 +1,6 @@
 {
   "name": "its-frontend",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "private": true,
   "description": "ITS – SPA React (Vite + shadcn/ui + Tailwind). Pasta frontend do repositório its.",
   "license": "MIT",

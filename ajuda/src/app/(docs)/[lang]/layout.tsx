@@ -7,7 +7,7 @@ import { Shell } from '~/components/shell';
 import { isLang, LANGS, MESSAGES } from '~/i18n';
 import { PREPAINT } from '~/prepaint';
 import { asset, PUBLICA } from '~/site';
-import '../globals.css';
+import '../../globals.css';
 
 export const dynamicParams = false;
 

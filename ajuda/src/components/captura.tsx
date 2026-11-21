@@ -3,9 +3,10 @@
 import { Expand } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import { type MouseEvent, useState } from 'react';
+import { type Lang, MESSAGES } from '../i18n';
 import { asset } from '../site';
 import type { CapturaAberta } from './captura-visor';
-import { useLang, useMessages } from './use-lang';
+import { useLang } from './use-lang';
 
 /** O visualizador só é baixado quando alguém abre uma captura. */
 const CapturaVisor = dynamic(() => import('./captura-visor'), { ssr: false });
@@ -18,9 +19,24 @@ const CapturaVisor = dynamic(() => import('./captura-visor'), { ssr: false });
  * Clicar amplia a captura em tela cheia, na própria página (zoom e pinça para ler os detalhes). Sem
  * JavaScript, ou com Ctrl, ⌘, Shift ou o botão do meio, o link abre o arquivo, como qualquer link.
  */
-export function Captura({ nome, alt, legenda }: { nome: string; alt: string; legenda?: string }) {
-  const lang = useLang();
-  const t = useMessages().capture;
+export function Captura({
+  nome,
+  alt,
+  legenda,
+  lang: forced,
+  recorte = false,
+}: {
+  nome: string;
+  alt: string;
+  legenda?: string;
+  /** Fora das páginas da documentação (a página inicial, sem idioma no endereço). */
+  lang?: Lang;
+  /** Mostra a captura numa proporção fixa, a partir do topo (a ampliada continua inteira). */
+  recorte?: boolean;
+}) {
+  const pathLang = useLang();
+  const lang = forced ?? pathLang;
+  const t = MESSAGES[lang].capture;
   const [aberta, setAberta] = useState<CapturaAberta | null>(null);
   const src = (tema: 'claro' | 'escuro') => asset(`/capturas/${lang}/${tema}/${nome}.webp`);
 
@@ -47,7 +63,7 @@ export function Captura({ nome, alt, legenda }: { nome: string; alt: string; leg
         href={src('claro')}
         onClick={abrir}
         aria-label={t.expand(alt)}
-        className="group relative block cursor-zoom-in overflow-clip rounded-lg border bg-muted shadow-sm outline-none transition-colors hover:border-ring focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
+        className={`group relative block cursor-zoom-in overflow-clip rounded-lg border bg-muted shadow-sm outline-none transition-colors hover:border-ring focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 ${recorte ? 'aspect-[16/10]' : ''}`}
       >
         {/* biome-ignore lint/performance/noImgElement: exportação estática sem otimizador (images.unoptimized); next/image não acrescentaria nada */}
         <img
@@ -57,7 +73,7 @@ export function Captura({ nome, alt, legenda }: { nome: string; alt: string; leg
           height={800}
           loading="lazy"
           data-tema="claro"
-          className="block h-auto w-full dark:hidden"
+          className={`block w-full dark:hidden ${recorte ? 'h-full object-cover object-top' : 'h-auto'}`}
         />
         {/* biome-ignore lint/performance/noImgElement: exportação estática sem otimizador (images.unoptimized); next/image não acrescentaria nada */}
         <img
@@ -67,7 +83,7 @@ export function Captura({ nome, alt, legenda }: { nome: string; alt: string; leg
           height={800}
           loading="lazy"
           data-tema="escuro"
-          className="hidden h-auto w-full dark:block"
+          className={`hidden w-full dark:block ${recorte ? 'h-full object-cover object-top' : 'h-auto'}`}
         />
         {/*
           Sinal de que a captura amplia, visível também no celular (onde não há "passar o mouse"). Fica
@@ -77,14 +93,14 @@ export function Captura({ nome, alt, legenda }: { nome: string; alt: string; leg
         */}
         <span
           aria-hidden="true"
-          className="pointer-events-none sticky bottom-2 z-10 mr-2 mb-2 -mt-9 ml-auto flex h-7 w-fit items-center gap-1.5 rounded-md border bg-background/90 px-2 text-xs font-medium text-foreground shadow-sm transition-colors group-hover:border-ring group-focus-visible:border-ring"
+          className={`pointer-events-none z-10 flex h-7 w-fit items-center gap-1.5 rounded-md border bg-background/90 px-2 text-xs font-medium text-foreground shadow-sm transition-colors group-hover:border-ring group-focus-visible:border-ring ${recorte ? 'absolute right-2 bottom-2' : 'sticky bottom-2 mr-2 mb-2 -mt-9 ml-auto'}`}
         >
           <Expand className="size-3.5" />
           {t.hint}
         </span>
       </a>
       {legenda && <figcaption className="mt-2 text-sm text-muted-foreground">{legenda}</figcaption>}
-      {aberta && <CapturaVisor captura={aberta} fechar={() => setAberta(null)} />}
+      {aberta && <CapturaVisor captura={aberta} lang={lang} fechar={() => setAberta(null)} />}
     </figure>
   );
 }

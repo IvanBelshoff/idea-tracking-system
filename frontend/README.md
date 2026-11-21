@@ -12,7 +12,7 @@ SPA em React + Vite + TypeScript + shadcn/ui + Tailwind CSS.
 
 ## Impeccable (design)
 
-Ferramenta de design usada no M0V. A instalação **não é versionada** (traz binários de terceiros); o resultado fica em [`../docs/DESIGN.md`](../docs/DESIGN.md), `src/tokens.css` e `PRODUCT.md`. Para usar: nesta pasta, `npx impeccable install`, depois abra o Claude Code aqui (`frontend`), suba `pnpm dev` e rode `/impeccable`. As pastas `.claude/`, `.github/` e `.impeccable/` desta pasta ficam fora do Git, e o Biome as ignora.
+Ferramenta de design usada no M0V. A instalação **não é versionada** (traz binários de terceiros); o resultado fica em [`../docs/DESIGN.md`](../docs/DESIGN.md), `src/tokens.css` e [`../PRODUCT.md`](../PRODUCT.md). Para usar: nesta pasta, `npx impeccable install`, depois abra o Claude Code aqui (`frontend`), suba `pnpm dev` e rode `/impeccable`. As pastas `.claude/`, `.github/` e `.impeccable/` desta pasta ficam fora do Git, e o Biome as ignora.
 
 ## Responsabilidades
 

@@ -1,6 +1,6 @@
 {
   "name": "its-backend",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "private": true,
   "description": "ITS – API (NestJS) e worker de jobs. Pasta backend do repositório its.",
   "license": "MIT",

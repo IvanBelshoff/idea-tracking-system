@@ -520,6 +520,18 @@ A ajuda (`its/ajuda`, servida em `/ajuda/`) é uma superfície de **leitura**: o
 - **Restrições:** vêm sempre com o porquê ("Sem justificativa não dá: quem enviou a ideia merece saber o porquê").
 - **Nomes:** a ajuda usa os nomes padrão e avisa que a organização pode ter trocado rótulos, cores e o logo.
 
+### Página inicial do site público (1.0.1)
+
+Só na ajuda pública (GitHub Pages), na raiz; na instalação, a raiz redireciona para a documentação. É a única superfície **de convencimento** do projeto: quem decide adotar precisa entender em segundos o que é o ITS, por que importa e o que fazer. O mundo visual é o mesmo (tokens, Geist, símbolo, claro e escuro); muda a composição.
+
+- **Tese: a prova do retorno é o rastro.** A primeira tela é o histórico de uma ideia de exemplo (dados fictícios, com a nota "Exemplo com dados fictícios"): à esquerda, o título "Nenhuma ideia sem resposta." em duas linhas (a segunda em índigo), o subtítulo e o código da ideia sob um fio; à direita, o registro descendo, evento a evento, com o marcador na cor da situação (`--st-*`), linhas tracejadas entre eventos e, no fim, o cartão índigo "sua vez" com o comando copiável e o botão Instalar. Recusa o padrão da categoria (manchete centrada sobre botão e cartões iguais; cópia à esquerda e captura à direita).
+- **Trilho como gramática.** Abaixo da dobra, uma linha fina na margem esquerda guia as seções, com um marcador por seção na cor de uma situação (Enviada, Em análise, Em andamento, a marca em Instalar, Implementada). A continuidade com o trilho do registro é de gramática, não física: os dois não se unem (decisão do dono, 20/11/2026). Sem rótulo acima dos títulos (eyebrow): o título da seção fica sozinho.
+- **Tipografia:** a monoespaçada continua só para códigos (o identificador e os comandos); horários e números de passo usam a Geist com algarismos tabulares (`font-num`).
+- **Movimento:** o registro se escreve ao abrir a página (cada evento entra de 40% de opacidade com um deslocamento de 6 px; o texto se revela por recorte logo depois do horário); o cartão "sua vez", que traz a ação principal, entra sempre visível, só deslizando; o evento "hoje" pulsa devagar. Nada disso acontece com movimento reduzido. Nunca opacidade sobre opacidade.
+- **Provas reais:** as capturas (recortadas em 16:10 a partir do topo, que ampliam inteiras) e um vídeo curto do caminho de uma ideia nas telas reais, com legendas, gerados por `ajuda/scripts/capturas.mjs` e `ajuda/scripts/video.mjs` numa instalação de demonstração. Nada de clientes, números de uso ou depoimentos.
+- **Dois idiomas numa página:** o HTML traz pt-BR e en; um script antes da primeira pintura escolhe (o idioma guardado ou o do navegador) e o CSS mostra só o escolhido, sem piscar. O cabeçalho é único, com os rótulos dos dois idiomas; no celular, a navegação dá lugar ao link Documentação.
+- **Blocos de comando:** fundo escuro fixo nos dois temas (mais escuro no tema escuro, com um contorno sutil), região rolável com nome e foco de teclado; no celular, o comando longo quebra em vez de rolar.
+
 ## Verificação de contraste
 
 Script `frontend/scripts/check-contrast.mjs` (`pnpm design:contrast`, também na CI do frontend): lê `src/tokens.css`, converte OKLCH para sRGB e mede a razão WCAG de cada par usado nas telas, no claro, no escuro e com a marca de exemplo. Falha se algum par ficar abaixo do mínimo.

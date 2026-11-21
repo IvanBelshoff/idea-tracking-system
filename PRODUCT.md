@@ -2,7 +2,7 @@
 
 <!-- impeccable:product-schema 1 -->
 
-> Fonte: `../docs/REGRAS-DE-NEGOCIO.md` (v1.0). Decisões visuais **não** ficam aqui: vão para `../docs/DESIGN.md` (M0V).
+> Fonte: `docs/REGRAS-DE-NEGOCIO.md` (v1.0). Vale para o produto inteiro: o sistema (`frontend/`), a Ajuda e o site público (`ajuda/`). Decisões visuais **não** ficam aqui: vão para `docs/DESIGN.md`.
 
 ## Platform
 
@@ -22,6 +22,14 @@ web
 | **Visitante** | Celular, sem login | Consultar o andamento de uma ideia por código de acompanhamento, numa única tela, sem dados pessoais |
 
 Perfis são editáveis e têm escopo por entidade; um mesmo usuário pode ser colaborador numa entidade e analista em outra.
+
+**Antes de usar (site público e repositório):** o ITS é aberto e cada organização o instala por conta própria, então há quem o conheça antes de existir uma instalação.
+
+| Quem | Situação | Trabalho |
+|---|---|---|
+| **Quem decide adotar** (público principal do site) | Responsável por um programa de melhoria contínua ou gestor de uma organização, chegando pelo GitHub, por uma indicação ou pelo LinkedIn | Entender se o ITS resolve o problema de ideias que ficam sem retorno e se dá para instalar e manter sem custo de licença |
+| **Quem instala** (TI) | Técnico com Docker, decidindo se o ITS é confiável e simples de manter | Instalar, atualizar, fazer backup e ligar os recursos opcionais |
+| **Comunidade e colegas** | Desenvolvedores e recrutadores conhecendo o projeto | Ver o que ele faz, como foi feito e o código |
 
 ## Product Purpose
 
@@ -59,22 +67,25 @@ Existe porque falta de retorno é a principal causa de baixo engajamento em prog
 - **Permissão e escopo são sempre decididos pelo backend;** o frontend só esconde o que o usuário não pode fazer.
 - **Consulta pública** (opcional, desligada por padrão) mostra só título, categoria, status, etapas e prazo; nunca autor, comentários, anexos, ganhos ou dados pessoais.
 - **Privacidade no reconhecimento:** o autor pode ocultar o nome em murais e rankings; ideias anônimas aparecem sem autor; o valor do ganho só aparece no Hall se a organização permitir.
-- **Terminologia** (glossário em `../docs/REGRAS-DE-NEGOCIO.md` §2): Ideia, Etapa, Categoria, Entidade, Perfil, Código de acompanhamento, Campanha, Hall de destaques, Ganho validado, Coautor, Convergência, Identificador (ex.: `ITS-2026-0042`).
-- **Em aberto:** nome definitivo do produto; licença definida: MIT.
+- **Terminologia** (glossário em `docs/REGRAS-DE-NEGOCIO.md` §2): Ideia, Etapa, Categoria, Entidade, Perfil, Código de acompanhamento, Campanha, Hall de destaques, Ganho validado, Coautor, Convergência, Identificador (ex.: `ITS-2026-0042`).
+- **Licença:** MIT. **Distribuição:** código em `github.com/IvanBelshoff/idea-tracking-system`, imagens prontas no GitHub (`ghcr.io/ivanbelshoff`) e no Docker Hub (`ivanbelshoff`), instalação com Docker Compose; a Ajuda vem em toda instalação e também fica aberta no GitHub Pages (`ivanbelshoff.github.io/idea-tracking-system`), que é o site público do projeto.
 
 ## Brand Commitments
 
 - **Personalidade:** profissional e acolhedor (sério o bastante para uma indústria ou um hospital, caloroso o bastante para o colaborador se sentir ouvido); celebra sem infantilizar; transparente; calmo.
 - **Voz:** direta, em segunda pessoa, sem jargão. "Sua ideia foi aprovada", não "Status alterado para APPROVED".
 - **Evitar:** visual genérico de "template de IA" (gradientes chamativos, cartões dentro de cartões, uma só fonte sem hierarquia); aparência de sistema corporativo cinza e datado (o GLPI é referência funcional, **não** visual); excesso de animação e de gamificação visual (confetes, medalhas brilhantes); depender só da cor para comunicar estado.
-- Nome: **ITS – Idea Tracking System** (Sistema de Acompanhamento de Ideias), desde 18/11/2026; o símbolo das pás continua.
-- **Identidade escolhida no M0V (04/11/2026): o padrão consagrado da categoria, executado com acabamento de primeira.** A barra de qualidade é o nível do **GitHub** (tabelas, status e linhas do tempo claros) e do **Notion** (calmo e acolhedor, bom de ler). As direções Sinalização, Metrô e Bilhete foram avaliadas e descartadas. Detalhes em `../docs/DESIGN.md`.
+- Nome: **ITS – Idea Tracking System** (Sistema de Acompanhamento de Ideias); o símbolo das pás é a marca.
+- **Autoria:** criado por **Ivan Belshoff** (`github.com/IvanBelshoff`), que pode aparecer como autor no site público; a licença diz "Contribuidores do ITS".
+- **Identidade escolhida no M0V (04/11/2026): o padrão consagrado da categoria, executado com acabamento de primeira.** A barra de qualidade é o nível do **GitHub** (tabelas, status e linhas do tempo claros) e do **Notion** (calmo e acolhedor, bom de ler). As direções Sinalização, Metrô e Bilhete foram avaliadas e descartadas. Detalhes em `docs/DESIGN.md`.
 
 ## Evidence on Hand
 
 - Protótipos descartáveis com dados fictícios em `src/prototype/` (enviar ideia, minhas ideias, fila do analista, detalhe da ideia), sobre o tema neutro padrão do shadcn/ui. Servem só para avaliar escolhas visuais.
-- Documentação de produto em `../docs/`: regras de negócio, critérios de aceite, modelo de dados, stack, roadmap.
-- **Não há** clientes, depoimentos, métricas de ganho, casos reais nem logos de organizações. Nada disso pode ser inventado; telas de demonstração usam dados claramente fictícios.
+- Documentação de produto em `docs/`: regras de negócio, critérios de aceite, modelo de dados, stack, design, instalação e roadmap.
+- Capturas de tela reais do sistema, com dados de demonstração fictícios, em `ajuda/public/capturas/` (pt-BR e en, temas claro e escuro), geradas por `ajuda/scripts/capturas.mjs`.
+- Versão publicada: **1.0.0** (20/11/2026).
+- **Não há** clientes, depoimentos, métricas de uso ou de ganho, casos reais nem logos de organizações. Nada disso pode ser inventado; telas de demonstração usam dados claramente fictícios.
 
 ## Product Principles
 

@@ -202,44 +202,17 @@ jobs:
             docker buildx imagetools inspect "$registry/$IMAGE:$VERSION"
           done
 
-  # A Ajuda pública: o mesmo app ajuda/, montado com o caminho do Pages e sem o que só existe dentro de
-  # uma instalação (src/site.ts e scripts/publica.mjs). Versão de teste não troca a Ajuda pública.
+  # A Ajuda pública (página inicial e documentação) no GitHub Pages: o fluxo pages.yml, que também
+  # pode ser rodado à mão. Versão de teste não troca a Ajuda pública.
   ajuda-publica:
     name: Ajuda pública (GitHub Pages)
     needs: [versao, manifesto]
     if: needs.versao.outputs.prerelease == 'false'
-    runs-on: ubuntu-24.04
     permissions:
       contents: read
       pages: write
       id-token: write
-    environment:
-      name: github-pages
-      url: ${{ steps.deploy.outputs.page_url }}
-    defaults:
-      run:
-        working-directory: ajuda
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6.1.1
-        with:
-          package_json_file: ajuda/package.json # versão lida de "packageManager"
-      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
-        with:
-          node-version: 24
-          cache: pnpm
-          cache-dependency-path: ajuda/pnpm-lock.yaml
-      - run: pnpm install --frozen-lockfile
-      - name: Build da Ajuda pública
-        env:
-          AJUDA_PUBLICA: "1"
-          AJUDA_BASE_PATH: /${{ github.event.repository.name }}
-        run: pnpm build
-      - uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
-        with:
-          path: ajuda/out
-      - id: deploy
-        uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5.0.1
+    uses: ./.github/workflows/pages.yml
 
   release:
     name: Release no GitHub

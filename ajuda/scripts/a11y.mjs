@@ -97,6 +97,8 @@ for (const theme of ['light', 'dark']) {
   const targets = [
     ...LANGS.flatMap((lang) => slugs.map((slug) => `${prefix}/${lang}/${slug ? `${slug}/` : ''}`)),
     `${prefix}/nao-encontrada.html`,
+    // A página inicial só existe na ajuda pública; na instalação, a raiz redireciona para a documentação.
+    ...(prefix === '/ajuda' ? [] : [`${prefix}/`]),
   ];
   for (const path of targets) {
     await send('Page.navigate', { url: base + path });

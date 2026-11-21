@@ -24,7 +24,7 @@ Thumbs.db
 tools/openapi/node_modules/
 
 # Impeccable (ferramenta de design): instalação e cache locais, reinstaláveis com "npx impeccable install".
-# O resultado do design fica versionado em ../docs/DESIGN.md, src/tokens.css e PRODUCT.md.
+# O resultado do design fica versionado em ../docs/DESIGN.md, src/tokens.css e ../PRODUCT.md.
 .claude/
 .github/
 .impeccable/

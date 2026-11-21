@@ -5,7 +5,7 @@ import Captions from 'yet-another-react-lightbox/plugins/captions';
 import Zoom from 'yet-another-react-lightbox/plugins/zoom';
 import 'yet-another-react-lightbox/styles.css';
 import 'yet-another-react-lightbox/plugins/captions.css';
-import { useMessages } from './use-lang';
+import { type Lang, MESSAGES } from '../i18n';
 
 export interface CapturaAberta {
   src: string;
@@ -21,8 +21,16 @@ export interface CapturaAberta {
  * detalhes e o texto da captura embaixo. Esc ou clique fora fecham, e o foco volta para a captura.
  * Com movimento reduzido, sem animação.
  */
-export default function CapturaVisor({ captura, fechar }: { captura: CapturaAberta; fechar: () => void }) {
-  const t = useMessages().capture;
+export default function CapturaVisor({
+  captura,
+  lang,
+  fechar,
+}: {
+  captura: CapturaAberta;
+  lang: Lang;
+  fechar: () => void;
+}) {
+  const t = MESSAGES[lang].capture;
   const reduzido = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   return (
     <Lightbox

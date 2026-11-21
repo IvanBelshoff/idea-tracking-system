@@ -6,7 +6,15 @@
     "useIgnoreFile": true
   },
   "files": {
-    "includes": ["**", "!!**/.next", "!!**/out", "!next-env.d.ts", "!src/simuladores/regras.json", "!public/*.html"]
+    "includes": [
+      "**",
+      "!!**/.next",
+      "!!**/out",
+      "!next-env.d.ts",
+      "!src/simuladores/regras.json",
+      "!public/*.html",
+      "!public/**/*.webp.json"
+    ]
   },
   "formatter": {
     "enabled": true,

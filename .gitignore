@@ -27,3 +27,9 @@ Thumbs.db
 
 # pnpm
 .pnpm-store/
+
+# Ferramentas de design locais (Impeccable): ficam fora do repositório
+.claude/
+.impeccable/
+# Registros de origem das imagens que o Impeccable grava ao lado delas (só locais)
+ajuda/public/**/*.webp.json

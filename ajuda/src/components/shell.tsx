@@ -98,6 +98,15 @@ export function Shell({ lang, children }: { lang: Lang; children: ReactNode }) {
             <span className="font-heading text-[1.05rem] font-bold">{t.site.title}</span>
           </Link>
           <div className="ml-auto flex items-center gap-1 sm:gap-2">
+            {/* Na ajuda pública, a raiz do site é a página inicial do ITS. */}
+            {PUBLICA && (
+              <Link
+                href="/"
+                className="hidden h-10 items-center rounded-md px-2.5 text-sm font-medium text-muted-foreground hover:bg-foreground/5 hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none md:inline-flex"
+              >
+                {t.header.siteHome}
+              </Link>
+            )}
             <Search lang={lang} />
             <Link
               href={pageHref(other, slug)}
@@ -141,6 +150,15 @@ export function Shell({ lang, children }: { lang: Lang; children: ReactNode }) {
           <div className="space-y-6 px-3 pt-16 pb-8">
             <SideNav lang={lang} onNavigate={() => setOpen(false)} />
             <div className="space-y-1 border-t pt-4">
+              {PUBLICA && (
+                <Link
+                  href="/"
+                  onClick={() => setOpen(false)}
+                  className="block rounded-md px-3 py-1.5 text-sm hover:bg-foreground/5"
+                >
+                  {t.header.siteHome}
+                </Link>
+              )}
               <Link
                 href={pageHref(other, slug)}
                 hrefLang={other}
