@@ -13,8 +13,10 @@ import { join } from 'node:path';
 
 const { SECTIONS } = await import('../content/nav.ts');
 const base = process.env.A11Y_BASE ?? 'http://127.0.0.1:3200';
-// Caminho base do build (AJUDA_BASE_PATH): /ajuda na instalação, /idea-tracking-system na ajuda pública.
-const prefix = process.env.AJUDA_BASE_PATH || '/ajuda';
+// Caminho base do build (AJUDA_BASE_PATH): /ajuda na instalação; na ajuda pública (AJUDA_PUBLICA=1), a raiz
+// do domínio próprio ou um caminho como /idea-tracking-system.
+const publica = process.env.AJUDA_PUBLICA === '1';
+const prefix = process.env.AJUDA_BASE_PATH ?? (publica ? '' : '/ajuda');
 // Qualquer navegador Chromium serve (Chrome, Edge ou Chromium); CHROME aponta outro caminho.
 const chrome =
   process.env.CHROME ??
@@ -98,7 +100,7 @@ for (const theme of ['light', 'dark']) {
     ...LANGS.flatMap((lang) => slugs.map((slug) => `${prefix}/${lang}/${slug ? `${slug}/` : ''}`)),
     `${prefix}/nao-encontrada.html`,
     // A página inicial só existe na ajuda pública; na instalação, a raiz redireciona para a documentação.
-    ...(prefix === '/ajuda' ? [] : [`${prefix}/`]),
+    ...(publica ? [`${prefix}/`] : []),
   ];
   for (const path of targets) {
     await send('Page.navigate', { url: base + path });

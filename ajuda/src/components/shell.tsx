@@ -145,7 +145,11 @@ export function Shell({ lang, children }: { lang: Lang; children: ReactNode }) {
       </header>
 
       <Sheet open={open} onOpenChange={setOpen}>
-        <SheetContent id="menu-ajuda" closeLabel={t.header.closeMenu} className="overflow-y-auto">
+        <SheetContent
+          id="menu-ajuda"
+          closeLabel={t.header.closeMenu}
+          className="overflow-y-auto bg-background text-foreground"
+        >
           <SheetTitle className="sr-only">{t.nav.label}</SheetTitle>
           <div className="space-y-6 px-3 pt-16 pb-8">
             <SideNav lang={lang} onNavigate={() => setOpen(false)} />

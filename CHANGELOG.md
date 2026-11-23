@@ -6,7 +6,7 @@ O ITS segue o [versionamento semântico](https://semver.org/lang/pt-BR/), com um
 
 ### Adicionado
 
-- **Página inicial do site público** (<https://ivanbelshoff.github.io/idea-tracking-system/>): apresenta o ITS, mostra como ele funciona, os recursos e um vídeo curto do caminho de uma ideia, e leva à instalação e à documentação, em português e em inglês. A documentação continua nos mesmos endereços, e dentro de uma instalação a Ajuda abre direto nela, como antes.
+- **Página inicial do site público** (<https://idea-tracking-system.silexcode.com.br/>): apresenta o ITS, mostra como ele funciona, os recursos e um vídeo curto do caminho de uma ideia, e leva à instalação e à documentação, em português e em inglês. A documentação continua nos mesmos endereços, e dentro de uma instalação a Ajuda abre direto nela, como antes.
 - O site público também pode ser publicado à mão, sem versão nova (fluxo `pages.yml`).
 
 ## [1.0.0] - 2026-11-20
@@ -26,4 +26,4 @@ Primeira versão pública do ITS – Idea Tracking System (Sistema de Acompanham
 - **Acesso:** login por e-mail e senha, e login corporativo com Microsoft e Google (desligado de fábrica).
 - **Operação:** observabilidade com saúde, métricas e alertas; segredos com validade acompanhada.
 - **Integrações:** API de leitura e escrita com tokens e escopo por entidade, e webhooks de saída assinados (desligados de fábrica).
-- **Interface e Ajuda** em português e em inglês; a Ajuda interativa, com simuladores, vem em toda instalação e também está aberta em <https://ivanbelshoff.github.io/idea-tracking-system/>.
+- **Interface e Ajuda** em português e em inglês; a Ajuda interativa, com simuladores, vem em toda instalação e também está aberta em <https://idea-tracking-system.silexcode.com.br/>.

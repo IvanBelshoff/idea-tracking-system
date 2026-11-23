@@ -3,7 +3,7 @@
 [![Versão](https://img.shields.io/github/v/release/IvanBelshoff/idea-tracking-system?label=vers%C3%A3o)](https://github.com/IvanBelshoff/idea-tracking-system/releases)
 [![CI](https://github.com/IvanBelshoff/idea-tracking-system/actions/workflows/ci.yml/badge.svg)](https://github.com/IvanBelshoff/idea-tracking-system/actions/workflows/ci.yml)
 [![Docker Hub](https://img.shields.io/docker/pulls/ivanbelshoff/its-api?label=docker%20hub)](https://hub.docker.com/r/ivanbelshoff/its-api)
-[![Ajuda](https://img.shields.io/badge/ajuda-pt--BR%20%7C%20en-5458c8)](https://ivanbelshoff.github.io/idea-tracking-system/)
+[![Ajuda](https://img.shields.io/badge/ajuda-pt--BR%20%7C%20en-5458c8)](https://idea-tracking-system.silexcode.com.br/)
 [![Licença MIT](https://img.shields.io/badge/licen%C3%A7a-MIT-green)](LICENSE)
 
 **Sistema de Acompanhamento de Ideias**, aberto e gratuito, para qualquer organização. Colaboradores enviam ideias, a equipe faz a triagem e conduz a execução em etapas com prazo, quem enviou acompanha cada passo e as melhores ideias são reconhecidas. Uma instalação atende uma organização inteira, com as suas unidades e áreas, como o GLPI faz com os chamados.
@@ -18,7 +18,7 @@
 - **Gestão:** indicadores, relatórios em CSV e PDF, campanhas e aprovação de outras áreas.
 - **Do jeito da organização:** perfis e permissões por entidade, identidade visual, tela de login própria, campos personalizados, login com Microsoft ou Google.
 - **Para o TI:** instalação com Docker em 10 minutos, observabilidade com alertas, API de integração e webhooks.
-- **Em português e em inglês**, com uma [Ajuda interativa](https://ivanbelshoff.github.io/idea-tracking-system/) que tem simuladores para praticar.
+- **Em português e em inglês**, com uma [Ajuda interativa](https://idea-tracking-system.silexcode.com.br/) que tem simuladores para praticar.
 
 A lista completa está no [roadmap](docs/ROADMAP.md).
 
@@ -34,14 +34,14 @@ curl -fsSL https://raw.githubusercontent.com/IvanBelshoff/idea-tracking-system/m
 docker compose up -d
 ```
 
-Abra <http://127.0.0.1:8080> e siga o assistente de instalação, que cria a conta de administrador. Não existe usuário nem senha padrão. Backup, restauração, atualização e como colocar na rede com HTTPS: [docs/INSTALACAO.md](docs/INSTALACAO.md) ou a página [Instalação](https://ivanbelshoff.github.io/idea-tracking-system/pt-BR/ti/instalacao/) da Ajuda.
+Abra <http://127.0.0.1:8080> e siga o assistente de instalação, que cria a conta de administrador. Não existe usuário nem senha padrão. Backup, restauração, atualização e como colocar na rede com HTTPS: [docs/INSTALACAO.md](docs/INSTALACAO.md) ou a página [Instalação](https://idea-tracking-system.silexcode.com.br/pt-BR/ti/instalacao/) da Ajuda.
 
 ## Documentação
 
 | Documento | Conteúdo |
 |---|---|
-| [Site do ITS](https://ivanbelshoff.github.io/idea-tracking-system/) | Apresentação, vídeo do caminho de uma ideia e instalação |
-| [Ajuda](https://ivanbelshoff.github.io/idea-tracking-system/pt-BR/) | Para quem usa e administra o ITS, em português e em inglês (também em `/ajuda/` em toda instalação) |
+| [Site do ITS](https://idea-tracking-system.silexcode.com.br/) | Apresentação, vídeo do caminho de uma ideia e instalação |
+| [Ajuda](https://idea-tracking-system.silexcode.com.br/pt-BR/) | Para quem usa e administra o ITS, em português e em inglês (também em `/ajuda/` em toda instalação) |
 | [docs/INSTALACAO.md](docs/INSTALACAO.md) | Instalação, backup, restauração, atualização e problemas comuns |
 | [docs/REGRAS-DE-NEGOCIO.md](docs/REGRAS-DE-NEGOCIO.md) | As regras de negócio (RN-01 a RN-202) e as decisões |
 | [docs/CRITERIOS-DE-ACEITE.md](docs/CRITERIOS-DE-ACEITE.md) | Os critérios testáveis de cada regra, que viram a suíte de testes |
@@ -91,6 +91,6 @@ Veja o [CONTRIBUTING](CONTRIBUTING.md), que também explica como sai uma versão
 
 ## In English
 
-**ITS – Idea Tracking System** is a free, open-source system for managing ideas and continuous improvement in any organization. Employees submit ideas, the improvement team triages them and runs them in steps with deadlines, the author follows every step, and the best ideas are recognized. The interface and the [help](https://ivanbelshoff.github.io/idea-tracking-system/en/) are available in Portuguese and English.
+**ITS – Idea Tracking System** is a free, open-source system for managing ideas and continuous improvement in any organization. Employees submit ideas, the improvement team triages them and runs them in steps with deadlines, the author follows every step, and the best ideas are recognized. The interface and the [help](https://idea-tracking-system.silexcode.com.br/en/) are available in Portuguese and English.
 
-Install with Docker in three steps: download `docker-compose.yml` and `.env.example` (as `.env`), fill in `POSTGRES_PASSWORD` and `APP_SECRET_KEY`, and run `docker compose up -d`. Then open <http://127.0.0.1:8080> and follow the installation wizard. See the [Installation](https://ivanbelshoff.github.io/idea-tracking-system/en/ti/instalacao/) help page for backup, updates and HTTPS. The project documentation in `docs/` is in Portuguese. Licensed under [MIT](LICENSE).
+Install with Docker in three steps: download `docker-compose.yml` and `.env.example` (as `.env`), fill in `POSTGRES_PASSWORD` and `APP_SECRET_KEY`, and run `docker compose up -d`. Then open <http://127.0.0.1:8080> and follow the installation wizard. See the [Installation](https://idea-tracking-system.silexcode.com.br/en/ti/instalacao/) help page for backup, updates and HTTPS. The project documentation in `docs/` is in Portuguese. Licensed under [MIT](LICENSE).

@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from 'next';
 import type { ReactNode } from 'react';
+import { Contador } from '~/components/contador';
 import { LANG_PREPAINT } from '~/components/home/idioma';
 import { HOME } from '~/components/home/texto';
 import { PREPAINT } from '~/prepaint';
@@ -25,7 +26,10 @@ export default function SiteLayout({ children }: { children: ReactNode }) {
         {/* biome-ignore lint/security/noDangerouslySetInnerHtml: scripts fixos do projeto, sem dados de fora */}
         <script dangerouslySetInnerHTML={{ __html: PREPAINT + LANG_PREPAINT }} />
       </head>
-      <body>{children}</body>
+      <body>
+        {children}
+        <Contador />
+      </body>
     </html>
   );
 }

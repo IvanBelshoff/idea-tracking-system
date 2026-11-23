@@ -1,6 +1,7 @@
 // Serve o build estático (out/) em /ajuda/, como o nginx faz no Docker. Só para testes locais.
 // Uso: node scripts/serve.mjs [porta]   (padrão 3200; escuta só em 127.0.0.1)
-// Build público: AJUDA_BASE_PATH=/idea-tracking-system node scripts/serve.mjs (mostra o 404.html, como o Pages).
+// Build público: AJUDA_PUBLICA=1 node scripts/serve.mjs (na raiz, como no domínio próprio; mostra o 404.html,
+// como o Pages). Com caminho: AJUDA_BASE_PATH=/idea-tracking-system node scripts/serve.mjs.
 import { createReadStream, existsSync, statSync } from 'node:fs';
 import { createServer } from 'node:http';
 import { extname, join, normalize } from 'node:path';
@@ -8,7 +9,7 @@ import { fileURLToPath } from 'node:url';
 
 const root = fileURLToPath(new URL('../out', import.meta.url));
 const port = Number(process.argv[2] ?? 3200);
-const prefix = process.env.AJUDA_BASE_PATH || '/ajuda';
+const prefix = process.env.AJUDA_BASE_PATH ?? (process.env.AJUDA_PUBLICA === '1' ? '' : '/ajuda');
 const notFound = existsSync(join(root, '404.html')) ? '404.html' : 'nao-encontrada.html';
 const TYPES = {
   '.html': 'text/html; charset=utf-8',

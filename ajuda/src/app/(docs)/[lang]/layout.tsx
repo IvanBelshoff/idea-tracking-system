@@ -8,6 +8,7 @@ import { isLang, LANGS, MESSAGES } from '~/i18n';
 import { PREPAINT } from '~/prepaint';
 import { asset, PUBLICA } from '~/site';
 import '../../globals.css';
+import { Contador } from '~/components/contador';
 
 export const dynamicParams = false;
 
@@ -51,6 +52,7 @@ export default async function LangLayout({
         <FontSync />
         <FaviconSync />
         <Shell lang={lang}>{children}</Shell>
+        <Contador />
       </body>
     </html>
   );

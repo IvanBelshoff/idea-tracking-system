@@ -58,7 +58,14 @@ export function Cabecalho() {
           <span aria-hidden="true" className="text-primary">
             <ItsSymbol size={28} free />
           </span>
-          <span className="text-lg">ITS</span>
+          {/* O nome por extenso, como no rodapé; some onde a navegação precisa do espaço. */}
+          <span className="text-lg">
+            ITS
+            <span className="hidden font-medium text-muted-foreground sm:inline md:hidden xl:inline">
+              {' '}
+              – Idea Tracking System
+            </span>
+          </span>
         </Link>
         {(['pt-BR', 'en'] as const).map((l) => (
           <nav key={l} data-l={l} aria-label={HOME[l].nav.label} className="hidden items-center gap-0.5 md:flex">
@@ -68,10 +75,14 @@ export function Cabecalho() {
             <a href={`#${ANCHORS[l].features}`} className={link}>
               {HOME[l].nav.features}
             </a>
-            <Link href={`/${l}/`} className={link}>
+            <Link href={`/${l}/`} className={link} data-goatcounter-click="documentacao/topo">
               {HOME[l].nav.docs}
             </Link>
-            <a href={REPO_URL} className={`${link} inline-flex items-center gap-1`}>
+            <a
+              href={REPO_URL}
+              className={`${link} inline-flex items-center gap-1`}
+              data-goatcounter-click="saida/github/topo"
+            >
               {HOME[l].nav.github}
               <ExternalLink aria-hidden="true" className="size-3.5" />
             </a>
@@ -79,7 +90,13 @@ export function Cabecalho() {
         ))}
         {/* No celular, a navegação some; a documentação continua a um toque. */}
         {(['pt-BR', 'en'] as const).map((l) => (
-          <Link key={l} data-l={l} href={`/${l}/`} className={`${link} md:hidden`}>
+          <Link
+            key={l}
+            data-l={l}
+            href={`/${l}/`}
+            className={`${link} md:hidden`}
+            data-goatcounter-click="documentacao/topo"
+          >
             {HOME[l].nav.docs}
           </Link>
         ))}

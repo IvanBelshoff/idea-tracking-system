@@ -220,12 +220,17 @@ jobs:
     runs-on: ubuntu-24.04
     permissions:
       contents: write
+      pages: read # endereço do site público, para as notas
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Notas a partir do CHANGELOG
         env:
           VERSION: ${{ needs.versao.outputs.version }}
+          GH_TOKEN: ${{ github.token }}
         run: |
+          # O endereço do site como o Pages informa (o domínio próprio, se houver).
+          SITE=$(gh api "repos/$GITHUB_REPOSITORY/pages" --jq .html_url 2>/dev/null) ||
+            SITE="https://${GITHUB_REPOSITORY_OWNER,,}.github.io/${GITHUB_REPOSITORY#*/}/"
           awk -v v="$VERSION" '
             $0 ~ "^## \\[" v "\\]" { on = 1; next }
             on && /^## \[/ { exit }
@@ -235,7 +240,7 @@ jobs:
 
           ---
 
-          Imagens: \`ghcr.io/ivanbelshoff/its-api:$VERSION\`, \`its-web\` e \`its-ajuda\` (também em \`docker.io/ivanbelshoff\`), para amd64 e arm64. Instalação e atualização: [docs/INSTALACAO.md](https://github.com/${{ github.repository }}/blob/${{ github.ref_name }}/docs/INSTALACAO.md) e a [Ajuda](https://ivanbelshoff.github.io/${{ github.event.repository.name }}/).
+          Imagens: \`ghcr.io/ivanbelshoff/its-api:$VERSION\`, \`its-web\` e \`its-ajuda\` (também em \`docker.io/ivanbelshoff\`), para amd64 e arm64. Instalação e atualização: [docs/INSTALACAO.md](https://github.com/${{ github.repository }}/blob/${{ github.ref_name }}/docs/INSTALACAO.md) e a [Ajuda]($SITE).
           EOF
       - name: Criar o release
         env:

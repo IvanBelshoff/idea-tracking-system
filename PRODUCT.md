@@ -68,7 +68,7 @@ Existe porque falta de retorno é a principal causa de baixo engajamento em prog
 - **Consulta pública** (opcional, desligada por padrão) mostra só título, categoria, status, etapas e prazo; nunca autor, comentários, anexos, ganhos ou dados pessoais.
 - **Privacidade no reconhecimento:** o autor pode ocultar o nome em murais e rankings; ideias anônimas aparecem sem autor; o valor do ganho só aparece no Hall se a organização permitir.
 - **Terminologia** (glossário em `docs/REGRAS-DE-NEGOCIO.md` §2): Ideia, Etapa, Categoria, Entidade, Perfil, Código de acompanhamento, Campanha, Hall de destaques, Ganho validado, Coautor, Convergência, Identificador (ex.: `ITS-2026-0042`).
-- **Licença:** MIT. **Distribuição:** código em `github.com/IvanBelshoff/idea-tracking-system`, imagens prontas no GitHub (`ghcr.io/ivanbelshoff`) e no Docker Hub (`ivanbelshoff`), instalação com Docker Compose; a Ajuda vem em toda instalação e também fica aberta no GitHub Pages (`ivanbelshoff.github.io/idea-tracking-system`), que é o site público do projeto.
+- **Licença:** MIT. **Distribuição:** código em `github.com/IvanBelshoff/idea-tracking-system`, imagens prontas no GitHub (`ghcr.io/ivanbelshoff`) e no Docker Hub (`ivanbelshoff`), instalação com Docker Compose; a Ajuda vem em toda instalação e também fica aberta no GitHub Pages (`idea-tracking-system.silexcode.com.br`), que é o site público do projeto.
 
 ## Brand Commitments
 

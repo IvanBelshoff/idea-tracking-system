@@ -1,7 +1,8 @@
 // Acabamento do build da ajuda PÚBLICA (GitHub Pages, M28). Roda depois do `next build`; no build da
 // instalação (sem AJUDA_PUBLICA=1) não faz nada.
 //
-//   AJUDA_PUBLICA=1 AJUDA_BASE_PATH=/idea-tracking-system pnpm build
+//   AJUDA_PUBLICA=1 pnpm build                                  (na raiz: o domínio próprio)
+//   AJUDA_PUBLICA=1 AJUDA_BASE_PATH=/idea-tracking-system pnpm build   (sem domínio próprio)
 //
 // - A página estática "não encontrada" (public/nao-encontrada.html) traz /ajuda/ escrito: aqui passa para
 //   o caminho base público. A raiz (index.html) é a página inicial, gerada pelo Next com o caminho certo.
@@ -14,10 +15,11 @@ import { fileURLToPath } from 'node:url';
 
 if (process.env.AJUDA_PUBLICA !== '1') process.exit(0);
 
+// Vazio = raiz do domínio próprio; senão, o caminho do Pages sem domínio (ex.: /idea-tracking-system).
 const base = process.env.AJUDA_BASE_PATH ?? '';
-if (!/^\/[a-z0-9-]+$/.test(base) || base === '/ajuda') {
+if (base !== '' && (!/^\/[a-z0-9-]+$/.test(base) || base === '/ajuda')) {
   console.error(
-    `A ajuda pública precisa de AJUDA_BASE_PATH com o caminho do Pages (ex.: /idea-tracking-system), não "${base}".`,
+    `A ajuda pública fica na raiz (AJUDA_BASE_PATH vazio) ou num caminho como /idea-tracking-system, não "${base}".`,
   );
   process.exit(1);
 }

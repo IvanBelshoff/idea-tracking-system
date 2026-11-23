@@ -3,12 +3,13 @@ import Link from 'next/link';
 import type { ReactNode } from 'react';
 import { StatusPill } from '@/components/status-pill';
 import type { Lang } from '../../i18n';
-import { asset, REPO_URL } from '../../site';
+import { REPO_URL } from '../../site';
 import { Captura } from '../captura';
 import { Cabecalho } from './cabecalho';
 import { Comando } from './copiar';
 import { Registro } from './registro';
 import { ANCHORS, COMMANDS, HOME } from './texto';
+import { VideoCiclo } from './video';
 
 const RELEASES = `${REPO_URL}/releases`;
 const DOCKER_HUB = 'https://hub.docker.com/r/ivanbelshoff/its-api';
@@ -101,17 +102,7 @@ function Corpo({ lang }: { lang: Lang }) {
 
             <Secao id={lang === 'en' ? 'demo' : 'demonstracao'} title={t.video.title} ink="var(--st-progress)">
               <figure className="not-doc">
-                <video
-                  className="aspect-video w-full rounded-xl border bg-muted shadow-sm"
-                  controls
-                  muted
-                  playsInline
-                  preload="none"
-                  poster={asset(`/video/ciclo-${lang}.webp`)}
-                  aria-label={t.video.label}
-                >
-                  <source src={asset(`/video/ciclo-${lang}.webm`)} type="video/webm" />
-                </video>
+                <VideoCiclo lang={lang} label={t.video.label} />
                 <figcaption className="mt-3 text-sm text-muted-foreground">{t.video.caption}</figcaption>
               </figure>
             </Secao>
@@ -131,6 +122,7 @@ function Corpo({ lang }: { lang: Lang }) {
                         copied={t.install.copied}
                         copyLabel={t.install.copyLabel(s.title)}
                         regionLabel={`${t.install.command}: ${s.title}`}
+                        evento="copiar-comando/baixar/instalar"
                       />
                     )}
                     {s.text && <p className="leading-relaxed text-pretty text-muted-foreground">{s.text}</p>}
@@ -141,13 +133,14 @@ function Corpo({ lang }: { lang: Lang }) {
                         copied={t.install.copied}
                         copyLabel={t.install.copyLabel(COMMANDS.start)}
                         regionLabel={`${t.install.command}: ${s.title}`}
+                        evento="copiar-comando/subir/instalar"
                       />
                     )}
                   </li>
                 ))}
               </ol>
               <p className="mt-10">
-                <Link href={`/${lang}/ti/instalacao/`} className={linkClass}>
+                <Link href={`/${lang}/ti/instalacao/`} className={linkClass} data-goatcounter-click="guia-instalacao">
                   {t.install.guide} →
                 </Link>
               </p>
@@ -173,26 +166,30 @@ function Corpo({ lang }: { lang: Lang }) {
             <span className="font-semibold text-shell-foreground">{t.footer.name}</span>
             {' · '}
             {t.footer.by}{' '}
-            <a href={AUTHOR} className={linkClass}>
+            <a href={AUTHOR} className={linkClass} data-goatcounter-click="saida/autor/rodape">
               Ivan Belshoff
             </a>
           </p>
           <ul className="flex flex-wrap gap-x-5 gap-y-2">
             <li>
-              <Link href={`/${lang}/`} className={linkClass}>
+              <Link href={`/${lang}/`} className={linkClass} data-goatcounter-click="documentacao/rodape">
                 {t.footer.links.docs}
               </Link>
             </li>
             {(
               [
-                [REPO_URL, t.footer.links.github],
-                [RELEASES, t.footer.links.releases],
-                [DOCKER_HUB, t.footer.links.dockerHub],
-                [`${REPO_URL}/blob/main/LICENSE`, t.footer.links.license],
+                [REPO_URL, t.footer.links.github, 'github'],
+                [RELEASES, t.footer.links.releases, 'releases'],
+                [DOCKER_HUB, t.footer.links.dockerHub, 'docker-hub'],
+                [`${REPO_URL}/blob/main/LICENSE`, t.footer.links.license, 'licenca'],
               ] as const
-            ).map(([href, label]) => (
+            ).map(([href, label, destino]) => (
               <li key={href}>
-                <a href={href} className={`${linkClass} inline-flex items-center gap-1`}>
+                <a
+                  href={href}
+                  className={`${linkClass} inline-flex items-center gap-1`}
+                  data-goatcounter-click={`saida/${destino}/rodape`}
+                >
                   {label}
                   <ExternalLink aria-hidden="true" className="size-3" />
                 </a>

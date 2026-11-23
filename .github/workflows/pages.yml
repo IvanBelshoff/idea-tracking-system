@@ -6,7 +6,10 @@
 # - À mão: Actions > Ajuda pública > Run workflow, na main (ajuste só de texto ou de visual do site,
 #   sem versão nova). O ambiente github-pages aceita a main e as tags v*.
 #
-# GitHub Pages: no repositório, Settings > Pages > Source = GitHub Actions (uma vez).
+# GitHub Pages: no repositório, Settings > Pages > Source = GitHub Actions (uma vez). Com domínio próprio
+# (Settings > Pages > Custom domain, hoje idea-tracking-system.silexcode.com.br), o site fica na raiz dele;
+# sem domínio, em <dono>.github.io/<repositório>. O caminho vem do próprio Pages (configure-pages), então
+# trocar o domínio é só mudar a configuração e rodar este fluxo de novo.
 name: Ajuda pública
 
 on:
@@ -48,10 +51,15 @@ jobs:
           cache: pnpm
           cache-dependency-path: ajuda/pnpm-lock.yaml
       - run: pnpm install --frozen-lockfile
+      # Endereço configurado no Pages: base_path vazio com domínio próprio, /<repositório> sem ele.
+      - id: pages
+        uses: actions/configure-pages@45bfe0192ca1faeb007ade9deae92b16b8254a0d # v6.0.0
       - name: Build da Ajuda pública
         env:
           AJUDA_PUBLICA: "1"
-          AJUDA_BASE_PATH: /${{ github.event.repository.name }}
+          AJUDA_BASE_PATH: ${{ steps.pages.outputs.base_path }}
+          # Contagem de visitas (GoatCounter): variável do repositório; sem ela, o site sai sem contador.
+          GOATCOUNTER_CODE: ${{ vars.GOATCOUNTER_CODE }}
         run: pnpm build
       - uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
         with:

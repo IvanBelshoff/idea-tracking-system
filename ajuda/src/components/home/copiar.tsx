@@ -2,14 +2,29 @@
 
 import { Check, Copy } from 'lucide-react';
 import { useState } from 'react';
+import { rastrear } from '../../rastrear';
 
 /** Copia um comando. O estado "Copiado" é anunciado ao leitor de tela e volta depois de 2 s. */
-export function Copiar({ text, label, copy, copied }: { text: string; label: string; copy: string; copied: string }) {
+export function Copiar({
+  text,
+  label,
+  copy,
+  copied,
+  evento,
+}: {
+  text: string;
+  label: string;
+  copy: string;
+  copied: string;
+  /** Evento da contagem do site público, contado quando a cópia dá certo (ex.: `copiar-comando/subir/inicio`). */
+  evento?: string;
+}) {
   const [done, setDone] = useState(false);
   const onClick = async () => {
     try {
       await navigator.clipboard.writeText(text);
       setDone(true);
+      if (evento) rastrear(evento);
       setTimeout(() => setDone(false), 2000);
     } catch {
       // Sem permissão de área de transferência: o comando continua visível para copiar à mão.
@@ -36,6 +51,7 @@ export function Comando({
   copyLabel,
   regionLabel,
   quebrar = false,
+  evento,
 }: {
   text: string;
   copy: string;
@@ -45,6 +61,8 @@ export function Comando({
   regionLabel: string;
   /** No celular, quebra as linhas longas em vez de rolar (a URL inteira fica à vista). */
   quebrar?: boolean;
+  /** Evento da contagem do site público, quando o comando é copiado. */
+  evento?: string;
 }) {
   return (
     <div className="flex items-start justify-between gap-2 rounded-lg bg-[oklch(0.2_0.012_270)] py-2 pr-2 pl-4 text-[oklch(0.94_0.005_270)] ring-1 ring-white/10 dark:bg-[oklch(0.11_0.008_270)] dark:ring-white/15">
@@ -59,7 +77,7 @@ export function Comando({
           <code>{text}</code>
         </pre>
       </div>
-      <Copiar text={text} label={copyLabel} copy={copy} copied={copied} />
+      <Copiar text={text} label={copyLabel} copy={copy} copied={copied} evento={evento} />
     </div>
   );
 }
