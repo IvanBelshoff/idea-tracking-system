@@ -531,6 +531,8 @@ Só na ajuda pública (GitHub Pages), na raiz; na instalação, a raiz redirecio
 - **Provas reais:** as capturas (recortadas em 16:10 a partir do topo, que ampliam inteiras) e um vídeo curto do caminho de uma ideia nas telas reais, com legendas, gerados por `ajuda/scripts/capturas.mjs` e `ajuda/scripts/video.mjs` numa instalação de demonstração. Nada de clientes, números de uso ou depoimentos.
 - **Dois idiomas numa página:** o HTML traz pt-BR e en; um script antes da primeira pintura escolhe (o idioma guardado ou o do navegador) e o CSS mostra só o escolhido, sem piscar. O cabeçalho é único, com os rótulos dos dois idiomas; no celular, a navegação dá lugar ao link Documentação.
 - **Blocos de comando:** fundo escuro fixo nos dois temas (mais escuro no tema escuro, com um contorno sutil), região rolável com nome e foco de teclado; no celular, o comando longo quebra em vez de rolar.
+- **Cabeçalho:** "ITS – Idea Tracking System", como no rodapé, com "ITS" em destaque e o resto em cor secundária; o nome por extenso só aparece onde cabe ao lado da navegação (640 a 767 px e a partir de 1280 px).
+- **Prévia ao compartilhar (Open Graph):** 1200×630, uma por idioma (`ajuda/public/previa/og-<idioma>.png`, gerada por `pnpm previa`). Repete a primeira tela no tema escuro: o símbolo e o nome no topo, o título em duas linhas (a segunda em índigo), o subtítulo e o endereço em monoespaçada à esquerda; à direita, quatro eventos do histórico de exemplo com os marcadores nas cores das situações. Um brilho índigo suave no canto superior esquerdo; nada de captura de tela, que fica ilegível no tamanho da prévia.
 
 ## Verificação de contraste
 

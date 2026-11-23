@@ -3,6 +3,7 @@ import Link from 'next/link';
 import type { ComponentType } from 'react';
 import { Toc } from '~/components/toc';
 import { isLang, LANGS, type Lang, MESSAGES } from '~/i18n';
+import { metaPublica } from '~/previa';
 import { ALL_PAGES, pageHref } from '../../../../../content/nav';
 
 export const dynamicParams = false;
@@ -31,10 +32,19 @@ async function resolve(params: Params) {
 
 export async function generateMetadata({ params }: { params: Params }): Promise<Metadata> {
   const { lang, slug, doc } = await resolve(params);
+  const site = MESSAGES[lang].site.title;
+  const path = (l: Lang) => `/${l}/${slug ? `${slug}/` : ''}`;
   return {
     // A página inicial usa só o nome da ajuda (sem "Boas-vindas · Ajuda do ITS").
-    title: slug ? doc.meta.title : { absolute: MESSAGES[lang].site.title },
+    title: slug ? doc.meta.title : { absolute: site },
     description: doc.meta.description,
+    ...metaPublica({
+      path: path(lang),
+      lang,
+      title: slug ? `${doc.meta.title} · ${site}` : site,
+      description: doc.meta.description,
+      languages: { 'pt-BR': path('pt-BR'), en: path('en'), 'x-default': path('pt-BR') },
+    }),
   };
 }
 

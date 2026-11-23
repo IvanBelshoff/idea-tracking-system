@@ -21,6 +21,18 @@ if (!(publica && basePath === '') && !/^\/[a-z0-9-]+$/.test(basePath)) {
 }
 
 /**
+ * Endereço completo do site público, para a prévia ao compartilhar, o endereço canônico e o sitemap: o
+ * pages.yml passa o que o GitHub Pages informa (configure-pages); sem ele, o domínio próprio.
+ */
+const siteUrl = (process.env.AJUDA_SITE_URL || `https://idea-tracking-system.silexcode.com.br${basePath}`).replace(
+  /\/$/,
+  '',
+);
+if (publica && !/^https?:\/\/[a-z0-9.-]+(:\d+)?(\/[a-z0-9-]+)?$/i.test(siteUrl)) {
+  throw new Error(`AJUDA_SITE_URL inválido: "${siteUrl}"`);
+}
+
+/**
  * Contagem de visitas do site público (GoatCounter, sem cookie): o código do site vem da variável
  * GOATCOUNTER_CODE do repositório (pages.yml). Vazio desliga. O build da instalação nunca leva o script.
  */
@@ -44,6 +56,7 @@ const nextConfig: NextConfig = {
     NEXT_PUBLIC_AJUDA_BASE_PATH: basePath,
     NEXT_PUBLIC_AJUDA_PUBLICA: publica ? '1' : '',
     NEXT_PUBLIC_GOATCOUNTER_CODE: publica ? goatcounter : '',
+    NEXT_PUBLIC_SITE_URL: publica ? siteUrl : '',
   },
   trailingSlash: true,
   images: { unoptimized: true },

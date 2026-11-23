@@ -12,6 +12,7 @@
     "test": "vitest run",
     "check:content": "node scripts/check-content.mjs",
     "a11y": "node scripts/a11y.mjs",
+    "previa": "node scripts/previa.mjs",
     "capturas": "node scripts/capturas.mjs",
     "video": "node scripts/video.mjs"
   },

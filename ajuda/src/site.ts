@@ -10,6 +10,8 @@
 export const BASE_PATH = process.env.NEXT_PUBLIC_AJUDA_BASE_PATH ?? '/ajuda';
 export const PUBLICA = process.env.NEXT_PUBLIC_AJUDA_PUBLICA === '1';
 export const REPO_URL = 'https://github.com/IvanBelshoff/idea-tracking-system';
+/** Endereço completo do site público (ex.: https://idea-tracking-system.silexcode.com.br); vazio na instalação. */
+export const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || '';
 /** Código do site no GoatCounter: só no build público, e vazio quando a variável não existe (sem contagem). */
 export const GOATCOUNTER_CODE = process.env.NEXT_PUBLIC_GOATCOUNTER_CODE || '';
 

@@ -4,12 +4,20 @@ import { Contador } from '~/components/contador';
 import { LANG_PREPAINT } from '~/components/home/idioma';
 import { HOME } from '~/components/home/texto';
 import { PREPAINT } from '~/prepaint';
+import { metaPublica } from '~/previa';
 import { asset, PUBLICA } from '~/site';
 import '../globals.css';
 
 export const metadata: Metadata = {
   title: HOME['pt-BR'].meta.title,
   description: HOME['pt-BR'].meta.description,
+  // A página inicial tem os dois idiomas no mesmo endereço: a prévia sai em português.
+  ...metaPublica({
+    path: '/',
+    lang: 'pt-BR',
+    title: HOME['pt-BR'].meta.title,
+    description: HOME['pt-BR'].meta.description,
+  }),
 };
 
 export const viewport: Viewport = { width: 'device-width', initialScale: 1, themeColor: '#5458c8' };

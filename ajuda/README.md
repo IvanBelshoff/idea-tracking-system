@@ -77,6 +77,13 @@ AJUDA_PUBLICA=1 node scripts/serve.mjs 3201                    # http://127.0.0.
 AJUDA_PUBLICA=1 A11Y_BASE=http://127.0.0.1:3201 pnpm a11y
 ```
 
+Para os mecanismos de busca e para a prévia do link, o build público também gera, a partir do endereço completo do site (`AJUDA_SITE_URL`, que o `pages.yml` pega do Pages):
+
+- em cada página, o endereço canônico, as versões nos dois idiomas (`hreflang`) e a prévia ao compartilhar (Open Graph, `src/previa.ts`);
+- o `sitemap.xml` e o `robots.txt` (`scripts/publica.mjs`), com as páginas do mapa (`content/nav.ts`).
+
+A imagem da prévia (`public/previa/og-<idioma>.png`) sai do `pnpm previa`, que fotografa uma página com a identidade do ITS e o histórico de exemplo da página inicial. Rode de novo quando o título ou o histórico de `src/components/home/texto.ts` mudarem.
+
 Use sempre `asset()` de `src/site.ts` para arquivos de `public/` e `<Link>` para páginas: nada de `/ajuda/` escrito no código.
 
 ### Página inicial

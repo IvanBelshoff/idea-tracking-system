@@ -58,6 +58,8 @@ jobs:
         env:
           AJUDA_PUBLICA: "1"
           AJUDA_BASE_PATH: ${{ steps.pages.outputs.base_path }}
+          # Endereço completo, para a prévia ao compartilhar, o endereço canônico e o sitemap.
+          AJUDA_SITE_URL: ${{ steps.pages.outputs.base_url }}
           # Contagem de visitas (GoatCounter): variável do repositório; sem ela, o site sai sem contador.
           GOATCOUNTER_CODE: ${{ vars.GOATCOUNTER_CODE }}
         run: pnpm build
